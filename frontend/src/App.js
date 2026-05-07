@@ -7,16 +7,21 @@ function App() {
   const [message, setMessage] = useState("");
   const [reply, setReply] = useState("");
 
-  const sendMessage = async () => {
+  // -----------------------------------
+  // Send Message to Backend
+  // -----------------------------------
+  const sendMessage = async (customMessage = null) => {
 
-    if (!message) return;
+    const finalMessage = customMessage || message;
+
+    if (!finalMessage) return;
 
     try {
 
       const response = await axios.post(
         "http://127.0.0.1:5000/chat",
         {
-          message: message
+          message: finalMessage
         }
       );
 
@@ -30,7 +35,52 @@ function App() {
     }
   };
 
+  // -----------------------------------
+  // Browser Speech Recognition
+  // -----------------------------------
+  const startVoiceRecognition = () => {
+
+    const SpeechRecognition =
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+
+      alert("Speech Recognition is not supported in this browser.");
+
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = "en-US";
+
+    recognition.start();
+
+    recognition.onstart = () => {
+
+      setReply("Listening...");
+    };
+
+    recognition.onresult = (event) => {
+
+      const transcript = event.results[0][0].transcript;
+
+      setMessage(transcript);
+
+      sendMessage(transcript);
+    };
+
+    recognition.onerror = (event) => {
+
+      console.log(event.error);
+
+      setReply("Microphone error.");
+    };
+  };
+
   return (
+
     <div className="container">
 
       <h1>NLP Chatbot</h1>
@@ -41,12 +91,22 @@ function App() {
         onChange={(e) => setMessage(e.target.value)}
       />
 
-      <button onClick={sendMessage}>
-        Send
-      </button>
+      <div className="button-group">
+
+        <button onClick={() => sendMessage()}>
+          Send
+        </button>
+
+        <button onClick={startVoiceRecognition}>
+          🎤 Speak
+        </button>
+
+      </div>
 
       <div className="reply-box">
+
         {reply}
+
       </div>
 
     </div>

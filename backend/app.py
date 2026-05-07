@@ -4,9 +4,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import subprocess
 from deep_translator import GoogleTranslator
-import speech_recognition as sr
 import re
-import os
 
 app = Flask(__name__)
 CORS(app)
@@ -22,28 +20,6 @@ def is_sinhala(text):
             return True
 
     return False
-
-
-# -----------------------------------
-# Speech to Text Function
-# -----------------------------------
-def speech_to_text(audio_file):
-
-    recognizer = sr.Recognizer()
-
-    with sr.AudioFile(audio_file) as source:
-
-        audio = recognizer.record(source)
-
-    try:
-
-        text = recognizer.recognize_google(audio)
-
-        return text
-
-    except:
-
-        return ""
 
 
 # -----------------------------------
@@ -118,7 +94,9 @@ Final short answer:
         input=model_input,
         text=True,
         capture_output=True,
-        shell=True
+        shell=True,
+        encoding='utf-8',
+        errors='ignore'
     )
 
     reply = result.stdout.strip()
@@ -170,7 +148,11 @@ Final short answer:
     # -----------------------------------
     # Keep only first sentence
     # -----------------------------------
-    reply = reply.split(".")[0] + "."
+    reply = reply.split(".")[0]
+
+    reply = re.sub(r'\d+$', '', reply).strip()
+
+    reply += "."
 
     # -----------------------------------
     # English → Sinhala Translation
@@ -203,40 +185,6 @@ def chat():
     user_message = data.get('message', '')
 
     response = process_text(user_message)
-
-    return jsonify(response)
-
-
-# -----------------------------------
-# AUDIO CHAT ROUTE
-# -----------------------------------
-@app.route('/chat/audio', methods=['POST'])
-def chat_audio():
-
-    if 'audio' not in request.files:
-
-        return jsonify({
-            "reply": "No audio uploaded."
-        })
-
-    file = request.files['audio']
-
-    # Create uploads folder automatically
-    os.makedirs("uploads", exist_ok=True)
-
-    file_path = "uploads/temp_audio.wav"
-
-    file.save(file_path)
-
-    text = speech_to_text(file_path)
-
-    if text == "":
-
-        return jsonify({
-            "reply": "Could not understand audio."
-        })
-
-    response = process_text(text)
 
     return jsonify(response)
 
