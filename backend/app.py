@@ -1,19 +1,26 @@
 # -*- coding: utf-8 -*-
+
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import subprocess
 from deep_translator import GoogleTranslator
 import speech_recognition as sr
 import re
+import os
 
 app = Flask(__name__)
+CORS(app)
 
 # -----------------------------------
 # Detect Sinhala Text
 # -----------------------------------
 def is_sinhala(text):
+
     for char in text:
+
         if '\u0D80' <= char <= '\u0DFF':
             return True
+
     return False
 
 
@@ -25,13 +32,17 @@ def speech_to_text(audio_file):
     recognizer = sr.Recognizer()
 
     with sr.AudioFile(audio_file) as source:
+
         audio = recognizer.record(source)
 
     try:
+
         text = recognizer.recognize_google(audio)
+
         return text
 
     except:
+
         return ""
 
 
@@ -41,7 +52,10 @@ def speech_to_text(audio_file):
 def process_text(user_message):
 
     if not user_message or user_message.strip() == "":
-        return {"reply": "No input detected."}
+
+        return {
+            "reply": "No input detected."
+        }
 
     # -----------------------------------
     # Sinhala → English Translation
@@ -49,6 +63,7 @@ def process_text(user_message):
     if is_sinhala(user_message):
 
         try:
+
             translated = GoogleTranslator(
                 source='auto',
                 target='en'
@@ -57,33 +72,42 @@ def process_text(user_message):
             sinhala = True
 
         except:
+
             translated = user_message
             sinhala = True
 
     else:
+
         translated = user_message
         sinhala = False
 
     # -----------------------------------
-    # Prompt for TinyLLaMA
+    # TinyLLaMA Prompt
     # -----------------------------------
     model_input = f"""
-You are an assistant for financial and welfare services.
+You are a financial and welfare assistant.
 
-Only answer about:
+Rules:
+- Give ONLY the final answer.
+- Use ONE short sentence.
+- Do NOT explain.
+- Do NOT repeat the question.
+- Do NOT give examples.
+- Do NOT repeat words.
+
+Only answer questions about:
 - loans
 - welfare
-- government benefits
 - subsidies
+- government benefits
 - financial help
 
-If the question is unrelated, say:
+If unrelated, say:
 "I can only help with financial or welfare questions."
 
-Explain in one short, simple sentence using common words only.
+Question: {translated}
 
-Question:
-{translated}
+Final short answer:
 """
 
     # -----------------------------------
@@ -100,29 +124,53 @@ Question:
     reply = result.stdout.strip()
 
     # -----------------------------------
+    # Extract answer only
+    # -----------------------------------
+    if "Final short answer:" in reply:
+
+        reply = reply.split("Final short answer:")[-1].strip()
+
+    # -----------------------------------
     # CLEANING
     # -----------------------------------
 
     # Remove unicode junk
     reply = reply.replace("\\u200d", "")
 
-    # Remove patterns like [[K
+    # Remove [[K junk
     reply = re.sub(r'\[\[.*?\]\]', '', reply)
 
-    # Remove patterns like 7D, 9D
+    # Remove weird short junk
     reply = re.sub(r'\b\d+[A-Z]\b', '', reply)
 
-    # Remove broken words ending with K
+    # Remove weird K endings
     reply = re.sub(r'\b\w*K\b', '', reply)
-
-    # Remove very short garbage words
-    reply = re.sub(r'\b\w{1,2}\b', '', reply)
 
     # Remove unwanted symbols
     reply = re.sub(r'[^\w\s.,]', '', reply)
 
-    # Clean spaces
+    # Remove extra spaces
     reply = re.sub(r'\s+', ' ', reply).strip()
+
+    # -----------------------------------
+    # Remove duplicate consecutive words
+    # -----------------------------------
+    words = reply.split()
+
+    cleaned_words = []
+
+    for i, word in enumerate(words):
+
+        if i == 0 or word.lower() != words[i - 1].lower():
+
+            cleaned_words.append(word)
+
+    reply = " ".join(cleaned_words)
+
+    # -----------------------------------
+    # Keep only first sentence
+    # -----------------------------------
+    reply = reply.split(".")[0] + "."
 
     # -----------------------------------
     # English → Sinhala Translation
@@ -130,6 +178,7 @@ Question:
     if sinhala:
 
         try:
+
             reply = GoogleTranslator(
                 source='en',
                 target='si'
@@ -138,7 +187,9 @@ Question:
         except:
             pass
 
-    return {"reply": reply}
+    return {
+        "reply": reply
+    }
 
 
 # -----------------------------------
@@ -163,9 +214,15 @@ def chat():
 def chat_audio():
 
     if 'audio' not in request.files:
-        return jsonify({"reply": "No audio uploaded."})
+
+        return jsonify({
+            "reply": "No audio uploaded."
+        })
 
     file = request.files['audio']
+
+    # Create uploads folder automatically
+    os.makedirs("uploads", exist_ok=True)
 
     file_path = "uploads/temp_audio.wav"
 
@@ -174,7 +231,10 @@ def chat_audio():
     text = speech_to_text(file_path)
 
     if text == "":
-        return jsonify({"reply": "Could not understand audio."})
+
+        return jsonify({
+            "reply": "Could not understand audio."
+        })
 
     response = process_text(text)
 
@@ -185,4 +245,5 @@ def chat_audio():
 # RUN APP
 # -----------------------------------
 if __name__ == '__main__':
+
     app.run(debug=True)
