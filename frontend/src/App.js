@@ -8,6 +8,9 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // Language selector
+  const [language, setLanguage] = useState("en-US");
+
   // -----------------------------------
   // Send Message
   // -----------------------------------
@@ -17,7 +20,7 @@ function App() {
 
     if (!finalMessage) return;
 
-    // Add user message
+    // User Message
     const userMessage = {
       sender: "user",
       text: finalMessage
@@ -38,7 +41,7 @@ function App() {
         }
       );
 
-      // Add bot reply
+      // Bot Reply
       const botMessage = {
         sender: "bot",
         text: response.data.reply
@@ -64,7 +67,7 @@ function App() {
   };
 
   // -----------------------------------
-  // Browser Speech Recognition
+  // Speech Recognition
   // -----------------------------------
   const startVoiceRecognition = () => {
 
@@ -74,14 +77,15 @@ function App() {
 
     if (!SpeechRecognition) {
 
-      alert("Speech Recognition not supported.");
+      alert("Speech Recognition is not supported in this browser.");
 
       return;
     }
 
     const recognition = new SpeechRecognition();
 
-    recognition.lang = "en-US";
+    // Dynamic language
+    recognition.lang = language;
 
     recognition.start();
 
@@ -106,7 +110,7 @@ function App() {
 
       <div className="chat-container">
 
-        <h1>NLP Assistant</h1>
+        <h1>SmartGrama Assistant</h1>
 
         <div className="chat-box">
 
@@ -139,10 +143,40 @@ function App() {
         <div className="input-container">
 
           <textarea
-            placeholder="Type your message..."
+            placeholder="Ask about loans, welfare, or SmartGrama services..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
           />
+
+          {/* Language Selector */}
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+          >
+
+            <option value="en-US">
+              English
+            </option>
+
+            <option value="si-LK">
+              Sinhala
+            </option>
+
+          </select>
+
+          {/* Example Questions */}
+          <div className="example-questions">
+
+            <p>Example Questions:</p>
+
+            <ul>
+              <li>How do I apply for a loan?</li>
+              <li>What is welfare eligibility?</li>
+              <li>How can I check my wallet?</li>
+              <li>Why was my loan amount reduced?</li>
+            </ul>
+
+          </div>
 
           <div className="button-group">
 

@@ -73,6 +73,12 @@ textarea {
   resize: none;
 }
 
+select {
+  padding: 10px;
+  font-size: 16px;
+  margin-top: 15px;
+}
+
 .button-group {
   margin-top: 15px;
   display: flex;

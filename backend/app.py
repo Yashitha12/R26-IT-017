@@ -58,28 +58,31 @@ def process_text(user_message):
         sinhala = False
 
     # -----------------------------------
-    # TinyLLaMA Prompt
+    # SmartGrama Prompt
     # -----------------------------------
     model_input = f"""
-You are a financial and welfare assistant.
+You are the SmartGrama Assistant.
+
+Your role is to help citizens understand:
+- welfare services
+- microfinance services
+- loan applications
+- repayment details
+- eligibility results
+- wallet information
+- application status
+- SmartGrama system features
 
 Rules:
-- Give ONLY the final answer.
-- Use ONE short sentence.
-- Do NOT explain.
-- Do NOT repeat the question.
-- Do NOT give examples.
-- Do NOT repeat words.
+- Use very simple language.
+- Give short answers.
+- Explain complex terms simply.
+- Do not give technical explanations.
+- Do not repeat words.
+- Use only 1–2 short sentences.
 
-Only answer questions about:
-- loans
-- welfare
-- subsidies
-- government benefits
-- financial help
-
-If unrelated, say:
-"I can only help with financial or welfare questions."
+If unrelated to SmartGrama services, say:
+"I can only help with SmartGrama welfare and financial services."
 
 Question: {translated}
 
@@ -112,22 +115,16 @@ Final short answer:
     # CLEANING
     # -----------------------------------
 
-    # Remove unicode junk
     reply = reply.replace("\\u200d", "")
 
-    # Remove [[K junk
     reply = re.sub(r'\[\[.*?\]\]', '', reply)
 
-    # Remove weird short junk
     reply = re.sub(r'\b\d+[A-Z]\b', '', reply)
 
-    # Remove weird K endings
     reply = re.sub(r'\b\w*K\b', '', reply)
 
-    # Remove unwanted symbols
     reply = re.sub(r'[^\w\s.,]', '', reply)
 
-    # Remove extra spaces
     reply = re.sub(r'\s+', ' ', reply).strip()
 
     # -----------------------------------
