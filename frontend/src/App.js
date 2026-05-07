@@ -5,16 +5,29 @@ import "./App.css";
 function App() {
 
   const [message, setMessage] = useState("");
-  const [reply, setReply] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   // -----------------------------------
-  // Send Message to Backend
+  // Send Message
   // -----------------------------------
   const sendMessage = async (customMessage = null) => {
 
     const finalMessage = customMessage || message;
 
     if (!finalMessage) return;
+
+    // Add user message
+    const userMessage = {
+      sender: "user",
+      text: finalMessage
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+
+    setMessage("");
+
+    setLoading(true);
 
     try {
 
@@ -25,13 +38,28 @@ function App() {
         }
       );
 
-      setReply(response.data.reply);
+      // Add bot reply
+      const botMessage = {
+        sender: "bot",
+        text: response.data.reply
+      };
+
+      setMessages((prev) => [...prev, botMessage]);
 
     } catch (error) {
 
       console.log(error);
 
-      setReply("Error connecting to backend.");
+      const errorMessage = {
+        sender: "bot",
+        text: "Error connecting to backend."
+      };
+
+      setMessages((prev) => [...prev, errorMessage]);
+
+    } finally {
+
+      setLoading(false);
     }
   };
 
@@ -46,7 +74,7 @@ function App() {
 
     if (!SpeechRecognition) {
 
-      alert("Speech Recognition is not supported in this browser.");
+      alert("Speech Recognition not supported.");
 
       return;
     }
@@ -57,11 +85,6 @@ function App() {
 
     recognition.start();
 
-    recognition.onstart = () => {
-
-      setReply("Listening...");
-    };
-
     recognition.onresult = (event) => {
 
       const transcript = event.results[0][0].transcript;
@@ -71,41 +94,69 @@ function App() {
       sendMessage(transcript);
     };
 
-    recognition.onerror = (event) => {
+    recognition.onerror = () => {
 
-      console.log(event.error);
-
-      setReply("Microphone error.");
+      alert("Microphone error.");
     };
   };
 
   return (
 
-    <div className="container">
+    <div className="app-container">
 
-      <h1>NLP Chatbot</h1>
+      <div className="chat-container">
 
-      <textarea
-        placeholder="Type your message..."
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-      />
+        <h1>NLP Assistant</h1>
 
-      <div className="button-group">
+        <div className="chat-box">
 
-        <button onClick={() => sendMessage()}>
-          Send
-        </button>
+          {
+            messages.map((msg, index) => (
 
-        <button onClick={startVoiceRecognition}>
-          🎤 Speak
-        </button>
+              <div
+                key={index}
+                className={
+                  msg.sender === "user"
+                    ? "message user"
+                    : "message bot"
+                }
+              >
+                {msg.text}
+              </div>
+            ))
+          }
 
-      </div>
+          {
+            loading && (
+              <div className="message bot">
+                Thinking...
+              </div>
+            )
+          }
 
-      <div className="reply-box">
+        </div>
 
-        {reply}
+        <div className="input-container">
+
+          <textarea
+            placeholder="Type your message..."
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+          />
+
+          <div className="button-group">
+
+            <button onClick={() => sendMessage()}>
+              Send
+            </button>
+
+            <button onClick={startVoiceRecognition}>
+              🎤 Speak
+            </button>
+
+          </div>
+
+        </div>
 
       </div>
 
