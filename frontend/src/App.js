@@ -11,16 +11,15 @@ function App() {
   // Language selector
   const [language, setLanguage] = useState("en-US");
 
-  // -----------------------------------
+  // -------------------------
   // Send Message
-  // -----------------------------------
+  // -------------------------
   const sendMessage = async (customMessage = null) => {
 
     const finalMessage = customMessage || message;
 
-    if (!finalMessage) return;
+    if (!finalMessage.trim()) return;
 
-    // User Message
     const userMessage = {
       sender: "user",
       text: finalMessage
@@ -41,7 +40,6 @@ function App() {
         }
       );
 
-      // Bot Reply
       const botMessage = {
         sender: "bot",
         text: response.data.reply
@@ -51,7 +49,7 @@ function App() {
 
     } catch (error) {
 
-      console.log(error);
+      console.error(error);
 
       const errorMessage = {
         sender: "bot",
@@ -63,12 +61,13 @@ function App() {
     } finally {
 
       setLoading(false);
+
     }
   };
 
-  // -----------------------------------
+  // -------------------------
   // Speech Recognition
-  // -----------------------------------
+  // -------------------------
   const startVoiceRecognition = () => {
 
     const SpeechRecognition =
@@ -84,14 +83,14 @@ function App() {
 
     const recognition = new SpeechRecognition();
 
-    // Dynamic language
     recognition.lang = language;
 
     recognition.start();
 
     recognition.onresult = (event) => {
 
-      const transcript = event.results[0][0].transcript;
+      const transcript =
+        event.results[0][0].transcript;
 
       setMessage(transcript);
 
@@ -110,83 +109,94 @@ function App() {
 
       <div className="chat-container">
 
-        <h1>SmartGrama Assistant</h1>
+        <h1>🌿 SmartGrama Assistant</h1>
 
         <div className="chat-box">
 
-          {
-            messages.map((msg, index) => (
+          {messages.map((msg, index) => (
 
-              <div
-                key={index}
-                className={
-                  msg.sender === "user"
-                    ? "message user"
-                    : "message bot"
-                }
-              >
-                {msg.text}
-              </div>
-            ))
-          }
+            <div
+              key={index}
+              className={
+                msg.sender === "user"
+                  ? "message user"
+                  : "message bot"
+              }
+            >
+              {msg.text}
+            </div>
 
-          {
-            loading && (
-              <div className="message bot">
-                Thinking...
-              </div>
-            )
-          }
+          ))}
+
+          {loading && (
+            <div className="message bot">
+              Thinking...
+            </div>
+          )}
 
         </div>
 
-        <div className="input-container">
+        <div className="bottom-panel">
 
           <textarea
-            placeholder="Ask about loans, welfare, or SmartGrama services..."
+            placeholder="Ask about loans, welfare services, Samurdhi, eligibility, wallet balance..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
           />
 
-          {/* Language Selector */}
-          <select
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-          >
+          <div className="controls-row">
 
-            <option value="en-US">
-              English
-            </option>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="language-dropdown"
+            >
+              <option value="en-US">
+                English
+              </option>
 
-            <option value="si-LK">
-              Sinhala
-            </option>
+              <option value="si-LK">
+                සිංහල
+              </option>
+            </select>
 
-          </select>
+            <button
+              className="mic-btn"
+              onClick={startVoiceRecognition}
+            >
+              🎤
+            </button>
 
-          {/* Example Questions */}
-          <div className="example-questions">
+            <button
+              className="send-btn"
+              onClick={() => sendMessage()}
+            >
+              Send
+            </button>
+
+          </div>
+
+          <div className="example-box">
 
             <p>Example Questions:</p>
 
             <ul>
-              <li>How do I apply for a loan?</li>
-              <li>What is welfare eligibility?</li>
-              <li>How can I check my wallet?</li>
-              <li>Why was my loan amount reduced?</li>
+              <li>
+                How do I apply for a loan?
+              </li>
+
+              <li>
+                What is welfare eligibility?
+              </li>
+
+              <li>
+                How can I check my wallet?
+              </li>
+
+              <li>
+                Why was my loan amount reduced?
+              </li>
             </ul>
-
-          </div>
-
-          <div className="button-group">
-
-            <button onClick={() => sendMessage()}>
-              Send
-            </button>
-
-            <button onClick={startVoiceRecognition}>
-              🎤 Speak
-            </button>
 
           </div>
 

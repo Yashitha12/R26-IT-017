@@ -1,0 +1,19 @@
+SmartGrama provides welfare and microfinance services for citizens.
+
+A welfare loan helps low-income citizens during financial difficulties.
+
+Loan eligibility depends on income, expenses, assets, repayment history, and existing loans.
+
+If monthly expenses are high, the system may recommend a smaller loan amount.
+
+A guarantor may be required for higher-risk applicants.
+
+The SmartGrama wallet shows active loans, welfare payments, installment history, and payment dates.
+
+Users can check their application status from the dashboard.
+
+Welfare eligibility depends on family size, income, dependents, and asset ownership.
+
+Blockchain logs are used for secure verification and audit tracking.
+
+The AI prediction system estimates repayment ability and loan risk level.
