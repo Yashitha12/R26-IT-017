@@ -1,19 +1,23 @@
-SmartGrama provides welfare and microfinance services for citizens.
+PROFILE INFORMATION:
+A user can create a SmartGrama profile by entering personal details, address, GN division, employment details, income information, family details, and existing financial information.
 
-A welfare loan helps low-income citizens during financial difficulties.
+LOAN INFORMATION:
+A welfare loan helps low-income citizens during financial difficulties. Loan eligibility depends on income, monthly expenses, assets, repayment history, existing loans, and financial stability. If monthly expenses are high, the system may recommend a smaller loan amount. Higher-risk applicants may need a guarantor before loan approval.
 
-Loan eligibility depends on income, expenses, assets, repayment history, and existing loans.
+WALLET INFORMATION:
+The SmartGrama wallet shows active loans, remaining balances, installment history, welfare payments, payment dates, and transaction records.
 
-If monthly expenses are high, the system may recommend a smaller loan amount.
+WELFARE INFORMATION:
+Welfare eligibility depends on family size, income level, dependents, asset ownership, and Grama Niladhari verification. Welfare programs include Samurdhi welfare support, senior citizen allowances, and disability assistance programs.
 
-A guarantor may be required for higher-risk applicants.
+AI PREDICTION INFORMATION:
+The AI prediction system estimates repayment ability, loan affordability, repayment duration, and loan risk level. Risk level represents the probability of repayment difficulties or loan default.
 
-The SmartGrama wallet shows active loans, welfare payments, installment history, and payment dates.
+DASHBOARD INFORMATION:
+The SmartGrama dashboard allows users to apply for loans, apply for welfare, access their wallet, view profile details, check application status, and communicate with the AI assistant.
 
-Users can check their application status from the dashboard.
+BLOCKCHAIN INFORMATION:
+Blockchain logs are used for secure verification, tamper-proof record keeping, and audit tracking.
 
-Welfare eligibility depends on family size, income, dependents, and asset ownership.
-
-Blockchain logs are used for secure verification and audit tracking.
-
-The AI prediction system estimates repayment ability and loan risk level.
+CHATBOT INFORMATION:
+The SmartGrama AI assistant supports Sinhala and English languages using Retrieval-Augmented Generation, translation services, and speech recognition.

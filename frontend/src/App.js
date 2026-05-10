@@ -1,31 +1,99 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import "./App.css";
 
+// =========================
+// Welcome Message
+// =========================
+
+const getWelcomeMessage = (lang) => {
+
+  if (lang === "si-LK") {
+
+    return "👋 ආයුබෝවන්! මම ඔබගේ SmartGrama AI සහායකයා.\nමම ඔබට අද කෙසේ උදව් කළ හැකිද?";
+  }
+
+  return "👋 Hello! I'm your SmartGrama AI assistant.\nHow can I help you today?";
+};
+
 function App() {
 
+  // =========================
+  // STATES
+  // =========================
+
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(false);
 
-  // Language selector
-  const [language, setLanguage] = useState("en-US");
+  const [language, setLanguage] =
+    useState("en-US");
 
-  // -------------------------
-  // Send Message
-  // -------------------------
-  const sendMessage = async (customMessage = null) => {
+  const [loading, setLoading] =
+    useState(false);
 
-    const finalMessage = customMessage || message;
+  const [listening, setListening] =
+    useState(false);
+
+  const [messages, setMessages] =
+    useState([
+      {
+        sender: "bot",
+        text: getWelcomeMessage("en-US")
+      }
+    ]);
+
+  // Auto Scroll Ref
+  const chatEndRef = useRef(null);
+
+  // =========================
+  // AUTO SCROLL
+  // =========================
+
+  useEffect(() => {
+
+    chatEndRef.current?.scrollIntoView({
+      behavior: "smooth"
+    });
+
+  }, [messages, loading]);
+
+  // =========================
+  // CHANGE WELCOME MESSAGE
+  // =========================
+
+  useEffect(() => {
+
+    setMessages([
+      {
+        sender: "bot",
+        text: getWelcomeMessage(language)
+      }
+    ]);
+
+  }, [language]);
+
+  // =========================
+  // SEND MESSAGE
+  // =========================
+
+  const sendMessage = async (
+    customMessage = null
+  ) => {
+
+    const finalMessage =
+      customMessage || message;
 
     if (!finalMessage.trim()) return;
 
+    // User Message
     const userMessage = {
       sender: "user",
       text: finalMessage
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages((prev) => [
+      ...prev,
+      userMessage
+    ]);
 
     setMessage("");
 
@@ -33,30 +101,37 @@ function App() {
 
     try {
 
-      const response = await axios.post(
-        "http://127.0.0.1:5000/chat",
-        {
-          message: finalMessage
-        }
-      );
+      const response =
+        await axios.post(
+          "http://127.0.0.1:5000/chat",
+          {
+            message: finalMessage,
+            language: language
+          }
+        );
 
       const botMessage = {
         sender: "bot",
         text: response.data.reply
       };
 
-      setMessages((prev) => [...prev, botMessage]);
+      setMessages((prev) => [
+        ...prev,
+        botMessage
+      ]);
 
     } catch (error) {
 
       console.error(error);
 
-      const errorMessage = {
-        sender: "bot",
-        text: "Error connecting to backend."
-      };
-
-      setMessages((prev) => [...prev, errorMessage]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: "bot",
+          text:
+            "❌ Error connecting to backend."
+        }
+      ]);
 
     } finally {
 
@@ -65,43 +140,143 @@ function App() {
     }
   };
 
-  // -------------------------
-  // Speech Recognition
-  // -------------------------
-  const startVoiceRecognition = () => {
+  // =========================
+  // VOICE RECOGNITION
+  // =========================
 
-    const SpeechRecognition =
-      window.SpeechRecognition ||
-      window.webkitSpeechRecognition;
+  // =========================
+// VOICE RECOGNITION
+// =========================
 
-    if (!SpeechRecognition) {
+const startVoiceRecognition = async () => {
 
-      alert("Speech Recognition is not supported in this browser.");
+  try {
 
-      return;
+    // Request microphone permission first
+    await navigator.mediaDevices.getUserMedia({
+      audio: true
+    });
+
+  } catch (err) {
+
+    alert(
+      "Please allow microphone access in Chrome."
+    );
+
+    console.log(err);
+
+    return;
+  }
+
+  const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+
+    alert(
+      "Speech Recognition is not supported in this browser."
+    );
+
+    return;
+  }
+
+  const recognition =
+    new SpeechRecognition();
+
+  recognition.lang = language;
+
+  recognition.continuous = false;
+
+  recognition.interimResults = false;
+
+  recognition.maxAlternatives = 1;
+
+  recognition.onstart = () => {
+
+    console.log("Mic started");
+
+    setListening(true);
+  };
+
+  recognition.onresult = (event) => {
+
+    const transcript =
+      event.results[0][0].transcript;
+
+    console.log("Transcript:", transcript);
+
+    setMessage(transcript);
+
+    sendMessage(transcript);
+  };
+
+  recognition.onerror = (event) => {
+
+    console.log(event.error);
+
+    if (event.error === "not-allowed") {
+
+      alert(
+        "Chrome blocked microphone access."
+      );
+
+    } else {
+
+      alert(
+        "Mic Error: " + event.error
+      );
     }
 
-    const recognition = new SpeechRecognition();
-
-    recognition.lang = language;
-
-    recognition.start();
-
-    recognition.onresult = (event) => {
-
-      const transcript =
-        event.results[0][0].transcript;
-
-      setMessage(transcript);
-
-      sendMessage(transcript);
-    };
-
-    recognition.onerror = () => {
-
-      alert("Microphone error.");
-    };
+    setListening(false);
   };
+
+  recognition.onend = () => {
+
+    console.log("Mic ended");
+
+    setListening(false);
+  };
+
+  recognition.start();
+};
+
+  // =========================
+  // ENTER KEY SEND
+  // =========================
+
+  const handleKeyDown = (e) => {
+
+    if (
+      e.key === "Enter" &&
+      !e.shiftKey
+    ) {
+
+      e.preventDefault();
+
+      sendMessage();
+    }
+  };
+
+  // =========================
+  // QUICK QUESTIONS
+  // =========================
+
+  const quickQuestions = [
+
+    "Loan eligibility",
+
+    "Credit score",
+
+    "Welfare info",
+
+    "Next payment"
+
+  ];
+
+  // =========================
+  // UI
+  // =========================
 
   return (
 
@@ -109,7 +284,42 @@ function App() {
 
       <div className="chat-container">
 
-        <h1>🌿 SmartGrama Assistant</h1>
+        {/* ================= HEADER ================= */}
+
+        <div className="header">
+
+          <div className="header-left">
+
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+              alt="logo"
+              className="logo"
+            />
+
+            <div>
+
+              <h1>
+                SmartGrama AI Assistant
+              </h1>
+
+              <p>
+                Multilingual Welfare &
+                Loan Assistant
+              </p>
+
+            </div>
+
+          </div>
+
+          <div className="menu-icon">
+
+            ☰
+
+          </div>
+
+        </div>
+
+        {/* ================= CHAT AREA ================= */}
 
         <div className="chat-box">
 
@@ -128,44 +338,67 @@ function App() {
 
           ))}
 
+          {/* Loading */}
+
           {loading && (
-            <div className="message bot">
-              Thinking...
+
+            <div className="message bot loading">
+
+              🤖 Thinking...
+
             </div>
+
           )}
+
+          {/* Listening */}
+
+          {listening && (
+
+            <div className="listening-box">
+
+              🎤 Listening...
+
+            </div>
+
+          )}
+
+          {/* Auto Scroll */}
+
+          <div ref={chatEndRef}></div>
 
         </div>
 
+        {/* ================= BOTTOM PANEL ================= */}
+
         <div className="bottom-panel">
 
-          <textarea
-            placeholder="Ask about loans, welfare services, Samurdhi, eligibility, wallet balance..."
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-          />
+          {/* Input Row */}
 
           <div className="controls-row">
 
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="language-dropdown"
-            >
-              <option value="en-US">
-                English
-              </option>
+            <textarea
+              placeholder="Type your message..."
+              value={message}
+              onChange={(e) =>
+                setMessage(e.target.value)
+              }
+              onKeyDown={handleKeyDown}
+            />
 
-              <option value="si-LK">
-                සිංහල
-              </option>
-            </select>
+            {/* MIC */}
 
             <button
-              className="mic-btn"
+              className={
+                listening
+                  ? "mic-btn listening"
+                  : "mic-btn"
+              }
               onClick={startVoiceRecognition}
             >
               🎤
             </button>
+
+            {/* SEND */}
 
             <button
               className="send-btn"
@@ -176,27 +409,44 @@ function App() {
 
           </div>
 
+          {/* ================= LANGUAGE ================= */}
+
+          <select
+            value={language}
+            onChange={(e) =>
+              setLanguage(e.target.value)
+            }
+            className="language-dropdown"
+          >
+
+            <option value="en-US">
+              English
+            </option>
+
+            <option value="si-LK">
+              සිංහල
+            </option>
+
+          </select>
+
+          {/* ================= QUICK BUTTONS ================= */}
+
           <div className="example-box">
 
-            <p>Example Questions:</p>
+            {quickQuestions.map(
+              (question, index) => (
 
-            <ul>
-              <li>
-                How do I apply for a loan?
-              </li>
+                <button
+                  key={index}
+                  onClick={() =>
+                    sendMessage(question)
+                  }
+                >
+                  {question}
+                </button>
 
-              <li>
-                What is welfare eligibility?
-              </li>
-
-              <li>
-                How can I check my wallet?
-              </li>
-
-              <li>
-                Why was my loan amount reduced?
-              </li>
-            </ul>
+              )
+            )}
 
           </div>
 

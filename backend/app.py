@@ -62,9 +62,9 @@ def is_sinhala(text):
 
 
 # -----------------------------------
-# Retrieve Relevant Context
+# Retrieve Context
 # -----------------------------------
-def retrieve_context(query, k=2):
+def retrieve_context(query, k=1):
 
     query_embedding = embedding_model.encode([query])
 
@@ -83,7 +83,40 @@ def retrieve_context(query, k=2):
                 documents[idx]
             )
 
-    return "\n".join(retrieved_docs[:2])
+    return "\n".join(retrieved_docs)
+
+
+# -----------------------------------
+# Personal Question Detection
+# -----------------------------------
+def is_personal_question(text):
+
+    personal_keywords = [
+
+        "my loan",
+        "my payment",
+        "my wallet",
+        "my account",
+        "my balance",
+        "my welfare",
+        "my eligibility",
+        "my risk",
+        "my status",
+        "my application",
+        "next payment",
+        "my amount"
+
+    ]
+
+    text = text.lower()
+
+    for keyword in personal_keywords:
+
+        if keyword in text:
+
+            return True
+
+    return False
 
 
 # -----------------------------------
@@ -94,25 +127,15 @@ def clean_response(reply):
     # Remove unwanted phrases
     junk_phrases = [
 
-        "Final Answer:",
         "Answer:",
-        "Possible final answer:",
-        "possible final answer",
-        "Sure,",
-        "heres",
-        "here is",
-        "using SmartGrama knowledge",
-        "SmartGrama knowledge",
-        "The context states",
-        "The information states",
+        "Response:",
+        "Final Answer:",
+        "Here is the answer",
+        "Here’s the answer",
         "According to the context",
         "According to the information",
-        "SmartGrama AI Assistant",
-        "retrieved knowledge",
-        "Reply:",
-        "Response:",
-        "Questions",
-        "Question"
+        "SmartGrama information",
+        "Retrieved information"
 
     ]
 
@@ -123,30 +146,9 @@ def clean_response(reply):
             ""
         )
 
-    # Remove repeated question patterns
+    # Remove section titles
     reply = re.sub(
-        r'how do i .*?\?',
-        '',
-        reply,
-        flags=re.IGNORECASE
-    )
-
-    # Remove weird characters
-    reply = reply.replace(
-        "\\u200d",
-        ""
-    )
-
-    # Remove brackets
-    reply = re.sub(
-        r'\[\[.*?\]\]',
-        '',
-        reply
-    )
-
-    # Keep Sinhala + English characters
-    reply = re.sub(
-        r'[^\w\s.,!?඀-෿]',
+        r'^[A-Z\s]+:\s*',
         '',
         reply
     )
@@ -158,38 +160,64 @@ def clean_response(reply):
         reply
     ).strip()
 
-    # Remove duplicate words
-    words = reply.split()
-
-    cleaned_words = []
-
-    for i, word in enumerate(words):
-
-        if i == 0 or word.lower() != words[i - 1].lower():
-
-            cleaned_words.append(word)
-
-    reply = " ".join(cleaned_words)
-
-    # Keep only first 2 sentences
-    sentences = re.split(
-        r'(?<=[.!?])\s+',
-        reply
-    )
-
-    reply = " ".join(
-        sentences[:2]
-    ).strip()
-
     # Capitalize first letter
-    reply = reply.capitalize()
+    if reply:
 
-    # Final fallback
-    if not reply:
+        reply = reply[0].upper() + reply[1:]
 
-        reply = "I do not have enough information."
+    # Add final period
+    if reply and not reply.endswith("."):
+
+        reply += "."
 
     return reply
+
+
+# -----------------------------------
+# Generate Human-Friendly Response
+# -----------------------------------
+def generate_human_response(context, question):
+
+    prompt = f"""
+You are the SmartGrama AI Assistant.
+
+Use ONLY the information below to answer the user's question.
+
+SmartGrama Information:
+{context}
+
+User Question:
+{question}
+
+Instructions:
+- Answer naturally and conversationally.
+- Keep the answer accurate.
+- Do not invent new information.
+- Keep it short and helpful.
+- Sound like a friendly assistant.
+- Maximum 3 sentences.
+
+Friendly Answer:
+"""
+
+    response = ollama.chat(
+
+        model='gemma:2b',
+
+        messages=[
+            {
+                'role': 'user',
+                'content': prompt
+            }
+        ],
+
+        options={
+            "temperature": 0.3,
+            "num_predict": 80
+        }
+    )
+
+    return response['message']['content']
 
 
 # -----------------------------------
@@ -197,15 +225,24 @@ def clean_response(reply):
 # -----------------------------------
 def process_text(user_message):
 
-    # Empty Input Check
-    if not user_message or user_message.strip() == "":
+    # Empty Input
+    if not user_message.strip():
 
         return {
-            "reply": "No input detected."
+            "reply": "Please enter a message."
         }
 
     # -----------------------------------
-    # Sinhala Detection + Translation
+    # Block Personal Questions
+    # -----------------------------------
+    if is_personal_question(user_message):
+
+        return {
+            "reply": "I cannot access personal account information yet."
+        }
+
+    # -----------------------------------
+    # Detect Sinhala
     # -----------------------------------
     sinhala = False
 
@@ -229,58 +266,30 @@ def process_text(user_message):
         translated = user_message
 
     # -----------------------------------
-    # Retrieve Context
+    # Retrieve RAG Context
     # -----------------------------------
     retrieved_context = retrieve_context(
         translated
     )
 
     # -----------------------------------
-    # No Context Fallback
+    # No Context
     # -----------------------------------
     if not retrieved_context.strip():
 
         return {
-            "reply": "I do not have enough information."
+            "reply": "I do not have enough information to answer that."
         }
 
     # -----------------------------------
-    # Prompt Engineering
-    # -----------------------------------
-    model_input = f"""
-Answer the question using ONLY this SmartGrama data.
-
-Data:
-{retrieved_context}
-
-Question:
-{translated}
-
-Answer in ONE short sentence only.
-Do NOT repeat the question.
-Do NOT explain.
-"""
-
-    # -----------------------------------
-    # Run PHI Model
+    # Generate Human Response
     # -----------------------------------
     try:
 
-        response = ollama.chat(
-    model='phi',
-    messages=[
-        {
-            'role': 'user',
-            'content': model_input
-        }
-    ],
-    options={
-        "num_predict": 40,
-        "temperature": 0.2
-    }
-)
-
-        reply = response['message']['content']
+        reply = generate_human_response(
+            retrieved_context,
+            translated
+        )
 
     except Exception as e:
 
@@ -308,6 +317,9 @@ Do NOT explain.
         except:
             pass
 
+    # -----------------------------------
+    # Final Response
+    # -----------------------------------
     return {
         "reply": reply
     }
