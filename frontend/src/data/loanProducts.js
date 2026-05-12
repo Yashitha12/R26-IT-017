@@ -1,0 +1,58 @@
+export const loanProducts = {
+  personal_consumer: {
+    title: "Personal / Consumer Loan",
+    min: 0,
+    max: 25000,
+    interestRate: 20,
+    maxMonths: 60,
+  },
+  long_term: {
+    title: "Long Term Loan",
+    min: 0,
+    max: 250000,
+    interestRate: 17,
+    maxMonths: 60,
+  },
+  below_25000: {
+    title: "Below Rs. 25,000 Loan",
+    min: 0,
+    max: 25000,
+    interestRate: 8,
+    maxMonths: 60,
+  },
+  above_25000: {
+    title: "Above Rs. 25,000 Loan",
+    min: 25000,
+    max: 150000,
+    interestRate: 8,
+    maxMonths: 60,
+  },
+  lifestyle: {
+    title: "Lifestyle Loan",
+    min: 50000,
+    max: 500000,
+    interestRate: 14,
+    maxMonths: 60,
+  },
+  sampatha: {
+    title: "Sampatha Loan",
+    min: 100000,
+    max: 100000,
+    interestRate: 15,
+    maxMonths: 60,
+  },
+  self_development: {
+    title: "Self Development Loan",
+    min: 0,
+    max: 100000,
+    interestRate: 14,
+    maxMonths: 60,
+  },
+  lakjaya: {
+    title: "Lakjaya Loan",
+    min: 100000,
+    max: 1000000,
+    interestRate: 15,
+    maxMonths: 60,
+  },
+};

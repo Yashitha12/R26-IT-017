@@ -15,24 +15,65 @@ body {
 /* ============== HEADER ============== */
 .header {
   background: white;
-  padding: 16px 20px;
+  padding: 14px 20px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  border-bottom: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-.menu {
-  font-size: 26px;
+.logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.logo-img {
+  height: 48px;
+  width: auto;
+  max-width: 180px;
+  object-fit: contain;
+}
+
+/* Admin Button */
+.admin-btn {
+  background: #1e40af;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 14.5px;
+  font-weight: 600;
+  border: none;
   cursor: pointer;
-  color: #334155;
+  white-space: nowrap;
 }
 
-.header h3 {
-  font-size: 21px;
-  font-weight: 700;
-  color: #1e40af;
+.admin-btn:hover {
+  background: #1e3a8a;
+}
+/* ============== REVIEW APPLICATION CARD ============== */
+.form-card h3 {
+  color: #166534;
+  margin-bottom: 20px;
+}
+
+.form-card.review-card p {
+  padding: 10px 0;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 8px;
+  font-size: 15.5px;
+}
+
+.form-card.review-card p:last-child {
+  border-bottom: none;
+}
+
+/* Make Review Section look cleaner */
+.review-card {
+  background: #f8fafc;
+  border: 2px solid #10b981;
 }
 
 /* ============== PROGRESS STEPS ============== */

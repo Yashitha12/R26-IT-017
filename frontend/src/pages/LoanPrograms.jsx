@@ -1,78 +1,67 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { loanProducts } from "../data/loanProducts";
 
 const LoanPrograms = () => {
   const navigate = useNavigate();
 
-  const loans = [
-    {
-      title: "Personal Loan",
-      desc: "Flexible loan for personal expenses",
-      rate: "12%",
-      term: "5 years",
-      amount: "Rs. 500,000",
-      time: "24 hrs",
-    },
-    {
-      title: "Home Improvement Loan",
-      desc: "Funding for home renovations and improvements",
-      rate: "8.5%",
-      term: "10 years",
-      amount: "Rs. 5,000,000",
-      time: "3-5 days",
-    },
-    {
-      title: "Business Loan",
-      desc: "Capital for starting or expanding your business",
-      rate: "9.75%",
-      term: "7 years",
-      amount: "Rs. 10,000,000",
-      time: "5-7 days",
-    },
-  ];
+  const loans = Object.entries(loanProducts).map(([key, value]) => ({
+    key,
+    ...value,
+  }));
 
   return (
     <div className="loan-programs-page">
-      {/* Header */}
       <div className="header">
         <div className="logo">
           <span className="sg-logo">SG</span>
           <h1>SmartGrama</h1>
         </div>
+
+        <button
+          className="secondary"
+          onClick={() => navigate("/admin-review")}
+        >
+          Admin Dashboard
+        </button>
       </div>
 
       <div className="content">
         <h2>Loan Programs</h2>
         <p className="subtitle">
-          Choose from our variety of loan options designed to meet your financial needs
+          Select a loan type and continue to application
         </p>
 
-        {loans.map((loan, index) => (
-          <div key={index} className="loan-card">
+        {loans.map((loan) => (
+          <div key={loan.key} className="loan-card">
             <h3>{loan.title}</h3>
-            <p className="loan-desc">{loan.desc}</p>
 
             <div className="loan-info">
               <div className="info-row">
-                <strong>{loan.rate}</strong>
+                <strong>{loan.interestRate}%</strong>
                 <span>Interest Rate</span>
               </div>
+
               <div className="info-row">
-                <strong>{loan.term}</strong>
+                <strong>{loan.maxMonths} months</strong>
                 <span>Max Term</span>
               </div>
+
               <div className="info-row">
-                <strong>{loan.amount}</strong>
-                <span>Loan Amount</span>
-              </div>
-              <div className="info-row">
-                <strong>{loan.time}</strong>
-                <span>Approval Time</span>
+                <strong>
+                  Rs. {loan.min.toLocaleString()} - Rs.{" "}
+                  {loan.max.toLocaleString()}
+                </strong>
+                <span>Loan Limit</span>
               </div>
             </div>
 
-            <button 
-              onClick={() => navigate('/loan-application', { state: { loanType: loan.title } })}
+            <button
+              onClick={() =>
+                navigate("/loan-application", {
+                  state: { loanType: loan.key },
+                })
+              }
               className="apply-btn"
             >
               Apply Now

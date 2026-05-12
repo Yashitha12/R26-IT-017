@@ -44,11 +44,11 @@ export default function LoanResult() {
         </div>
 
         <div className="warning-box">
-          ⚠ Existing loan balance and monthly expenses are high.
+          ⚠ AI result should be reviewed by a loan officer before final approval.
         </div>
 
         <div className="tip-box">
-          💡 Tip: Reduce monthly expenses to improve your credit score.
+          💡 Tip: Maintaining savings and reducing expenses can improve loan eligibility.
         </div>
 
         <button className="secondary" onClick={() => navigate("/")}>
@@ -56,6 +56,20 @@ export default function LoanResult() {
         </button>
 
         <button
+          onClick={() =>
+            navigate("/wallet", {
+              state: {
+                prediction,
+                application,
+              },
+            })
+          }
+        >
+          ✓ Accept Offer
+        </button>
+
+        <button
+          className="secondary"
           onClick={() =>
             navigate("/admin-review", {
               state: {
@@ -65,7 +79,7 @@ export default function LoanResult() {
             })
           }
         >
-          ✓ Accept Offer
+          Admin Review
         </button>
       </div>
     </div>

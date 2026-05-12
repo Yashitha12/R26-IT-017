@@ -3,12 +3,14 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import ProgressSteps from "../components/ProgressSteps";
 import { predictLoan } from "../api/loanApi";
+import { loanProducts } from "../data/loanProducts";
 
 export default function LoanApplication() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const selectedLoan = location.state?.loanType || "Personal Loan";
+  const selectedLoanKey = location.state?.loanType || "personal_consumer";
+  const selectedProduct = loanProducts[selectedLoanKey];
 
   const [step, setStep] = useState(1);
 
@@ -24,7 +26,9 @@ export default function LoanApplication() {
     other_income: "",
     expenses: "",
     loan_amount: "",
-    loan_type: selectedLoan,
+    loan_type: selectedLoanKey,
+    interest_rate: selectedProduct.interestRate,
+    repayment_months: selectedProduct.maxMonths,
     savings_balance: "",
     existing_loans: "",
     repayment_history: "1",
@@ -56,7 +60,10 @@ export default function LoanApplication() {
     navigate("/loan-result", {
       state: {
         prediction,
-        application: form,
+        application: {
+          ...form,
+          loan_title: selectedProduct.title,
+        },
       },
     });
   };
@@ -67,7 +74,9 @@ export default function LoanApplication() {
 
       <div className="page-card">
         <h2>Loan Application</h2>
-        <p>{selectedLoan} - Step {step} of 5</p>
+        <p>
+          {selectedProduct.title} - Step {step} of 5
+        </p>
       </div>
 
       <ProgressSteps step={step} />
@@ -91,13 +100,32 @@ export default function LoanApplication() {
         <div className="form-card">
           <h3>💰 Loan Details</h3>
 
-          <input name="loan_type" value={form.loan_type} onChange={handleChange} />
-          <input name="loan_amount" placeholder="Loan Amount Rs." onChange={handleChange} />
-          <input placeholder="Interest Rate" />
-          <input placeholder="Loan Date" />
-          <input placeholder="Repayment Period Months" />
+          <label>Selected Loan Type</label>
+          <input value={selectedProduct.title} readOnly />
 
-          <button className="secondary" onClick={() => setStep(1)}>← Back</button>
+          <label>Allowed Loan Limit</label>
+          <input
+            value={`Rs. ${selectedProduct.min.toLocaleString()} - Rs. ${selectedProduct.max.toLocaleString()}`}
+            readOnly
+          />
+
+          <label>Requested Loan Amount</label>
+          <input
+            name="loan_amount"
+            placeholder="Loan Amount Rs."
+            value={form.loan_amount}
+            onChange={handleChange}
+          />
+
+          <label>Interest Rate</label>
+          <input value={`${form.interest_rate}%`} readOnly />
+
+          <label>Maximum Repayment Period</label>
+          <input value={`${form.repayment_months} months`} readOnly />
+
+          <button className="secondary" onClick={() => setStep(1)}>
+            ← Back
+          </button>
           <button onClick={() => setStep(3)}>Next →</button>
         </div>
       )}
@@ -110,9 +138,11 @@ export default function LoanApplication() {
           <input name="other_income" placeholder="Other Income Rs." onChange={handleChange} />
           <input name="expenses" placeholder="Monthly Expenses Rs." onChange={handleChange} />
           <input name="savings_balance" placeholder="Savings Balance Rs." onChange={handleChange} />
-          <input name="existing_loans" placeholder="Existing Loans Amount Rs." onChange={handleChange} />
+          <input name="existing_loans" placeholder="Existing Loans 0 or 1" onChange={handleChange} />
 
-          <button className="secondary" onClick={() => setStep(2)}>← Back</button>
+          <button className="secondary" onClick={() => setStep(2)}>
+            ← Back
+          </button>
           <button onClick={() => setStep(4)}>Next →</button>
         </div>
       )}
@@ -132,25 +162,28 @@ export default function LoanApplication() {
             <option value="0">Poor Repayment History</option>
           </select>
 
-          <button className="secondary" onClick={() => setStep(3)}>← Back</button>
+          <button className="secondary" onClick={() => setStep(3)}>
+            ← Back
+          </button>
           <button onClick={() => setStep(5)}>Next →</button>
         </div>
       )}
 
-      {step === 5 && (
-        <div className="form-card">
-          <h3>✅ Review Application</h3>
-
-          <p>Name: {form.fullName}</p>
-          <p>Loan Type: {form.loan_type}</p>
-          <p>Loan Amount: Rs. {form.loan_amount}</p>
-          <p>Monthly Income: Rs. {form.monthly_income}</p>
-          <p>Expenses: Rs. {form.expenses}</p>
-
-          <button className="secondary" onClick={() => setStep(4)}>← Back</button>
-          <button onClick={submitApplication}>Submit Application</button>
-        </div>
-      )}
+     {step === 5 && (
+  <div className="form-card review-card">
+    <h3>✅ Review Application</h3>
+    <p>Name: {form.fullName}</p>
+    <p>Loan Type: {selectedProduct.title}</p>
+    <p>Interest Rate: {form.interest_rate}%</p>
+    <p>Loan Amount: Rs. {form.loan_amount}</p>
+    <p>Monthly Income: Rs. {form.monthly_income}</p>
+    <p>Expenses: Rs. {form.expenses}</p>
+    <button className="secondary" onClick={() => setStep(4)}>
+      ← Back
+    </button>
+    <button onClick={submitApplication}>Submit Application</button>
+  </div>
+)}
     </div>
   );
 }
