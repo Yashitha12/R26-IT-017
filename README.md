@@ -22,7 +22,13 @@ The system provides:
 
 The platform aims to improve decision-making efficiency, reduce manual processing, and provide secure and transparent service management for underserved rural communities in Sri Lanka.
 
----
+# Workflow
+Create a branch from dev
+follow the naming convention
+commit with a meaningful message
+push your branch 
+Open the pull request to dev
+Get a team review before merging
 
 # System Objectives
 
@@ -81,7 +87,7 @@ Automated welfare and loan eligibility validation using predefined rules.
 Machine learning models for loan risk prediction and repayment estimation.
 
 ## 4. NLP-Powered Multilingual Communication
-Sinhala, Tamil, and English chatbot support for citizen interaction.
+Sinhala  and English chatbot support for citizen interaction.
 
 ---
 
@@ -117,10 +123,10 @@ This research aligns with:
 ---
 
 ## Team Members
-- Hashini Tharushika
-- Ayani Imalya
-- Yashitha Ranod
-- Deneth Eshaka
+- Hashini Tharushika (IT22194626)
+- Ayani Imalya (IT22552310)
+- Yashitha Ranod (IT22145048)
+- Deneth Eshaka (IT22111074)
 
 
 ---
