@@ -2,18 +2,17 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import "./App.css";
 
-// =========================
+
 // Welcome Message
-// =========================
 
 const getWelcomeMessage = (lang) => {
 
   if (lang === "si-LK") {
 
-    return "👋 ආයුබෝවන්! මම ඔබගේ SmartGrama AI සහායකයා.\nමම ඔබට අද කෙසේ උදව් කළ හැකිද?";
+    return " ආයුබෝවන්! මම ඔබගේ SmartGrama AI සහායකයා.\nමම ඔබට අද කෙසේ උදව් කළ හැකිද?";
   }
 
-  return "👋 Hello! I'm your SmartGrama AI assistant.\nHow can I help you today?";
+  return " Hello! I'm your SmartGrama AI assistant.\nHow can I help you today?";
 };
 
 function App() {
@@ -44,9 +43,8 @@ function App() {
   // Auto Scroll Ref
   const chatEndRef = useRef(null);
 
-  // =========================
   // AUTO SCROLL
-  // =========================
+  
 
   useEffect(() => {
 
@@ -56,9 +54,9 @@ function App() {
 
   }, [messages, loading]);
 
-  // =========================
+  
   // CHANGE WELCOME MESSAGE
-  // =========================
+  
 
   useEffect(() => {
 
@@ -71,9 +69,9 @@ function App() {
 
   }, [language]);
 
-  // =========================
+  
   // SEND MESSAGE
-  // =========================
+  
 
   const sendMessage = async (
     customMessage = null
@@ -129,7 +127,7 @@ function App() {
         {
           sender: "bot",
           text:
-            "❌ Error connecting to backend."
+            " Error connecting to backend."
         }
       ]);
 
@@ -140,13 +138,13 @@ function App() {
     }
   };
 
-  // =========================
+  
   // VOICE RECOGNITION
-  // =========================
+  
 
-  // =========================
+  
 // VOICE RECOGNITION
-// =========================
+
 
 const startVoiceRecognition = async () => {
 
@@ -241,9 +239,9 @@ const startVoiceRecognition = async () => {
   recognition.start();
 };
 
-  // =========================
+  
   // ENTER KEY SEND
-  // =========================
+ 
 
   const handleKeyDown = (e) => {
 
@@ -258,9 +256,9 @@ const startVoiceRecognition = async () => {
     }
   };
 
-  // =========================
+  
   // QUICK QUESTIONS
-  // =========================
+  
 
   const quickQuestions = [
 
@@ -274,9 +272,9 @@ const startVoiceRecognition = async () => {
 
   ];
 
-  // =========================
+  
   // UI
-  // =========================
+  
 
   return (
 
@@ -344,7 +342,7 @@ const startVoiceRecognition = async () => {
 
             <div className="message bot loading">
 
-              🤖 Thinking...
+               Thinking...
 
             </div>
 
@@ -356,7 +354,7 @@ const startVoiceRecognition = async () => {
 
             <div className="listening-box">
 
-              🎤 Listening...
+               Listening...
 
             </div>
 

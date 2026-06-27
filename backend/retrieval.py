@@ -13,9 +13,9 @@ index = faiss.read_index('rag/faiss_index.bin')
 with open('rag/documents.pkl', 'rb') as f:
     documents = pickle.load(f)
 
-# -----------------------------
+
 # Search Function
-# -----------------------------
+
 def retrieve_context(query, k=3):
 
     # Convert query into embedding
