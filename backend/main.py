@@ -36,30 +36,42 @@ class LoanInput(BaseModel):
 def decision_recommendation(risk_level, monthly_income, expenses, requested_loan_amount):
     disposable_income = monthly_income - expenses
 
-    if risk_level == "Low Risk":
-        max_loan = monthly_income * 6
-    elif risk_level == "Medium Risk":
-        max_loan = monthly_income * 3
-    else:
-        max_loan = monthly_income * 1.5
-
-    if requested_loan_amount <= max_loan and risk_level == "Low Risk":
-        final_decision = "Approved"
-        recommended_loan = requested_loan_amount
-
-    elif requested_loan_amount <= max_loan and risk_level == "Medium Risk":
-        final_decision = "Approved with Caution"
-        recommended_loan = requested_loan_amount
-
-    elif risk_level == "High Risk":
-        final_decision = "Reduced Amount Approved"
-        recommended_loan = max_loan
-
-    else:
-        final_decision = "Reduced Amount Approved"
-        recommended_loan = max_loan
+    if disposable_income < 0:
+        disposable_income = 0
 
     suggested_monthly_installment = disposable_income * 0.35
+
+    # Safe loan caps based on affordable installment term limits
+    if risk_level == "Low Risk":
+        max_loan = suggested_monthly_installment * 36
+    elif risk_level == "Medium Risk":
+        max_loan = suggested_monthly_installment * 24
+    else: # High Risk
+        max_loan = suggested_monthly_installment * 12
+
+    reason = ""
+
+    if disposable_income <= 0:
+        final_decision = "Rejected"
+        recommended_loan = 0
+        reason = "Currently, your expenses exceed or equal your income, making loan repayment unsafe."
+    elif risk_level == "High Risk":
+        if requested_loan_amount <= max_loan:
+            final_decision = "Approved with Strict Caution"
+            recommended_loan = requested_loan_amount
+            reason = "Approved, but please be cautious with repayments to improve your risk profile."
+        else:
+            final_decision = "Reduced Amount Approved"
+            recommended_loan = max_loan
+            reason = "Due to a high risk profile, we cannot approve the full amount. We recommend starting with a smaller, safer micro-loan."
+    elif requested_loan_amount <= max_loan:
+        final_decision = "Approved" if risk_level == "Low Risk" else "Approved with Caution"
+        recommended_loan = requested_loan_amount
+        reason = "Your requested amount is safely within your affordable limits."
+    else:
+        final_decision = "Reduced Amount Approved"
+        recommended_loan = max_loan
+        reason = "The requested amount exceeds safe borrowing limits. We recommend a lower amount to ensure comfortable monthly repayments."
 
     repayment_months = (
         recommended_loan / suggested_monthly_installment
@@ -70,11 +82,13 @@ def decision_recommendation(risk_level, monthly_income, expenses, requested_loan
     return {
         "predicted_risk_level": risk_level,
         "final_decision": final_decision,
+        "reason": reason,
         "requested_loan_amount": round(requested_loan_amount, 2),
         "recommended_loan_amount": round(recommended_loan, 2),
         "suggested_monthly_installment": round(suggested_monthly_installment, 2),
         "estimated_repayment_duration_months": int(round(repayment_months)),
     }
+
 
 
 @app.post("/predict-loan")
