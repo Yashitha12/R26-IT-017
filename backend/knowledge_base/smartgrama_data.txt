@@ -1,23 +1,29 @@
-PROFILE INFORMATION:
-A user can create a SmartGrama profile by entering personal details, address, GN division, employment details, income information, family details, and existing financial information.
+PROFILE AND REGISTRATION INFORMATION:
+A citizen can register and create a SmartGrama digital profile by providing their National Identity Card (NIC) number, full name, residential address, Grama Niladhari (GN) division, employment status, monthly household income, family size, dependent details, and existing financial obligations. The profile serves as the single source of verified citizen data across all welfare and micro-loan services.
 
-LOAN INFORMATION:
-A welfare loan helps low-income citizens during financial difficulties. Loan eligibility depends on income, monthly expenses, assets, repayment history, existing loans, and financial stability. If monthly expenses are high, the system may recommend a smaller loan amount. Higher-risk applicants may need a guarantor before loan approval.
+WELFARE SERVICES AND ASSISTANCE SCHEMES:
+SmartGrama provides access to several government welfare support programs, including the Samurdhi welfare program, Aswesuma welfare benefit scheme, Senior Citizen monthly allowance (for individuals aged 70 and above), and Disability financial assistance support. Welfare eligibility is determined based on household income thresholds, family dependency ratio, chronic illness or disability status, asset ownership, and formal verification by the local Grama Niladhari officer.
 
-WALLET INFORMATION:
-The SmartGrama wallet shows active loans, remaining balances, installment history, welfare payments, payment dates, and transaction records.
+WELFARE APPLICATION AND REQUIRED DOCUMENTS:
+To apply for welfare assistance through SmartGrama, applicants must submit copies of their National Identity Card (NIC), Grama Niladhari residence and income verification certificate, family income declarations, and relevant medical certificates (for disability or senior allowances). Once submitted, the Grama Niladhari division reviews the documentation and updates the verification status on the SmartGrama platform.
 
-WELFARE INFORMATION:
-Welfare eligibility depends on family size, income level, dependents, asset ownership, and Grama Niladhari verification. Welfare programs include Samurdhi welfare support, senior citizen allowances, and disability assistance programs.
+MICRO-LOAN SCHEMES AND ELIGIBILITY:
+SmartGrama micro-loans are designed to support low-income citizens, small-scale farmers, self-employed individuals, and micro-entrepreneurs facing financial difficulties. Loan eligibility depends on monthly income, living expenses, existing loan commitments, credit repayment history, and financial stability. If an applicant has high monthly expenses relative to income, the system may recommend a smaller, more affordable loan amount to avoid default. Higher-risk applicants may be asked to provide an eligible guarantor before final loan approval.
 
-AI PREDICTION INFORMATION:
-The AI prediction system estimates repayment ability, loan affordability, repayment duration, and loan risk level. Risk level represents the probability of repayment difficulties or loan default.
+MICRO-LOAN TERMS, REPAYMENT, AND INTEREST:
+Micro-loans offered under the SmartGrama welfare initiative feature flexible repayment periods ranging from 6 months to 24 months, with subsidized low interest rates. Borrowers can pay monthly installments directly through the SmartGrama digital wallet, authorized post offices, or partner rural banks. A grace period may be granted upon request in the event of documented emergencies or agricultural loss.
 
-DASHBOARD INFORMATION:
-The SmartGrama dashboard allows users to apply for loans, apply for welfare, access their wallet, view profile details, check application status, and communicate with the AI assistant.
+SMARTGRAMA DIGITAL WALLET:
+The SmartGrama digital wallet displays active loan details, remaining principal balances, upcoming installment due dates, repayment history, disbursed welfare payments, and government grant deposits. Users can monitor transaction receipts and track repayment progress in real time.
 
-BLOCKCHAIN INFORMATION:
-Blockchain logs are used for secure verification, tamper-proof record keeping, and audit tracking.
+AI PREDICTION AND FINANCIAL RISK SCORING:
+The SmartGrama AI assessment engine evaluates an applicant's loan repayment capacity, affordability index, recommended loan tenure, and credit risk level. The risk score represents the likelihood of repayment difficulty or default. Applicants with lower risk ratings qualify for faster automated pre-approval, while applicants with elevated risk levels receive tailored advice on budgeting or smaller loan limits.
 
-CHATBOT INFORMATION:
-The SmartGrama AI assistant supports Sinhala and English languages using Retrieval-Augmented Generation, translation services, and speech recognition.
+SMARTGRAMA DASHBOARD AND CITIZEN SERVICES:
+The SmartGrama citizen dashboard enables users to submit new micro-loan applications, check welfare eligibility and grant status, view their digital wallet balance, manage verified profile information, and interact directly with the SmartGrama Multilingual AI Conversational Assistant for immediate guidance.
+
+BLOCKCHAIN AUDIT AND TAMPER-PROOF VERIFICATION:
+All welfare distribution records, loan approvals, and official Grama Niladhari verification logs are recorded on a secure blockchain ledger to ensure complete transparency, prevent duplicate claims, and maintain an immutable audit trail.
+
+MULTILINGUAL AI CONVERSATIONAL ASSISTANT:
+The SmartGrama AI Assistant supports both Sinhala (සිංහල) and English languages. It utilizes Retrieval-Augmented Generation (RAG), vector similarity search with FAISS, multilingual translation, and speech-to-text recognition to provide accurate, context-grounded guidance for all citizen inquiries.
