@@ -1,117 +1,144 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 
 export default function Wallet() {
-  const { state } = useLocation();
   const navigate = useNavigate();
 
-  const prediction = state?.prediction;
-  const application = state?.application;
-
-  if (!prediction || !application) {
-    return <p>No wallet data found</p>;
-  }
-
   return (
-    <div className="phone wallet-page">
+    <>
       <Header />
-
-      <div className="page-card">
-        <h2>My Wallet</h2>
-        <p>Digital wallet linked to your DID</p>
+      <div style={{ paddingLeft: '40px', paddingTop: '16px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)', fontSize: '20px', fontWeight: 'bold' }}>
+        My Wallet
       </div>
 
-      <div className="wallet-card blue">
-        <p>Total Balance</p>
-        <h1>Rs. 47,500.00</h1>
-        <div className="wallet-tags">
-          <span>✓ Verified Account</span>
-          <span>Samupath Bank</span>
+      <main className="content-container flex flex-col gap-8">
+        
+        {/* Purple Balance Banner */}
+        <section style={{ background: 'linear-gradient(90deg, var(--primary), var(--primary-dark))', borderRadius: 'var(--radius-xl)', padding: '32px', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', boxShadow: 'var(--shadow-md)', position: 'relative' }}>
+          <div>
+            <div style={{ fontSize: '14px', opacity: 0.9 }}>Total Balance</div>
+            <div style={{ fontSize: '36px', fontWeight: 'bold', margin: '4px 0 32px 0' }}>Rs. 12,500</div>
+            
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <div style={{ background: 'rgba(255,255,255,0.1)', padding: '16px 24px', borderRadius: '12px', minWidth: '240px' }}>
+                <div style={{ fontSize: '12px', opacity: 0.9, marginBottom: '4px' }}>Savings</div>
+                <div style={{ fontSize: '20px', fontWeight: 'bold' }}>Rs. 8,000</div>
+              </div>
+              <div style={{ background: 'rgba(255,255,255,0.1)', padding: '16px 24px', borderRadius: '12px', minWidth: '240px' }}>
+                <div style={{ fontSize: '12px', opacity: 0.9, marginBottom: '4px' }}>Welfare</div>
+                <div style={{ fontSize: '20px', fontWeight: 'bold' }}>Rs. 4,500</div>
+              </div>
+            </div>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.2)', width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <i className="fa-solid fa-wallet" style={{ fontSize: '20px' }}></i>
+          </div>
+        </section>
+
+        {/* Middle Row: Active Loans & Welfare Support */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+          
+          {/* Active Loans */}
+          <div className="card" style={{ padding: '32px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '24px', color: 'var(--text-primary)' }}>Active Loans</h3>
+            
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
+              <div style={{ background: 'var(--primary-light)', color: 'var(--accent)', width: '40px', height: '40px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <i className="fa-solid fa-chart-line"></i>
+              </div>
+              <div>
+                <h4 style={{ fontWeight: 'bold', fontSize: '14px' }}>Agricultural Microloan</h4>
+                <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Approved on Apr 15, 2026</p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Loan Amount</span>
+                <span style={{ fontWeight: 'bold' }}>Rs. 150,000</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Remaining Balance</span>
+                <span style={{ fontWeight: 'bold', color: '#ea580c' }}>Rs. 142,500</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Monthly Installment</span>
+                <span style={{ fontWeight: 'bold' }}>Rs. 3,750</span>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                <span>Repayment Progress</span>
+                <span>2/48 months</span>
+              </div>
+              <div style={{ width: '100%', height: '6px', background: 'var(--border)', borderRadius: '3px', overflow: 'hidden' }}>
+                <div style={{ width: '4%', height: '100%', background: 'var(--accent)' }}></div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
+              <span style={{ color: 'var(--text-secondary)' }}>Next Payment</span>
+              <span style={{ fontWeight: 'bold', color: 'var(--accent)' }}>June 1, 2026</span>
+            </div>
+          </div>
+
+          {/* Welfare Support */}
+          <div className="card" style={{ padding: '32px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '24px', color: 'var(--text-primary)' }}>Welfare Support</h3>
+            
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
+              <div style={{ background: 'var(--secondary-light)', color: 'var(--success)', width: '40px', height: '40px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <i className="fa-solid fa-gift"></i>
+              </div>
+              <div>
+                <h4 style={{ fontWeight: 'bold', fontSize: '14px' }}>Monthly Samurdhi Support</h4>
+                <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Active since Jan 2026</p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Monthly Amount</span>
+                <span style={{ fontWeight: 'bold' }}>Rs. 4,500</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Last Payment</span>
+                <span style={{ fontWeight: 'bold' }}>May 1, 2026</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Next Payment</span>
+                <span style={{ fontWeight: 'bold' }}>June 1, 2026</span>
+              </div>
+            </div>
+          </div>
+
         </div>
-        <small>DID: did:sg:{application.nic || "user"}</small>
-      </div>
 
-      <div className="form-card">
-        <h3>🏦 Active Loan</h3>
+        {/* Bottom Row: Recent Transactions */}
+        <div className="card" style={{ padding: '32px', marginBottom: '40px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>Recent Transactions</h3>
+            <button style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}>View All</button>
+          </div>
 
-        <p>
-          <b>Loan Type:</b> {application.loan_title || application.loan_type}
-        </p>
-        <p>
-          <b>Original Amount:</b> Rs. {prediction.recommended_loan_amount}
-        </p>
-        <p>
-          <b>Remaining:</b> Rs.{" "}
-          {Math.max(
-            prediction.recommended_loan_amount -
-              prediction.suggested_monthly_installment,
-            0
-          )}
-        </p>
-        <p>
-          <b>Monthly EMI:</b> Rs. {prediction.suggested_monthly_installment}
-        </p>
-        <p>
-          <b>Next Payment:</b> May 15, 2026
-        </p>
-
-        <div className="progress-line">
-          <div className="progress-fill"></div>
-        </div>
-        <small>2% Repaid</small>
-      </div>
-
-      <div className="form-card">
-        <h3>🤝 Welfare Benefits</h3>
-
-        <p>
-          <b>Program:</b> Samurdhi
-        </p>
-        <p>
-          <b>Monthly Amount:</b> Rs. 5,000
-        </p>
-        <p>
-          <b>Status:</b> Active
-        </p>
-        <p>
-          <b>Next Payment:</b> June 1, 2026
-        </p>
-      </div>
-
-      <div className="form-card">
-        <h3>📜 Payment History</h3>
-
-        <div className="history-row">
-          <span>May 1</span>
-          <span>Loan EMI</span>
-          <b>Rs. {prediction.suggested_monthly_installment}</b>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '16px', borderBottom: '1px solid var(--border)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{ background: '#dcfce7', color: 'var(--success)', width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>
+                  <i className="fa-solid fa-check"></i>
+                </div>
+                <div>
+                  <div style={{ fontWeight: 'bold', fontSize: '14px' }}>Welfare Payment</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>May 1, 2026</div>
+                </div>
+              </div>
+              <div style={{ fontWeight: 'bold', color: 'var(--success)' }}>+Rs. 4,500</div>
+            </div>
+          </div>
         </div>
 
-        <div className="history-row">
-          <span>May 1</span>
-          <span>Welfare</span>
-          <b>Rs. 5,000</b>
-        </div>
-
-        <div className="history-row">
-          <span>Apr 30</span>
-          <span>Group Contribution</span>
-          <b>Rs. 1,000</b>
-        </div>
-      </div>
-
-      <button
-        onClick={() =>
-          navigate("/admin-review", {
-            state: {
-              prediction,
-              application,
-            },
-          })
-        }
-      >
-        Admin Dashboard
-      </button>
-    </div>
+      </main>
+    </>
   );
 }

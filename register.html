@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register – FinanceEase</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+
+<nav class="navbar" id="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><i class="fa-solid fa-building-columns"></i> FinanceEase</a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="register.html" class="active">Register</a></li>
+      <li><a href="apply.html">Apply for Loan</a></li>
+      <li><a href="admin.html">Admin Panel</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="container">
+    <h1><i class="fa-solid fa-user-plus"></i> Member Registration</h1>
+    <p>Create your FinanceEase account to start your loan journey</p>
+  </div>
+</div>
+
+<section class="form-section">
+  <div class="form-container">
+    <form id="registerForm" class="card-form" novalidate>
+      <div class="form-group-title"><i class="fa-solid fa-circle-user"></i> Personal Information</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Full Name <span class="req">*</span></label>
+          <input type="text" id="reg_name" placeholder="e.g. Kamal Perera" required/>
+          <span class="err-msg" id="err_reg_name"></span>
+        </div>
+        <div class="form-group">
+          <label>NIC Number <span class="req">*</span></label>
+          <input type="text" id="reg_nic" placeholder="e.g. 199012345678" required/>
+          <span class="err-msg" id="err_reg_nic"></span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date of Birth <span class="req">*</span></label>
+          <input type="date" id="reg_dob" required/>
+        </div>
+        <div class="form-group">
+          <label>Gender <span class="req">*</span></label>
+          <select id="reg_gender" required>
+            <option value="">Select Gender</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Mobile Number <span class="req">*</span></label>
+          <input type="tel" id="reg_mobile" placeholder="07X XXX XXXX" required/>
+          <span class="err-msg" id="err_reg_mobile"></span>
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="reg_email" placeholder="you@example.com"/>
+        </div>
+      </div>
+
+      <div class="form-group full">
+        <label>Home Address <span class="req">*</span></label>
+        <textarea id="reg_address" rows="2" placeholder="No. 12, Galle Road, Colombo" required></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>District</label>
+          <select id="reg_district">
+            <option value="">Select District</option>
+            <option>Colombo</option><option>Gampaha</option><option>Kalutara</option>
+            <option>Kandy</option><option>Matale</option><option>Nuwara Eliya</option>
+            <option>Galle</option><option>Matara</option><option>Hambantota</option>
+            <option>Jaffna</option><option>Kilinochchi</option><option>Mannar</option>
+            <option>Vavuniya</option><option>Mullaitivu</option><option>Batticaloa</option>
+            <option>Ampara</option><option>Trincomalee</option><option>Kurunegala</option>
+            <option>Puttalam</option><option>Anuradhapura</option><option>Polonnaruwa</option>
+            <option>Badulla</option><option>Moneragala</option><option>Ratnapura</option>
+            <option>Kegalle</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Occupation</label>
+          <input type="text" id="reg_occupation" placeholder="e.g. Teacher, Farmer"/>
+        </div>
+      </div>
+
+      <div class="form-group-title" style="margin-top:1.5rem"><i class="fa-solid fa-lock"></i> Account Credentials</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Username <span class="req">*</span></label>
+          <input type="text" id="reg_username" placeholder="Choose a username" required/>
+          <span class="err-msg" id="err_reg_username"></span>
+        </div>
+        <div class="form-group">
+          <label>Password <span class="req">*</span></label>
+          <div class="input-pw">
+            <input type="password" id="reg_password" placeholder="Min 8 characters" required/>
+            <button type="button" class="pw-toggle" onclick="togglePw('reg_password',this)"><i class="fa-solid fa-eye"></i></button>
+          </div>
+          <span class="err-msg" id="err_reg_password"></span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Confirm Password <span class="req">*</span></label>
+          <div class="input-pw">
+            <input type="password" id="reg_confirm" placeholder="Re-enter password" required/>
+            <button type="button" class="pw-toggle" onclick="togglePw('reg_confirm',this)"><i class="fa-solid fa-eye"></i></button>
+          </div>
+          <span class="err-msg" id="err_reg_confirm"></span>
+        </div>
+        <div class="form-group">
+          <label>Security Question</label>
+          <select id="reg_sq">
+            <option value="">Select a question</option>
+            <option>What is your mother's maiden name?</option>
+            <option>What was the name of your first pet?</option>
+            <option>What city were you born in?</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group full">
+        <label>Security Answer</label>
+        <input type="text" id="reg_sa" placeholder="Answer to your security question"/>
+      </div>
+
+      <div class="form-check">
+        <input type="checkbox" id="reg_terms" required/>
+        <label for="reg_terms">I agree to the <a href="#">Terms & Conditions</a> and <a href="#">Privacy Policy</a></label>
+      </div>
+      <span class="err-msg" id="err_reg_terms"></span>
+
+      <button type="submit" class="btn btn-primary btn-full"><i class="fa-solid fa-user-plus"></i> Create Account</button>
+
+      <p class="form-footer-link">Already a member? <a href="apply.html">Apply for a Loan</a></p>
+    </form>
+
+    <div id="successMsg" class="success-card" style="display:none">
+      <i class="fa-solid fa-circle-check"></i>
+      <h2>Registration Successful!</h2>
+      <p>Your member account has been created. Your Member ID is <strong id="newMemberId"></strong>.</p>
+      <a href="apply.html" class="btn btn-primary">Apply for a Loan Now</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner container">
+    <div class="footer-brand">
+      <a href="index.html" class="logo"><i class="fa-solid fa-building-columns"></i> FinanceEase</a>
+      <p>Empowering members with accessible financial solutions since 2005.</p>
+    </div>
+    <div class="footer-links">
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="register.html">Register</a></li>
+        <li><a href="apply.html">Apply for Loan</a></li>
+        <li><a href="admin.html">Admin Panel</a></li>
+      </ul>
+    </div>
+    <div class="footer-contact">
+      <h4>Contact Us</h4>
+      <p><i class="fa-solid fa-phone"></i> +94 11 234 5678</p>
+      <p><i class="fa-solid fa-envelope"></i> info@financeease.lk</p>
+      <p><i class="fa-solid fa-location-dot"></i> 45 Main Street, Colombo 07</p>
+    </div>
+  </div>
+  <div class="footer-bottom"><p>&copy; 2026 FinanceEase. All rights reserved.</p></div>
+</footer>
+
+<script src="main.js"></script>
+<script src="register.js"></script>
+</body>
+</html>
