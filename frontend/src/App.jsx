@@ -12,7 +12,6 @@ import Wallet from "./pages/Wallet";
 import Status from "./pages/Status";
 import Profile from "./pages/Profile";
 import AIChat from "./pages/AIChat";
-import AdminApplicantReview from "./pages/AdminApplicantReview";
 
 export default function App() {
   return (
@@ -33,7 +32,6 @@ export default function App() {
             <Route path="/status" element={<Status />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/ai-chat" element={<AIChat />} />
-            <Route path="/admin" element={<AdminApplicantReview />} />
           </Routes>
         </div>
       </div>

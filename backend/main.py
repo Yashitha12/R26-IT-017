@@ -26,11 +26,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+
 # -------------------------------------------------------------
 # 1. ML CREDIT RISK PREDICTION ENGINE (Preserved 100%)
 # -------------------------------------------------------------
-model = joblib.load("combined_risk_prediction_model.pkl")
-model_columns = joblib.load("combined_model_columns.pkl")
+model = joblib.load(BASE_DIR / "combined_risk_prediction_model.pkl")
+model_columns = joblib.load(BASE_DIR / "combined_model_columns.pkl")
 
 
 class LoanInput(BaseModel):
@@ -276,8 +280,8 @@ def record_on_blockchain(data: BlockchainLoanRecord):
         "decision": data.decision,
         "smart_contract": "0x71C8A33E2B6c0f81A2b1d3A84988f4AcE9812",
         "channel": "sg-interbank-financial-channel",
-        "consensus_status": "Verified & Committed (Hyperledger/DLT Anchor)",
-        "status": "Active"
+        "consensus_status": "Pending Officer Approval",
+        "status": "Pending"
     }
 
     blockchain_ledger_db.append(ledger_entry)
@@ -285,9 +289,26 @@ def record_on_blockchain(data: BlockchainLoanRecord):
 
     return {
         "status": "success",
-        "message": "Loan agreement anchored on blockchain ledger successfully.",
+        "message": "Loan application recorded and pending officer review.",
         "receipt": ledger_entry
     }
+
+class ReviewDecision(BaseModel):
+    action: str  # 'approve' or 'reject'
+
+@app.post("/applications/{tx_hash}/review")
+def review_application(tx_hash: str, decision: ReviewDecision):
+    for entry in loan_applications_db:
+        if entry["tx_hash"] == tx_hash:
+            if decision.action == "approve":
+                entry["status"] = "Active"
+                entry["consensus_status"] = "Verified & Committed (Hyperledger/DLT Anchor)"
+            else:
+                entry["status"] = "Rejected"
+                entry["consensus_status"] = "Rejected by Officer"
+            return {"status": "success", "receipt": entry}
+            
+    raise HTTPException(status_code=404, detail="Transaction not found")
 
 
 @app.get("/blockchain/transactions")

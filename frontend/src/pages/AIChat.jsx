@@ -1,193 +1,412 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import axios from "axios";
+import "./AIChat.css";
 import Header from "../components/Header";
-import { sendChatMessage } from "../api/loanApi";
+
+// Multilingual Greetings
+const getWelcomeMessage = (lang) => {
+  if (lang === "si-LK") {
+    return "ආයුබෝවන්! මම ඔබගේ SmartGrama AI සහායකයා.\nසුබසාධන සේවා, සමෘද්ධි/අස්වැසුම, ක්ෂුද්‍ර ණය සහ අයදුම් කිරීමේ ක්‍රමවේද පිළිබඳ ඕනෑම ප්‍රශ්නයක් විමසන්න.";
+  }
+  return "Hello! I'm your SmartGrama AI Assistant.\nAsk me anything about welfare schemes, Samurdhi/Aswesuma, micro-loans, and eligibility criteria.";
+};
+
+// Multilingual Quick Questions
+const quickQuestionsMap = {
+  "en-US": [
+    "What welfare assistance is available?",
+    "How can I apply for a micro-loan?",
+    "What documents are required for eligibility?",
+    "How does high monthly expense affect my loan?"
+  ],
+  "si-LK": [
+    "මට ණයක් ලබාගන්න පුළුවන්ද?",
+    "සුබසාධන ආධාර ලබාගන්නේ කෙසේද?",
+    "ණය සඳහා අවශ්‍ය ලියකියවිලි මොනවාද?",
+    "වැඩි වියදම් ඇති විට ණය මුදලට කුමක් සිදුවේද?"
+  ]
+};
 
 export default function AIChat() {
+  // =========================
+  // STATES
+  // =========================
+  const [message, setMessage] = useState("");
+  const [language, setLanguage] = useState("en-US");
+  const [loading, setLoading] = useState(false);
+  const [listening, setListening] = useState(false);
+  const [useRag, setUseRag] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [speakingIndex, setSpeakingIndex] = useState(null);
+
   const [messages, setMessages] = useState([
     {
-      id: 1,
-      sender: "ai",
-      text: "I'm here to help with loans, welfare, wallet, and applications. What would you like to know?",
+      sender: "bot",
+      text: getWelcomeMessage("en-US"),
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ]);
-  const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  // Auto Scroll Ref
+  const chatEndRef = useRef(null);
+  const menuRef = useRef(null);
 
+  // AUTO SCROLL
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, isTyping]);
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
 
-  const handleSend = async (text = input) => {
-    if (!text.trim()) return;
-
-    const userMsg = {
-      id: Date.now(),
-      sender: "user",
-      text: text,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  // CLOSE MENU ON OUTSIDE CLICK
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setMenuOpen(false);
+      }
     };
-    
-    setMessages(prev => [...prev, userMsg]);
-    setInput("");
-    setIsTyping(true);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-    try {
-      const response = await sendChatMessage(text, "en");
-      const aiMsg = {
-        id: Date.now() + 1,
-        sender: "ai",
-        text: response.reply,
-        time: response.timestamp
-      };
-      setMessages(prev => [...prev, aiMsg]);
-    } catch (e) {
-      const errorMsg = {
-        id: Date.now() + 1,
-        sender: "ai",
-        text: "Sorry, I am having trouble connecting to the knowledge base right now.",
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      setMessages(prev => [...prev, errorMsg]);
-    } finally {
-      setIsTyping(false);
+  // LANGUAGE CHANGE (Preserve conversation history, update initial welcome message if untouched)
+  const handleLanguageChange = (newLang) => {
+    setLanguage(newLang);
+    if (messages.length === 1 && messages[0].sender === "bot") {
+      setMessages([
+        {
+          sender: "bot",
+          text: getWelcomeMessage(newLang),
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ]);
     }
   };
 
+  // CLEAR CHAT
+  const handleClearChat = () => {
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    setSpeakingIndex(null);
+    setMessages([
+      {
+        sender: "bot",
+        text: getWelcomeMessage(language),
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+    ]);
+    setMenuOpen(false);
+  };
+
+  // TEXT-TO-SPEECH (TTS)
+  const handleSpeak = (text, index) => {
+    if (!('speechSynthesis' in window)) {
+      alert("Text-to-speech is not supported on this browser.");
+      return;
+    }
+
+    if (speakingIndex === index) {
+      window.speechSynthesis.cancel();
+      setSpeakingIndex(null);
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = language === "si-LK" ? "si-LK" : "en-US";
+    utterance.rate = 0.95;
+
+    utterance.onend = () => setSpeakingIndex(null);
+    utterance.onerror = () => setSpeakingIndex(null);
+
+    setSpeakingIndex(index);
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // SEND MESSAGE
+  const sendMessage = async (customMessage = null) => {
+    const finalMessage = customMessage || message;
+    if (!finalMessage || !finalMessage.trim() || loading) return;
+
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    // User Message
+    const userMessage = {
+      sender: "user",
+      text: finalMessage.trim(),
+      time: timeStr
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setMessage("");
+    setLoading(true);
+
+    try {
+      const response = await axios.post("http://127.0.0.1:5000/chat", {
+        message: finalMessage.trim(),
+        language: language,
+        use_rag: useRag
+      });
+
+      const botMessage = {
+        sender: "bot",
+        text: response.data.reply || (language === "si-LK" ? "පිළිතුරක් නොලැබුණි." : "No response received."),
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        ragUsed: response.data.rag_used
+      };
+
+      setMessages((prev) => [...prev, botMessage]);
+    } catch (error) {
+      console.error("Chat error:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: "bot",
+          text: language === "si-LK" 
+            ? "පද්ධතිය සමඟ සම්බන්ධ වීමේ දෝෂයක්. කරුණාකර පසුපස සේවාදායකය (Flask Backend) ක්‍රියාත්මක දැයි පරීක්ෂා කරන්න."
+            : "Error connecting to the backend server. Please verify the Flask service is running on port 5000.",
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          isError: true
+        }
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // VOICE RECOGNITION (STT)
+  const startVoiceRecognition = async () => {
+    try {
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (err) {
+      alert("Microphone permission denied. Please allow microphone access.");
+      console.error("Mic error:", err);
+      return;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Speech Recognition is not supported in this browser. Please use Chrome.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = language === "si-LK" ? "si-LK" : "en-US";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setListening(true);
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setMessage(transcript);
+      sendMessage(transcript);
+    };
+
+    recognition.onerror = (event) => {
+      console.warn("Speech recognition error:", event.error);
+      setListening(false);
+    };
+
+    recognition.onend = () => {
+      setListening(false);
+    };
+
+    recognition.start();
+  };
+
+  // ENTER KEY SUBMIT
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
+  const activeQuickQuestions = quickQuestionsMap[language] || quickQuestionsMap["en-US"];
+
   return (
     <>
-      <Header />
-      <div style={{ paddingLeft: '40px', paddingTop: '16px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)', fontSize: '20px', fontWeight: 'bold' }}>
-        AI Assistant
-      </div>
+      <Header title="AI Assistant" />
+      <div className="app-container">
+        <div className="chat-container">
 
-      <main className="content-container">
-        
-        <div className="dashboard-grid" style={{ gridTemplateColumns: '1fr 320px', gap: '32px' }}>
-          
-          {/* Left Column: Chat Window */}
-          <div className="card flex flex-col" style={{ padding: '0', height: 'calc(100vh - 140px)', overflow: 'hidden' }}>
-            
-            {/* Chat Header */}
-            <div style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '16px', borderBottom: '1px solid var(--border)' }}>
-              <div style={{ background: 'var(--primary)', color: 'white', width: '40px', height: '40px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <i className="fa-solid fa-message"></i>
-              </div>
-              <div>
-                <h2 style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '2px' }}>SmartGrama AI Assistant</h2>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--success)' }}></div>
-                  Online & ready to help
-                </div>
-              </div>
+        {/* ================= HEADER ================= */}
+        <div className="header">
+          <div className="header-left">
+            <div className="logo-badge">
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+                alt="SmartGrama AI Logo"
+                className="logo"
+              />
+              <span className="status-dot online"></span>
             </div>
-
-            {/* Chat Messages */}
-            <div style={{ flex: 1, padding: '24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {messages.map((msg) => (
-                <div key={msg.id} style={{ display: 'flex', gap: '16px', justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start' }}>
-                  {msg.sender === 'ai' && (
-                    <div style={{ background: 'var(--primary)', color: 'white', width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, alignSelf: 'flex-end' }}>
-                      <i className="fa-solid fa-message" style={{ fontSize: '12px' }}></i>
-                    </div>
-                  )}
-                  <div style={{ 
-                    background: msg.sender === 'user' ? 'var(--primary)' : 'var(--background)', 
-                    color: msg.sender === 'user' ? 'white' : 'var(--text-primary)',
-                    padding: '16px 20px', 
-                    borderRadius: '16px', 
-                    borderBottomLeftRadius: msg.sender === 'ai' ? '4px' : '16px',
-                    borderBottomRightRadius: msg.sender === 'user' ? '4px' : '16px',
-                    maxWidth: '80%',
-                    fontSize: '14px',
-                    lineHeight: '1.5'
-                  }}>
-                    {msg.text}
-                  </div>
-                </div>
-              ))}
-              
-              {isTyping && (
-                <div style={{ display: 'flex', gap: '16px' }}>
-                   <div style={{ background: 'var(--primary)', color: 'white', width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, alignSelf: 'flex-end' }}>
-                      <i className="fa-solid fa-message" style={{ fontSize: '12px' }}></i>
-                    </div>
-                  <div style={{ background: 'var(--background)', padding: '16px 20px', borderRadius: '16px', borderBottomLeftRadius: '4px' }}>
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--text-secondary)', animation: 'bounce 1s infinite' }}></div>
-                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--text-secondary)', animation: 'bounce 1s infinite 0.2s' }}></div>
-                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--text-secondary)', animation: 'bounce 1s infinite 0.4s' }}></div>
-                    </div>
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
+            <div>
+              <div className="title-row">
+                <h1>SmartGrama AI Assistant</h1>
+                <span className={`rag-badge ${useRag ? 'rag-on' : 'rag-off'}`}>
+                  {useRag ? 'RAG Grounded' : 'Baseline LLM'}
+                </span>
+              </div>
+              <p>Multilingual Welfare & Micro-Loan Advisory System</p>
             </div>
+          </div>
 
-            {/* Chat Input */}
-            <div style={{ padding: '24px', borderTop: '1px solid var(--border)' }}>
-              <div style={{ display: 'flex', gap: '16px' }}>
-                <input 
-                  type="text" 
-                  placeholder="Type your message..." 
-                  style={{ flex: 1, padding: '16px 24px', borderRadius: '30px', border: '1px solid var(--border)', outline: 'none', fontSize: '14px', background: 'white' }}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                />
-                <button 
-                  style={{ background: 'var(--primary-light)', color: 'var(--primary)', width: '52px', height: '52px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }}
-                  onClick={() => handleSend()}
-                  disabled={!input.trim()}
-                >
-                  <i className="fa-solid fa-paper-plane"></i>
+          <div className="header-right" ref={menuRef}>
+            <button 
+              className="menu-button"
+              onClick={() => setMenuOpen(!menuOpen)}
+              title="Assistant Options"
+            >
+              ☰
+            </button>
+
+            {menuOpen && (
+              <div className="menu-dropdown">
+                <div className="menu-item-header">Settings & Controls</div>
+                <button className="menu-item" onClick={handleClearChat}>
+                  🗑️ {language === "si-LK" ? "සංවාදය මකන්න (Clear Chat)" : "Clear Conversation"}
                 </button>
-              </div>
-            </div>
-            
-          </div>
-
-          {/* Right Column: Suggested & Topics */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            
-            <div className="card" style={{ padding: '24px' }}>
-              <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '16px' }}>Suggested Questions</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ background: 'var(--background)', padding: '16px', borderRadius: '8px', fontSize: '12px', color: 'var(--text-secondary)', cursor: 'pointer', border: '1px solid var(--border)' }} onClick={() => handleSend("How do I apply for a microloan?")}>
-                  How do I apply for a microloan?
-                </div>
-                <div style={{ background: 'var(--background)', padding: '16px', borderRadius: '8px', fontSize: '12px', color: 'var(--text-secondary)', cursor: 'pointer', border: '1px solid var(--border)' }} onClick={() => handleSend("What is the Samurdhi welfare program?")}>
-                  What is the Samurdhi welfare program?
-                </div>
-                <div style={{ background: 'var(--background)', padding: '16px', borderRadius: '8px', fontSize: '12px', color: 'var(--text-secondary)', cursor: 'pointer', border: '1px solid var(--border)' }} onClick={() => handleSend("How can I check my loan status?")}>
-                  How can I check my loan status?
-                </div>
-                <div style={{ background: 'var(--background)', padding: '16px', borderRadius: '8px', fontSize: '12px', color: 'var(--text-secondary)', cursor: 'pointer', border: '1px solid var(--border)' }} onClick={() => handleSend("What documents do I need for welfare?")}>
-                  What documents do I need for welfare?
+                <button 
+                  className="menu-item"
+                  onClick={() => {
+                    setUseRag(!useRag);
+                    setMenuOpen(false);
+                  }}
+                >
+                  ⚡ {useRag ? "Switch to Baseline (No RAG)" : "Enable RAG Mode (Knowledge-Grounded)"}
+                </button>
+                <div className="menu-divider"></div>
+                <div className="menu-info">
+                  <strong>Stack:</strong> Flask + FAISS + SentenceTransformers + Ollama
                 </div>
               </div>
-            </div>
-
-            <div className="card" style={{ padding: '24px', background: 'var(--primary-light)', border: 'none' }}>
-              <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '16px' }}>Topics I can help with</h3>
-              <ul style={{ listStyleType: 'disc', paddingLeft: '20px', fontSize: '13px', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <li>Microloan applications</li>
-                <li>Welfare programs</li>
-                <li>Wallet & payments</li>
-                <li>Application status</li>
-                <li>Document requirements</li>
-              </ul>
-            </div>
-
+            )}
           </div>
-          
         </div>
-      </main>
+
+        {/* ================= CHAT AREA ================= */}
+        <div className="chat-box">
+          {messages.map((msg, index) => (
+            <div
+              key={index}
+              className={`message-wrapper ${msg.sender === "user" ? "user-wrapper" : "bot-wrapper"}`}
+            >
+              <div className={`message ${msg.sender === "user" ? "user" : "bot"} ${msg.isError ? "error-bubble" : ""}`}>
+                <div className="message-content">{msg.text}</div>
+                <div className="message-footer">
+                  <span className="timestamp">{msg.time}</span>
+                  {msg.sender === "bot" && (
+                    <button
+                      className={`speak-btn ${speakingIndex === index ? 'speaking' : ''}`}
+                      onClick={() => handleSpeak(msg.text, index)}
+                      title="Read aloud"
+                    >
+                      {speakingIndex === index ? "⏹️ Stop" : "🔊 Listen"}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {/* Loading */}
+          {loading && (
+            <div className="message-wrapper bot-wrapper">
+              <div className="message bot loading">
+                <div className="typing-indicator">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <span className="loading-text">
+                  {language === "si-LK" ? "තොරතුරු සකසමින් පවතී..." : "Retrieving knowledge & generating answer..."}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Listening State */}
+          {listening && (
+            <div className="listening-box">
+              <span className="pulse-icon">🎙️</span>
+              <span>{language === "si-LK" ? "සවන් දෙමින් පවතී... කතා කරන්න" : "Listening... speak now"}</span>
+            </div>
+          )}
+
+          <div ref={chatEndRef}></div>
+        </div>
+
+        {/* ================= BOTTOM PANEL ================= */}
+        <div className="bottom-panel">
+
+          {/* Quick Questions Chips */}
+          <div className="example-box">
+            <span className="suggestions-label">
+              {language === "si-LK" ? "යෝජිත ප්‍රශ්න:" : "Suggested Questions:"}
+            </span>
+            <div className="chips-container">
+              {activeQuickQuestions.map((question, index) => (
+                <button
+                  key={index}
+                  className="quick-chip"
+                  onClick={() => sendMessage(question)}
+                  disabled={loading}
+                >
+                  {question}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Input Controls Row */}
+          <div className="controls-row">
+            <select
+              value={language}
+              onChange={(e) => handleLanguageChange(e.target.value)}
+              className="language-dropdown"
+              title="Select Language"
+            >
+              <option value="en-US">🇬🇧 English</option>
+              <option value="si-LK">🇱🇰 සිංහල (Sinhala)</option>
+            </select>
+
+            <textarea
+              placeholder={language === "si-LK" ? "ඔබගේ පණිවිඩය මෙහි ටයිප් කරන්න..." : "Type your welfare or loan question..."}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={handleKeyDown}
+              rows="1"
+            />
+
+            {/* Microphone Button */}
+            <button
+              className={`mic-btn ${listening ? "listening" : ""}`}
+              onClick={startVoiceRecognition}
+              title={listening ? "Listening active..." : "Voice Input (Speech-to-Text)"}
+              type="button"
+            >
+              🎤
+            </button>
+
+            {/* Send Button */}
+            <button
+              className="send-btn"
+              onClick={() => sendMessage()}
+              disabled={loading || !message.trim()}
+              type="button"
+            >
+              {language === "si-LK" ? "යවන්න" : "Send"}
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
     </>
   );
 }

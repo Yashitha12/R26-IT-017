@@ -1,8 +1,20 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 
 export default function Wallet() {
   const navigate = useNavigate();
+  const [activeLoans, setActiveLoans] = useState([]);
+
+  useEffect(() => {
+    fetch("http://127.0.0.1:8000/applications/all")
+      .then(res => res.json())
+      .then(data => {
+        const approved = (data.loans || []).filter(l => l.status === 'Active');
+        setActiveLoans(approved);
+      })
+      .catch(console.error);
+  }, []);
 
   return (
     <>
@@ -42,45 +54,38 @@ export default function Wallet() {
           <div className="card" style={{ padding: '32px' }}>
             <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '24px', color: 'var(--text-primary)' }}>Active Loans</h3>
             
-            <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
-              <div style={{ background: 'var(--primary-light)', color: 'var(--accent)', width: '40px', height: '40px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <i className="fa-solid fa-chart-line"></i>
-              </div>
-              <div>
-                <h4 style={{ fontWeight: 'bold', fontSize: '14px' }}>Agricultural Microloan</h4>
-                <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Approved on Apr 15, 2026</p>
-              </div>
-            </div>
+            {activeLoans.length === 0 ? (
+              <p style={{ color: 'var(--text-secondary)' }}>No active loans.</p>
+            ) : (
+              activeLoans.map((loan, index) => (
+                <div key={index} style={{ marginBottom: '24px', borderBottom: index < activeLoans.length - 1 ? '1px solid var(--border)' : 'none', paddingBottom: index < activeLoans.length - 1 ? '24px' : '0' }}>
+                  <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
+                    <div style={{ background: 'var(--primary-light)', color: 'var(--accent)', width: '40px', height: '40px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <i className="fa-solid fa-chart-line"></i>
+                    </div>
+                    <div>
+                      <h4 style={{ fontWeight: 'bold', fontSize: '14px' }}>{loan.loan_type}</h4>
+                      <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Approved via Blockchain</p>
+                    </div>
+                  </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Loan Amount</span>
-                <span style={{ fontWeight: 'bold' }}>Rs. 150,000</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Remaining Balance</span>
-                <span style={{ fontWeight: 'bold', color: '#ea580c' }}>Rs. 142,500</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Monthly Installment</span>
-                <span style={{ fontWeight: 'bold' }}>Rs. 3,750</span>
-              </div>
-            </div>
-
-            <div style={{ marginBottom: '24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-                <span>Repayment Progress</span>
-                <span>2/48 months</span>
-              </div>
-              <div style={{ width: '100%', height: '6px', background: 'var(--border)', borderRadius: '3px', overflow: 'hidden' }}>
-                <div style={{ width: '4%', height: '100%', background: 'var(--accent)' }}></div>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
-              <span style={{ color: 'var(--text-secondary)' }}>Next Payment</span>
-              <span style={{ fontWeight: 'bold', color: 'var(--accent)' }}>June 1, 2026</span>
-            </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>Loan Amount</span>
+                      <span style={{ fontWeight: 'bold' }}>Rs. {Number(loan.approved_amount).toLocaleString()}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>Duration</span>
+                      <span style={{ fontWeight: 'bold' }}>{loan.duration_months} months</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>Interest Rate</span>
+                      <span style={{ fontWeight: 'bold' }}>{loan.interest_rate}</span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
 
           {/* Welfare Support */}

@@ -5,3 +5,9 @@ joblib
 scikit-learn
 imbalanced-learn
 pydantic
+flask
+flask-cors
+ollama
+deep-translator
+sentence-transformers
+faiss-cpu

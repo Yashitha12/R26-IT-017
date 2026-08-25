@@ -24,9 +24,10 @@ export default function LoanResult() {
     );
   }
 
-  const isRejected = prediction.final_decision.includes("Rejected");
-  const isReduced = prediction.final_decision.includes("Reduced");
-  const isCaution = prediction.final_decision.includes("Caution");
+  const decision = prediction?.final_decision || "Approved";
+  const isRejected = decision.includes("Rejected");
+  const isReduced = decision.includes("Reduced");
+  const isCaution = decision.includes("Caution");
   const isFullyApproved = !isRejected && !isReduced && !isCaution;
 
   let statusColor = "var(--success)";
@@ -48,9 +49,10 @@ export default function LoanResult() {
   }
 
   let riskColor = "var(--success)";
-  if (prediction.predicted_risk_level.includes("High")) {
+  const riskLevel = prediction?.predicted_risk_level || "Low Risk";
+  if (riskLevel.includes("High")) {
     riskColor = "var(--error, #ef4444)";
-  } else if (prediction.predicted_risk_level.includes("Medium")) {
+  } else if (riskLevel.includes("Medium")) {
     riskColor = "#eab308";
   }
 
@@ -117,13 +119,13 @@ export default function LoanResult() {
               <div style={{ border: '1px solid var(--border)', borderRadius: '12px', padding: '20px' }}>
                 <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>Predicted Risk Profile</div>
                 <div style={{ fontSize: '18px', fontWeight: 'bold', color: riskColor, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <i className="fa-solid fa-shield-cat"></i> {prediction.predicted_risk_level}
+                  <i className="fa-solid fa-shield-cat"></i> {riskLevel}
                 </div>
               </div>
               <div style={{ border: '1px solid var(--border)', borderRadius: '12px', padding: '20px' }}>
                 <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>Requested Amount</div>
                 <div style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
-                  Rs. {prediction.requested_loan_amount.toLocaleString()}
+                  Rs. {Number(prediction.requested_loan_amount || 0).toLocaleString()}
                 </div>
               </div>
             </div>
@@ -132,21 +134,30 @@ export default function LoanResult() {
             {!isRejected && (
               <div style={{ marginTop: 'auto', borderTop: '1px solid var(--border)', paddingTop: '32px' }}>
                 {!txReceipt ? (
-                  <button 
-                    onClick={handleRecordBlockchain}
-                    disabled={isRecording}
-                    style={{ background: 'var(--success)', color: 'white', border: 'none', padding: '16px', borderRadius: '8px', width: '100%', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                  >
-                    {isRecording ? "Recording to Blockchain..." : <>Accept Offer & Record on Blockchain <i className="fa-solid fa-link"></i></>}
-                  </button>
+                  <div style={{ display: 'flex', gap: '16px' }}>
+                    <button 
+                      onClick={handleRecordBlockchain}
+                      disabled={isRecording}
+                      style={{ flex: 1, background: 'var(--success)', color: 'white', border: 'none', padding: '16px', borderRadius: '8px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                    >
+                      {isRecording ? "Processing..." : <>Accept Suggestion</>}
+                    </button>
+                    <button 
+                      onClick={() => navigate("/")}
+                      disabled={isRecording}
+                      style={{ flex: 1, background: 'white', color: 'var(--error, #ef4444)', border: '1px solid var(--error, #ef4444)', padding: '16px', borderRadius: '8px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                    >
+                      Reject Application
+                    </button>
+                  </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <div style={{ padding: '16px', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #16a34a' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#16a34a', fontWeight: 'bold', marginBottom: '8px' }}>
-                        <i className="fa-solid fa-circle-check"></i> Blockchain Anchoring Successful
+                    <div style={{ padding: '16px', background: '#fffbeb', borderRadius: '8px', border: '1px solid #f59e0b' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#d97706', fontWeight: 'bold', marginBottom: '8px' }}>
+                        <i className="fa-solid fa-clock"></i> Application Pending Officer Review
                       </div>
-                      <div style={{ fontSize: '12px', color: '#15803d', wordBreak: 'break-all', fontFamily: 'monospace' }}>
-                        TX: {txReceipt.tx_hash}
+                      <div style={{ fontSize: '12px', color: '#b45309', wordBreak: 'break-all', fontFamily: 'monospace' }}>
+                        Tracking ID: {txReceipt.tx_hash}
                       </div>
                     </div>
                     <button 
@@ -171,22 +182,22 @@ export default function LoanResult() {
                 <div style={{ marginBottom: '24px' }}>
                   <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Approved Amount</div>
                   <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--primary)' }}>
-                    Rs. {prediction.recommended_loan_amount.toLocaleString()}
+                    Rs. {Number(prediction.recommended_loan_amount || 0).toLocaleString()}
                   </div>
                 </div>
                 
                 <div style={{ borderTop: '1px solid #d8b4fe', paddingTop: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Monthly EMI</span>
-                    <span style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>Rs. {prediction.suggested_monthly_installment.toLocaleString()}</span>
+                    <span style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>Rs. {Number(prediction.suggested_monthly_installment || 0).toLocaleString()}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Duration</span>
-                    <span style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{prediction.estimated_repayment_duration_months} months</span>
+                    <span style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{prediction.estimated_repayment_duration_months || 12} months</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Interest Rate</span>
-                    <span style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{application.interest_rate}% APR</span>
+                    <span style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{application?.interest_rate || 12}% APR</span>
                   </div>
                 </div>
               </div>

@@ -2,6 +2,19 @@
 
 import sys
 import os
+import numpy as np
+
+# Polyfill for np.object (deprecated in numpy 1.24, but used by transformers/tensorflow)
+if not hasattr(np, 'object'):
+    np.object = object
+if not hasattr(np, 'bool'):
+    np.bool = bool
+if not hasattr(np, 'typeDict'):
+    np.typeDict = np.sctypeDict
+
+# Disable TensorFlow in transformers because of missing keras
+os.environ["USE_TF"] = "0"
+os.environ["USE_TORCH"] = "1"
 
 # Enforce UTF-8 on Windows console stdout/stderr
 if hasattr(sys.stdout, 'reconfigure'):

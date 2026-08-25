@@ -1,9 +1,25 @@
 const API_URL = "http://127.0.0.1:8000";
 
+async function fetchWithTimeout(url, options = {}, timeoutMs = 5000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    return res;
+  } catch (err) {
+    clearTimeout(timer);
+    throw err;
+  }
+}
+
 // 1. Predict Loan Risk & Safe Affordability
 export async function predictLoan(loanData) {
   try {
-    const response = await fetch(`${API_URL}/predict-loan`, {
+    const response = await fetchWithTimeout(`${API_URL}/predict-loan`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -18,17 +34,25 @@ export async function predictLoan(loanData) {
     return await response.json();
   } catch (err) {
     console.error("API Error in predictLoan, using fallback calculation:", err);
-    // Safe client-side fallback if backend is momentarily reloading
+    // Safe client-side fallback if backend is momentarily reloading or offline
     const disposable = Math.max((loanData.monthly_income || 50000) - (loanData.expenses || 25000), 0);
-    const emi = disposable * 0.35;
+    const emi = disposable > 0 ? disposable * 0.35 : 0;
+    const requested = loanData.loan_amount || 150000;
+    const maxAffordable = emi * 36;
+    const isApproved = disposable > 0 && requested <= (maxAffordable || requested);
+
     return {
-      predicted_risk_level: "Low Risk",
-      final_decision: "Approved",
-      reason: "Your requested amount is safely within your affordable limits.",
-      requested_loan_amount: loanData.loan_amount || 150000,
-      recommended_loan_amount: loanData.loan_amount || 150000,
-      suggested_monthly_installment: Math.round(emi),
-      estimated_repayment_duration_months: 48,
+      predicted_risk_level: disposable > 0 ? "Low Risk" : "High Risk",
+      final_decision: isApproved ? "Approved" : (disposable <= 0 ? "Rejected" : "Reduced Amount Approved"),
+      reason: isApproved
+        ? "Your requested amount is safely within your affordable limits based on verified disposable income."
+        : (disposable <= 0
+          ? "Currently, your monthly expenses exceed or equal your income, making loan repayment unsafe."
+          : "The requested amount exceeds safe borrowing limits. We recommend a lower amount for comfortable monthly repayments."),
+      requested_loan_amount: requested,
+      recommended_loan_amount: isApproved ? requested : Math.min(requested, Math.max(10000, Math.round(maxAffordable))),
+      suggested_monthly_installment: Math.round(emi || 1500),
+      estimated_repayment_duration_months: 24,
     };
   }
 }
@@ -102,14 +126,33 @@ export async function recordLoanOnBlockchain(recordData) {
         decision: recordData.decision,
         smart_contract: "0x71C8A33E2B6c0f81A2b1d3A84988f4AcE9812",
         channel: "sg-interbank-financial-channel",
-        consensus_status: "Verified & Committed (Hyperledger/DLT Anchor)",
-        status: "Approved",
+        consensus_status: "Pending Officer Approval",
+        status: "Pending",
       },
     };
   }
 }
 
-// 4. Get Blockchain Transactions
+// 4. Update Application Status (Officer Review)
+export async function updateApplicationStatus(txHash, action) {
+  try {
+    const response = await fetch(`${API_URL}/applications/${txHash}/review`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ action }),
+    });
+
+    if (!response.ok) throw new Error("Status update failed");
+    return await response.json();
+  } catch (err) {
+    console.error("API Error in updateApplicationStatus:", err);
+    throw err;
+  }
+}
+
+// 5. Get Blockchain Transactions
 export async function fetchBlockchainLedger() {
   try {
     const response = await fetch(`${API_URL}/blockchain/transactions`);
@@ -139,19 +182,23 @@ export async function fetchBlockchainLedger() {
   }
 }
 
-// 5. Send Chat Message to AI Assistant
-export async function sendChatMessage(message, language = "en") {
+// 5. Send Chat Message to AI Assistant (NLP Branch)
+export async function sendChatMessage(message, language = "en-US") {
   try {
-    const response = await fetch(`${API_URL}/assistant/chat`, {
+    const response = await fetch(`http://127.0.0.1:5000/chat`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ message, language }),
+      body: JSON.stringify({ message, language, use_rag: true }),
     });
 
     if (!response.ok) throw new Error("Chat assistant failed");
-    return await response.json();
+    const data = await response.json();
+    
+    // The Flask NLP app doesn't return a timestamp, so we add one for the UI
+    data.timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return data;
   } catch (err) {
     console.error("API Error in sendChatMessage:", err);
     return {
