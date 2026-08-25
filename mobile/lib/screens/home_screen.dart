@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'apply_loan_screen.dart';
+import 'loan_programs_screen.dart';
 import 'wallet_screen.dart';
 import 'welfare_screen.dart';
 import 'profile_screen.dart';
+import 'ai_chat_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
     WalletScreen(),
     Scaffold(body: Center(child: Text('Status Screen'))),
     ProfileScreen(),
-    Scaffold(body: Center(child: Text('AI Chat Screen'))),
+    AIChatScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -134,7 +135,7 @@ class _HomeContent extends StatelessWidget {
           // 2x2 Action Grid
           Row(
             children: [
-              Expanded(child: _ActionCard(icon: Icons.trending_up, color: Colors.blue, title: 'Apply Loan', subtitle: 'Quick funding', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ApplyLoanScreen())))),
+              Expanded(child: _ActionCard(icon: Icons.trending_up, color: Colors.blue, title: 'Apply Loan', subtitle: 'Quick funding', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoanProgramsScreen())))),
               const SizedBox(width: 16),
               Expanded(child: _ActionCard(icon: Icons.card_giftcard, color: Colors.green, title: 'Apply Welfare', subtitle: 'Government aid', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WelfareScreen())))),
             ],

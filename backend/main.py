@@ -31,6 +31,74 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 
 # -------------------------------------------------------------
+# 0. AUTHENTICATION & USER MANAGEMENT
+# -------------------------------------------------------------
+users_db = []
+
+class UserRegister(BaseModel):
+    name: str
+    nic: str
+    dob: str
+    gender: Optional[str] = None
+    mobile: str
+    email: Optional[str] = None
+    address: Optional[str] = None
+    district: Optional[str] = None
+    occupation: Optional[str] = None
+    username: str
+    password: str
+    securityQuestion: Optional[str] = None
+    securityAnswer: Optional[str] = None
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+@app.post("/auth/register")
+def register_user(user: UserRegister):
+    for u in users_db:
+        if u["username"] == user.username:
+            raise HTTPException(status_code=400, detail="Username already exists")
+        if u["nic"] == user.nic:
+            raise HTTPException(status_code=400, detail="NIC already exists")
+    
+    new_user = user.dict()
+    new_user["memberId"] = f"MEM-{str(len(users_db) + 1).zfill(5)}"
+    users_db.append(new_user)
+    return {"status": "success", "memberId": new_user["memberId"]}
+
+@app.post("/auth/login")
+def login_user(creds: UserLogin):
+    for u in users_db:
+        if u["username"] == creds.username and u["password"] == creds.password:
+            return {"status": "success", "user": {"name": u["name"], "nic": u["nic"], "memberId": u["memberId"]}}
+    raise HTTPException(status_code=401, detail="Invalid credentials")
+
+@app.post("/auth/admin-login")
+def admin_login(creds: UserLogin):
+    if creds.username == "admin" and creds.password == "admin123":
+        return {"status": "success", "token": "admin-token-123"}
+    raise HTTPException(status_code=401, detail="Invalid admin credentials")
+
+# -------------------------------------------------------------
+# 0.5 BLOCKCHAIN API STUBS (For future integration)
+# -------------------------------------------------------------
+class BlockchainPayload(BaseModel):
+    type: str
+    data: dict
+
+@app.post("/blockchain/store")
+def blockchain_store(payload: BlockchainPayload):
+    # This is a stub where the external smart contract logic will go
+    print(f"[BLOCKCHAIN] Storing {payload.type} data onto DLT: {payload.data}")
+    return {"status": "success", "tx_hash": f"0x{uuid.uuid4().hex}"}
+
+@app.get("/blockchain/retrieve/{did}")
+def blockchain_retrieve(did: str):
+    # This is a stub to fetch on-chain identity/records
+    return {"status": "success", "did": did, "message": "Placeholder for on-chain data"}
+
+# -------------------------------------------------------------
 # 1. ML CREDIT RISK PREDICTION ENGINE (Preserved 100%)
 # -------------------------------------------------------------
 model = joblib.load(BASE_DIR / "combined_risk_prediction_model.pkl")
@@ -325,7 +393,172 @@ def get_all_applications():
         "loans": loan_applications_db[::-1],
         "welfare": welfare_applications_db[::-1]
     }
+# -------------------------------------------------------------
+# 3.5 DYNAMIC BANKS & LOAN PROGRAMS REGISTRY
+# -------------------------------------------------------------
+banks_db = [
+    {"id": "b1", "name": "Samupakara (Sanasa)"},
+    {"id": "b2", "name": "Samurdhi Bank"}
+]
 
+loan_programs_db = [
+    {
+        "id": "lp1",
+        "bank_id": "b1",
+        "title": "Below Rs. 25,000 Micro-Loan",
+        "subtitle": "Quick emergency micro-credit with minimal documentation",
+        "tag": "8% Low Interest",
+        "tagColor": 0xFF4CAF50, # green equivalent
+        "apr": "8%",
+        "limit": "Rs. 5,000 - Rs. 25,000",
+        "months": "24 months",
+        "features": ["No collateral required", "Approval within 24 hours", "Repayment up to 24 months"]
+    },
+    {
+        "id": "lp2",
+        "bank_id": "b1",
+        "title": "Above Rs. 25,000 Development Loan",
+        "subtitle": "Affordable capital financing for local micro-enterprises",
+        "tag": "8% Low Interest",
+        "tagColor": 0xFF4CAF50,
+        "apr": "8%",
+        "limit": "Rs. 25,000 - Rs. 500,000",
+        "months": "48 months",
+        "features": ["Business plan required", "Group guarantee options"]
+    },
+    {
+        "id": "lp3",
+        "bank_id": "b1",
+        "title": "Long Term Investment Loan",
+        "subtitle": "Extended term capital financing for equipment & asset building",
+        "tag": "Long Term",
+        "tagColor": 0xFF4CAF50,
+        "apr": "20%",
+        "limit": "Rs. 100,000+",
+        "months": "60 months",
+        "features": ["Asset backed security", "Grace period available"]
+    },
+    {
+        "id": "lp4",
+        "bank_id": "b1",
+        "title": "EPF Backed Secured Loan",
+        "subtitle": "Low rate credit secured against your employee provident fund",
+        "tag": "13% APR",
+        "tagColor": 0xFF4CAF50,
+        "apr": "13%",
+        "limit": "Up to 75% of EPF balance",
+        "months": "60 months",
+        "features": ["Directly secured by EPF", "Fast processing"]
+    },
+    {
+        "id": "lp5",
+        "bank_id": "b2",
+        "title": "Lak Jaya Microloan (ලක් ජය)",
+        "subtitle": "Livelihood & cottage industry micro-capital",
+        "tag": "Samurdhi Certified",
+        "tagColor": 0xFF4CAF50,
+        "apr": "15%",
+        "limit": "Rs. 10,000 - Rs. 100,000",
+        "months": "36 months",
+        "features": ["Designed for low-income entrepreneurs", "Group guarantee acceptance", "No hidden processing fees"]
+    },
+    {
+        "id": "lp6",
+        "bank_id": "b2",
+        "title": "Lak Wasana Business Loan (ලක් වාසනා)",
+        "subtitle": "Enterprise expansion capital for established micro-businesses",
+        "tag": "High Limit",
+        "tagColor": 0xFFFF9800, # orange
+        "apr": "16%",
+        "limit": "Rs. 50,000 - Rs. 500,000",
+        "months": "48 months",
+        "features": ["Business registration required", "Flexible repayment schedules"]
+    },
+    {
+        "id": "lp7",
+        "bank_id": "b2",
+        "title": "Liya Sawiya Women Loan (ලිය සවිය)",
+        "subtitle": "Special subsidized micro-finance empowering female entrepreneurs",
+        "tag": "12% Subsidized",
+        "tagColor": 0xFF2196F3, # blue
+        "apr": "12%",
+        "limit": "Rs. 20,000 - Rs. 200,000",
+        "months": "48 months",
+        "features": ["Female applicants only", "Skill development training included"]
+    },
+    {
+        "id": "lp8",
+        "bank_id": "b2",
+        "title": "Jiwanopaya Livelihood Loan (ජීවනෝපාය)",
+        "subtitle": "Farming, poultry, and home-based craft enhancement loan",
+        "tag": "Livelihood Aid",
+        "tagColor": 0xFF4CAF50,
+        "apr": "14%",
+        "limit": "Rs. 10,000 - Rs. 50,000",
+        "months": "24 months",
+        "features": ["No collateral", "Quick disbursement"]
+    },
+    {
+        "id": "lp9",
+        "bank_id": "b2",
+        "title": "Chakrya Revolving Loan (චක්රීය ණය)",
+        "subtitle": "Rotating community credit fund with ultra-low interest",
+        "tag": "10% Revolving",
+        "tagColor": 0xFF4CAF50,
+        "apr": "10%",
+        "limit": "Rs. 5,000 - Rs. 20,000",
+        "months": "12 months",
+        "features": ["Community managed", "Revolving credit line"]
+    }
+]
+
+class BankCreate(BaseModel):
+    name: str
+
+class LoanProgramCreate(BaseModel):
+    bank_id: str
+    title: str
+    subtitle: str
+    tag: str
+    tagColor: int
+    apr: str
+    limit: str
+    months: str
+    features: List[str]
+
+@app.get("/banks")
+def get_banks():
+    return banks_db
+
+@app.post("/banks")
+def add_bank(bank: BankCreate):
+    new_bank = {"id": f"b{len(banks_db) + 1}", "name": bank.name}
+    banks_db.append(new_bank)
+    return new_bank
+
+@app.get("/loan-programs")
+def get_loan_programs():
+    return loan_programs_db
+
+@app.post("/loan-programs")
+def add_loan_program(program: LoanProgramCreate):
+    new_program = program.dict()
+    new_program["id"] = f"lp{len(loan_programs_db) + 1}"
+    loan_programs_db.append(new_program)
+    return new_program
+
+@app.delete("/banks/{bank_id}")
+def delete_bank(bank_id: str):
+    global banks_db, loan_programs_db
+    banks_db = [b for b in banks_db if b["id"] != bank_id]
+    loan_programs_db = [p for p in loan_programs_db if p["bank_id"] != bank_id]
+    return {"status": "success"}
+
+@app.delete("/loan-programs/{program_id}")
+def delete_loan_program(program_id: str):
+    global loan_programs_db
+    loan_programs_db = [p for p in loan_programs_db if p["id"] != program_id]
+    return {"status": "success"}
 
 # -------------------------------------------------------------
 # 4. MULTILINGUAL CONVERSATIONAL AI & RAG ASSISTANT

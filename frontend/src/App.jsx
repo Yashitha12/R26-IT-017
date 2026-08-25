@@ -13,6 +13,16 @@ import Status from "./pages/Status";
 import Profile from "./pages/Profile";
 import AIChat from "./pages/AIChat";
 
+import Register from "./pages/Register";
+import Login from "./pages/Login";
+import { Navigate } from "react-router-dom";
+
+const ProtectedRoute = ({ children }) => {
+  const user = localStorage.getItem("user");
+  if (!user) return <Navigate to="/login" replace />;
+  return children;
+};
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -20,18 +30,23 @@ export default function App() {
         <Sidebar />
         <div className="main-area">
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/loan-programs" element={<LoanPrograms />} />
-            <Route path="/apply" element={<LoanApplication />} />
-            <Route path="/loan-application" element={<LoanApplication />} />
-            <Route path="/loan-result" element={<LoanResult />} />
-            <Route path="/welfare" element={<WelfareLanding />} />
-            <Route path="/welfare-apply" element={<WelfareApplication />} />
-            <Route path="/welfare-result" element={<WelfareResult />} />
-            <Route path="/wallet" element={<Wallet />} />
-            <Route path="/status" element={<Status />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/ai-chat" element={<AIChat />} />
+            {/* Public Routes */}
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
+
+            {/* Protected Routes */}
+            <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+            <Route path="/loan-programs" element={<ProtectedRoute><LoanPrograms /></ProtectedRoute>} />
+            <Route path="/apply" element={<ProtectedRoute><LoanApplication /></ProtectedRoute>} />
+            <Route path="/loan-application" element={<ProtectedRoute><LoanApplication /></ProtectedRoute>} />
+            <Route path="/loan-result" element={<ProtectedRoute><LoanResult /></ProtectedRoute>} />
+            <Route path="/welfare" element={<ProtectedRoute><WelfareLanding /></ProtectedRoute>} />
+            <Route path="/welfare-apply" element={<ProtectedRoute><WelfareApplication /></ProtectedRoute>} />
+            <Route path="/welfare-result" element={<ProtectedRoute><WelfareResult /></ProtectedRoute>} />
+            <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
+            <Route path="/status" element={<ProtectedRoute><Status /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/ai-chat" element={<ProtectedRoute><AIChat /></ProtectedRoute>} />
           </Routes>
         </div>
       </div>

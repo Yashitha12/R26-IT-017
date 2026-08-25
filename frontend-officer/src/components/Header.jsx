@@ -1,14 +1,15 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function Header({ title = "Officer Dashboard" }) {
   const navigate = useNavigate();
 
   return (
     <header className="top-header" style={{ padding: '24px 32px', background: 'white', borderBottom: '1px solid var(--border)' }}>
-      <div className="flex" style={{ flexDirection: 'column' }}>
+      <div className="flex" style={{ flexDirection: 'column', flex: 1 }}>
         <h2 className="font-bold text-xl" style={{ color: 'var(--text-primary)' }}>{title}</h2>
-        <div style={{ color: 'var(--text-secondary)', fontSize: '13px', marginTop: '4px' }}>
-          SmartGrama Administration &middot; Microfinance Officer
+        <div style={{ display: 'flex', gap: '16px', marginTop: '12px' }}>
+          <Link to="/" style={{ textDecoration: 'none', color: '#1e40af', fontWeight: 'bold' }}>Dashboard</Link>
+          <Link to="/manage" style={{ textDecoration: 'none', color: '#1e40af', fontWeight: 'bold' }}>Manage Programs</Link>
         </div>
       </div>
 
