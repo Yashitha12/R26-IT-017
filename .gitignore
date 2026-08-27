@@ -1,0 +1,30 @@
+# Ignore Ollama binaries and models
+backend/ollama/
+*.dll
+*.exe
+
+# Python
+__pycache__/
+*.pyc
+.env
+venv/
+env/
+.conda/
+
+# Node
+node_modules/
+.npm/
+
+# Flutter
+.dart_tool/
+build/
+.pub-cache/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# IDEs and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

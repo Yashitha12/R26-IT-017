@@ -71,14 +71,86 @@ def register_user(user: UserRegister):
 def login_user(creds: UserLogin):
     for u in users_db:
         if u["username"] == creds.username and u["password"] == creds.password:
-            return {"status": "success", "user": {"name": u["name"], "nic": u["nic"], "memberId": u["memberId"]}}
+            return {"status": "success",
+                "user": {
+                    "name": u["name"],
+                    "nic": u["nic"],
+                    "memberId": u["memberId"],
+                    "mobile": u.get("mobile", ""),
+                    "email": u.get("email", ""),
+                    "address": u.get("address", ""),
+                    "district": u.get("district", ""),
+                    "occupation": u.get("occupation", ""),
+                    "dob": u.get("dob", ""),
+                    "gender": u.get("gender", ""),}}
     raise HTTPException(status_code=401, detail="Invalid credentials")
+
+officers_db = [
+    {
+        "username": "superadmin",
+        "name": "System Administrator",
+        "password": "superadmin123",
+        "responsibilities": [
+            "samupakara_loans",
+            "samurdhi_loans",
+            "welfare_checking",
+            "wadihiti_dimana",
+            "kyc_checking",
+            "tickets_review"
+        ]
+    }
+]
+
+class OfficerRegister(BaseModel):
+    username: str
+    name: str
+    password: str
+
+@app.post("/auth/admin-register")
+def admin_register(officer: OfficerRegister):
+    for o in officers_db:
+        if o["username"] == officer.username:
+            raise HTTPException(status_code=400, detail="Username already exists")
+    
+    new_officer = {
+        "username": officer.username,
+        "name": officer.name,
+        "password": officer.password,
+        "responsibilities": []  # No permissions by default
+    }
+    officers_db.append(new_officer)
+    return {"status": "success", "username": new_officer["username"]}
 
 @app.post("/auth/admin-login")
 def admin_login(creds: UserLogin):
-    if creds.username == "admin" and creds.password == "admin123":
-        return {"status": "success", "token": "admin-token-123"}
+    for o in officers_db:
+        if o["username"] == creds.username and o["password"] == creds.password:
+            return {
+                "status": "success", 
+                "token": f"token-{o['username']}",
+                "officer": {
+                    "username": o["username"],
+                    "name": o["name"],
+                    "responsibilities": o["responsibilities"]
+                }
+            }
     raise HTTPException(status_code=401, detail="Invalid admin credentials")
+
+@app.get("/auth/officers")
+def get_officers():
+    return [{"username": o["username"], "name": o["name"], "responsibilities": o["responsibilities"]} for o in officers_db]
+
+class UpdatePermissions(BaseModel):
+    responsibilities: List[str]
+
+@app.patch("/auth/officers/{username}/permissions")
+def update_officer_permissions(username: str, data: UpdatePermissions):
+    for o in officers_db:
+        if o["username"] == username:
+            o["responsibilities"] = data.responsibilities
+            return {"status": "success"}
+    raise HTTPException(status_code=404, detail="Officer not found")
+
 
 # -------------------------------------------------------------
 # 0.5 BLOCKCHAIN API STUBS (For future integration)
@@ -96,7 +168,24 @@ def blockchain_store(payload: BlockchainPayload):
 @app.get("/blockchain/retrieve/{did}")
 def blockchain_retrieve(did: str):
     # This is a stub to fetch on-chain identity/records
-    return {"status": "success", "did": did, "message": "Placeholder for on-chain data"}
+    # We search the in-memory users_db to simulate a smart contract lookup
+    for user in users_db:
+        if user["memberId"] == did:
+            return {
+                "status": "success", 
+                "did": did, 
+                "data": {
+                    "name": user["name"],
+                    "nic": user["nic"],
+                    "dob": user["dob"],
+                    "mobile": user["mobile"],
+                    "address": user.get("address", ""),
+                    "district": user.get("district", ""),
+                    "occupation": user.get("occupation", ""),
+                    "gender": user.get("gender", "")
+                }
+            }
+    raise HTTPException(status_code=404, detail="Blockchain record not found")
 
 # -------------------------------------------------------------
 # 1. ML CREDIT RISK PREDICTION ENGINE (Preserved 100%)
@@ -303,6 +392,68 @@ def assess_welfare(data: WelfareInput):
 
     welfare_applications_db.append(record)
     return record
+
+
+class WelfareReviewDecision(BaseModel):
+    action: str  # 'approve' or 'reject'
+
+@app.post("/welfare/{assessment_id}/review")
+def review_welfare(assessment_id: str, decision: WelfareReviewDecision):
+    for entry in welfare_applications_db:
+        if entry["assessment_id"] == assessment_id:
+            if decision.action == "approve":
+                entry["status"] = "Approved for Disbursement"
+            else:
+                entry["status"] = "Rejected by Officer"
+                entry["monthly_stipend"] = 0.0
+            return {"status": "success", "receipt": entry}
+            
+    raise HTTPException(status_code=404, detail="Assessment not found")
+
+
+# -------------------------------------------------------------
+# 2.5 KYC CHECKING (MOCK DATABASE)
+# -------------------------------------------------------------
+kyc_db = [
+    {
+        "did": "did:sg:921345678V",
+        "name": "Kamal Perera",
+        "submitted_at": "2026-08-25 10:15:00",
+        "nic_front": "https://placehold.co/600x400/eeeeee/888888?text=NIC+Front+Scan",
+        "nic_back": "https://placehold.co/600x400/eeeeee/888888?text=NIC+Back+Scan",
+        "selfie": "https://placehold.co/400x400/eeeeee/888888?text=Applicant+Selfie",
+        "status": "Pending"
+    },
+    {
+        "did": "did:sg:881234567V",
+        "name": "Sunil Silva",
+        "submitted_at": "2026-08-26 08:30:00",
+        "nic_front": "https://placehold.co/600x400/eeeeee/888888?text=NIC+Front+Scan",
+        "nic_back": "https://placehold.co/600x400/eeeeee/888888?text=NIC+Back+Scan",
+        "selfie": "https://placehold.co/400x400/eeeeee/888888?text=Applicant+Selfie",
+        "status": "Pending"
+    }
+]
+
+@app.get("/kyc")
+def get_pending_kyc():
+    return [k for k in kyc_db if k["status"] == "Pending"]
+
+class KYCReviewDecision(BaseModel):
+    action: str  # 'verify' or 'reject'
+
+@app.post("/kyc/{did}/review")
+def review_kyc(did: str, decision: KYCReviewDecision):
+    for entry in kyc_db:
+        if entry["did"] == did:
+            if decision.action == "verify":
+                entry["status"] = "Verified"
+            else:
+                entry["status"] = "Rejected"
+            return {"status": "success", "receipt": entry}
+            
+    raise HTTPException(status_code=404, detail="KYC record not found")
+
 
 
 # -------------------------------------------------------------

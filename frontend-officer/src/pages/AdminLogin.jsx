@@ -26,8 +26,9 @@ export default function AdminLogin() {
 
       if (!res.ok) throw new Error(data.detail || "Login failed");
 
-      // Store admin token
+      // Store admin token and officer details
       localStorage.setItem("admin_token", data.token);
+      localStorage.setItem("officer_data", JSON.stringify(data.officer));
       navigate("/");
     } catch (err) {
       setError(err.message);
@@ -69,6 +70,10 @@ export default function AdminLogin() {
           </div>
 
         </form>
+
+        <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '14px', color: '#6b7280' }}>
+          New Officer? <a href="#" onClick={(e) => { e.preventDefault(); navigate("/register"); }} style={{ color: '#2563eb', fontWeight: 'bold', textDecoration: 'none' }}>Create an account</a>
+        </p>
       </div>
     </div>
   );

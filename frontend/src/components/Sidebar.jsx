@@ -37,7 +37,7 @@ export default function Sidebar() {
           </button>
         ))}
 
-        <div style={{ marginTop: "auto", paddingBottom: "16px" }}>
+        <div style={{ marginTop: "auto", paddingBottom: "16px", display: "flex", flexDirection: "column", gap: "8px" }}>
           <div style={{ padding: '12px', display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: 'var(--background)', borderRadius: '8px', cursor: 'pointer' }} onClick={() => navigate("/profile")}>
             <div style={{ width: '32px', height: '32px', backgroundColor: 'var(--accent)', color: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold' }}>
               NP
@@ -47,6 +47,17 @@ export default function Sidebar() {
               <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>NIC: 198723456789</span>
             </div>
           </div>
+          
+          <button 
+            style={{ width: '100%', padding: '10px', backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+            onClick={() => {
+              localStorage.removeItem("user");
+              navigate("/login");
+            }}
+          >
+            <i className="fa-solid fa-arrow-right-from-bracket"></i>
+            Logout
+          </button>
         </div>
       </nav>
     </aside>

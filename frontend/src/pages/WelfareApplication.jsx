@@ -2,15 +2,17 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import { assessWelfare } from "../api/loanApi";
+import { getCurrentUser } from "../utils/user";
 
 export default function WelfareApplication() {
   const navigate = useNavigate();
+  const user = getCurrentUser();
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const [form, setForm] = useState({
-    nic: "198723456789",
-    full_name: "Nimal Perera",
-    gn_division: "Homagama - Division 542/A",
+    nic: user?.nic || "",
+    full_name: user?.name || "",
+    gn_division: user?.district || "",
     family_size: "4",
     dependents_children: "2",
     elderly_count: "0",
@@ -20,6 +22,7 @@ export default function WelfareApplication() {
     house_ownership: "rented",
     electricity_units_monthly: "45",
   });
+
 
   const handleChange = (e) => {
     setForm({

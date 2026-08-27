@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../api_service.dart';
 
 class AIChatScreen extends StatefulWidget {
@@ -15,15 +16,71 @@ class _AIChatScreenState extends State<AIChatScreen> {
   String _language = 'en';
   bool _useRag = true;
 
+  // Speech to Text variables
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
+  String _currentWords = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _speech = stt.SpeechToText();
+  }
+
+  void _listen() async {
+    if (!_isListening) {
+      bool available = await _speech.initialize(
+        onStatus: (status) {
+          if (status == 'notListening' || status == 'done') {
+            setState(() => _isListening = false);
+          }
+        },
+        onError: (errorNotification) {
+          setState(() => _isListening = false);
+        },
+      );
+
+      if (available) {
+        setState(() => _isListening = true);
+        _speech.listen(
+          onResult: (result) {
+            setState(() {
+              _currentWords = result.recognizedWords;
+              _controller.text = _currentWords;
+            });
+          },
+          localeId: _getSpeechLocale(),
+        );
+      }
+    } else {
+      setState(() => _isListening = false);
+      _speech.stop();
+    }
+  }
+
+  String _getSpeechLocale() {
+    switch (_language) {
+      case 'si': return 'si_LK';
+      case 'ta': return 'ta_LK';
+      default: return 'en_US';
+    }
+  }
+
   void _sendMessage() async {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
+
+    if (_isListening) {
+      _speech.stop();
+      setState(() => _isListening = false);
+    }
 
     setState(() {
       _messages.add({'role': 'user', 'content': text});
       _isLoading = true;
     });
     _controller.clear();
+    _currentWords = '';
 
     try {
       final response = await ApiService.sendChatMessage(text, _language, _useRag);
@@ -121,11 +178,16 @@ class _AIChatScreenState extends State<AIChatScreen> {
             ),
             child: Row(
               children: [
+                IconButton(
+                  icon: Icon(_isListening ? Icons.mic : Icons.mic_none),
+                  color: _isListening ? Colors.red : const Color(0xFF1D4ED8),
+                  onPressed: _listen,
+                ),
                 Expanded(
                   child: TextField(
                     controller: _controller,
                     decoration: InputDecoration(
-                      hintText: 'Type your message...',
+                      hintText: _isListening ? 'Listening...' : 'Type your message...',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                         borderSide: BorderSide.none,

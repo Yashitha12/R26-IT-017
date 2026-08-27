@@ -7,6 +7,7 @@ class ApiService {
   static String get baseUrl => kIsWeb ? 'http://127.0.0.1:8000' : 'http://10.0.2.2:8000';
 
   // Flask AI Backend (Port 5000)
+  // Fix: for Android emulator it's 10.0.2.2, for web it's 127.0.0.1
   static String get aiBaseUrl => kIsWeb ? 'http://127.0.0.1:5000' : 'http://10.0.2.2:5000';
 
   static Future<Map<String, dynamic>> predictLoan(Map<String, dynamic> data) async {

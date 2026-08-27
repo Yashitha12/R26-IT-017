@@ -3,6 +3,10 @@
 import sys
 import os
 import numpy as np
+import io
+from flask import send_file \
+# pyrefly: ignore [missing-import]
+from gtts import gTTS
 
 # Polyfill for np.object (deprecated in numpy 1.24, but used by transformers/tensorflow)
 if not hasattr(np, 'object'):
@@ -40,7 +44,6 @@ from deep_translator import GoogleTranslator
 # -----------------------------------
 from sentence_transformers import SentenceTransformer
 import faiss
-import numpy as np
 import pickle
 
 
@@ -62,8 +65,11 @@ print("Embedding model loaded.")
 
 
 # =========================================================
-# LOAD FAISS INDEX & KNOWLEDGE BASE
+# RAG: FAISS INDEX & DOCUMENTS
 # =========================================================
+
+index = None
+documents = []
 
 def load_rag_data():
     global index, documents
@@ -247,7 +253,6 @@ User Question:
 
 Please answer the user's question concisely in 2-3 sentences.
 """
-
     model_name = 'gemma:2b'
     try:
         response = ollama.chat(
@@ -270,7 +275,6 @@ Please answer the user's question concisely in 2-3 sentences.
         )
 
     return response['message']['content']
-
 
 # =========================================================
 # MAIN NLP & RAG PROCESSING PIPELINE
@@ -398,6 +402,54 @@ def chat():
         }), 500
 
 
+# =========================================================
+# TEXT-TO-SPEECH (TTS) CLEANER & API ENDPOINT
+# =========================================================
+
+def clean_text_for_speech(text):
+    if not text:
+        return ""
+    # Strip markdown headers, bold, italics, code blocks
+    cleaned = re.sub(r'[*_#`~]', '', text)
+    # Strip bullet points
+    cleaned = re.sub(r'^\s*[-•*]\s+', '', cleaned, flags=re.MULTILINE)
+    # Normalize whitespace
+    cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+    return cleaned
+
+
+@app.route('/tts', methods=['POST'])
+def tts():
+    try:
+        data = request.get_json() or {}
+        raw_text = data.get('text', '')
+        selected_lang = data.get('language', 'en-US')
+
+        cleaned_text = clean_text_for_speech(raw_text)
+        if not cleaned_text:
+            return jsonify({"error": "Empty text for speech synthesis"}), 400
+
+        # Select Sinhala ('si') or English ('en')
+        if selected_lang == 'si-LK' or is_sinhala(cleaned_text):
+            tts_lang = 'si'
+        else:
+            tts_lang = 'en'
+
+        tts_obj = gTTS(text=cleaned_text, lang=tts_lang, slow=False)
+        audio_fp = io.BytesIO()
+        tts_obj.write_to_fp(audio_fp)
+        audio_fp.seek(0)
+
+        return send_file(
+            audio_fp,
+            mimetype='audio/mp3',
+            as_attachment=False,
+            download_name='speech.mp3'
+        )
+
+    except Exception as e:
+        print(f"TTS generation error: {e}")
+        return jsonify({"error": f"TTS generation failed: {str(e)}"}), 500
 # =========================================================
 # STATUS & HEALTH API
 # =========================================================
