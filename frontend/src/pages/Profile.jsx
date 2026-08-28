@@ -86,6 +86,10 @@ export default function Profile() {
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                <span style={{ opacity: 0.8 }}>DID</span>
+                <span style={{ fontWeight: "bold", fontSize: "11px", fontFamily: "monospace" }}>{user?.did || "did:smartgrama:prototype:001"}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
                 <span style={{ opacity: 0.8 }}>Member ID</span>
                 <span style={{ fontWeight: "bold" }}>{memberId}</span>
               </div>
@@ -94,8 +98,11 @@ export default function Profile() {
                 <span style={{ fontWeight: "bold" }}>{district || "—"}</span>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
-                <span style={{ opacity: 0.8 }}>Status</span>
-                <span style={{ fontWeight: "bold", color: "#4ade80" }}>Active Resident</span>
+                <span style={{ opacity: 0.8 }}>KYC Status</span>
+                <span style={{ fontWeight: "bold", color: "#4ade80" }}>
+                  <i className="fa-solid fa-shield-check" style={{ marginRight: "4px" }}></i>
+                  {user?.kycStatus || "VERIFIED"}
+                </span>
               </div>
             </div>
 

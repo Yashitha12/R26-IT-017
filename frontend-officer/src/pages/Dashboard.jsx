@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { updateApplicationStatus } from "../api/loanApi";
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,8 +42,15 @@ export default function Dashboard() {
         <div className="card-header bg-gray-50 m-0" style={{ padding: '24px 32px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 className="card-title m-0 text-xl" style={{ color: '#1f2937', fontWeight: 'bold' }}>Pending Loan Applications</h2>
           <div style={{ display: 'flex', gap: '8px' }}>
-            <span style={{ backgroundColor: '#dbeafe', color: '#1e40af', padding: '6px 16px', borderRadius: '9999px', fontSize: '14px', fontWeight: 'bold' }}>Loans</span>
-            <span style={{ backgroundColor: 'white', border: '1px solid #d1d5db', color: '#4b5563', padding: '6px 16px', borderRadius: '9999px', fontSize: '14px', fontWeight: 'bold' }}>Welfare</span>
+            <span style={{ backgroundColor: '#dbeafe', color: '#1e40af', padding: '6px 16px', borderRadius: '9999px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>Loans</span>
+            <span 
+              onClick={() => navigate("/welfare")} 
+              style={{ backgroundColor: 'white', border: '1px solid #d1d5db', color: '#4b5563', padding: '6px 16px', borderRadius: '9999px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s' }}
+              onMouseOver={(e) => e.target.style.backgroundColor = '#f3f4f6'}
+              onMouseOut={(e) => e.target.style.backgroundColor = 'white'}
+            >
+              Welfare
+            </span>
           </div>
         </div>
 

@@ -32,7 +32,7 @@ export default function Home() {
               <div style={{ fontSize: '13px', opacity: 0.9, textAlign: 'right' }}>Savings</div>
               <div style={{ fontSize: '24px', fontWeight: 'bold' }}>Rs. 8,000</div>
             </div>
-            <div style={{ borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '48px' }}>
+            <div onClick={() => navigate("/welfare")} style={{ borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '48px', cursor: 'pointer' }}>
               <div style={{ fontSize: '13px', opacity: 0.9, textAlign: 'right' }}>Welfare</div>
               <div style={{ fontSize: '24px', fontWeight: 'bold' }}>Rs. 4,500</div>
             </div>

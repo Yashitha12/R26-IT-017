@@ -14,8 +14,16 @@ export default function Header() {
         <h2 className="font-bold text-xl" style={{ color: "var(--text-primary)" }}>
           Welcome back, {displayName}
         </h2>
-        <div style={{ color: "var(--text-secondary)", fontSize: "13px", marginTop: "4px" }}>
-          {division} &nbsp;&middot;&nbsp; GN Resident
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px', flexWrap: 'wrap' }}>
+          <span style={{ color: "var(--text-secondary)", fontSize: "13px" }}>
+            {division} &nbsp;&middot;&nbsp; GN Resident
+          </span>
+          {user?.did && (
+            <span style={{ background: '#dcfce7', color: '#166534', border: '1px solid #86efac', borderRadius: '12px', padding: '2px 8px', fontSize: '11px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+              <i className="fa-solid fa-shield-check"></i>
+              {user.did}
+            </span>
+          )}
         </div>
       </div>
 

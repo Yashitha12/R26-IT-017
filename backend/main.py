@@ -31,59 +31,11 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 
 # -------------------------------------------------------------
-# 0. AUTHENTICATION & USER MANAGEMENT
+# 0. OFFICER AUTHENTICATION & ADMIN MANAGEMENT
 # -------------------------------------------------------------
-users_db = []
-
-class UserRegister(BaseModel):
-    name: str
-    nic: str
-    dob: str
-    gender: Optional[str] = None
-    mobile: str
-    email: Optional[str] = None
-    address: Optional[str] = None
-    district: Optional[str] = None
-    occupation: Optional[str] = None
+class AdminLogin(BaseModel):
     username: str
     password: str
-    securityQuestion: Optional[str] = None
-    securityAnswer: Optional[str] = None
-
-class UserLogin(BaseModel):
-    username: str
-    password: str
-
-@app.post("/auth/register")
-def register_user(user: UserRegister):
-    for u in users_db:
-        if u["username"] == user.username:
-            raise HTTPException(status_code=400, detail="Username already exists")
-        if u["nic"] == user.nic:
-            raise HTTPException(status_code=400, detail="NIC already exists")
-    
-    new_user = user.dict()
-    new_user["memberId"] = f"MEM-{str(len(users_db) + 1).zfill(5)}"
-    users_db.append(new_user)
-    return {"status": "success", "memberId": new_user["memberId"]}
-
-@app.post("/auth/login")
-def login_user(creds: UserLogin):
-    for u in users_db:
-        if u["username"] == creds.username and u["password"] == creds.password:
-            return {"status": "success",
-                "user": {
-                    "name": u["name"],
-                    "nic": u["nic"],
-                    "memberId": u["memberId"],
-                    "mobile": u.get("mobile", ""),
-                    "email": u.get("email", ""),
-                    "address": u.get("address", ""),
-                    "district": u.get("district", ""),
-                    "occupation": u.get("occupation", ""),
-                    "dob": u.get("dob", ""),
-                    "gender": u.get("gender", ""),}}
-    raise HTTPException(status_code=401, detail="Invalid credentials")
 
 officers_db = [
     {
@@ -122,7 +74,7 @@ def admin_register(officer: OfficerRegister):
     return {"status": "success", "username": new_officer["username"]}
 
 @app.post("/auth/admin-login")
-def admin_login(creds: UserLogin):
+def admin_login(creds: AdminLogin):
     for o in officers_db:
         if o["username"] == creds.username and o["password"] == creds.password:
             return {
@@ -394,15 +346,41 @@ def assess_welfare(data: WelfareInput):
     return record
 
 
+@app.post("/welfare/register-reference")
+def register_welfare_reference(data: dict):
+    # This stores a reference in Python DB so the Officer Dashboard can list pending apps
+    app_id = data.get("applicationId") or data.get("assessment_id") or f"ASW-{int(time.time())}"
+    record = {
+        "assessment_id": app_id,
+        "applicationId": app_id,
+        "did": data.get("did") or f"did:smartgrama:prototype:001",
+        "applicant_name": data.get("applicant_name") or data.get("full_name") or "Citizen Applicant",
+        "gn_division": data.get("gn_division", "Homagama - Division 542/A"),
+        "welfare_score": data.get("welfare_score", 565.0),
+        "tier": data.get("tier") or data.get("category", "POOR"),
+        "monthly_stipend": float(data.get("monthly_stipend") or data.get("monthlyBenefitLkr") or 8500.0),
+        "status": data.get("status", "Eligible - Pending Review"),
+        "recommended_programs": data.get("recommended_programs", ["Aswesuma Social Safety Net"]),
+        "assessed_at": time.strftime("%Y-%m-%d %H:%M:%S")
+    }
+    # Check if already exists, update or append
+    existing = next((r for r in welfare_applications_db if r.get("assessment_id") == app_id or r.get("applicationId") == app_id), None)
+    if existing:
+        existing.update(record)
+    else:
+        welfare_applications_db.append(record)
+    return {"status": "success", "record": record}
+
+
 class WelfareReviewDecision(BaseModel):
     action: str  # 'approve' or 'reject'
 
 @app.post("/welfare/{assessment_id}/review")
 def review_welfare(assessment_id: str, decision: WelfareReviewDecision):
     for entry in welfare_applications_db:
-        if entry["assessment_id"] == assessment_id:
+        if entry.get("assessment_id") == assessment_id or entry.get("applicationId") == assessment_id:
             if decision.action == "approve":
-                entry["status"] = "Approved for Disbursement"
+                entry["status"] = "Approved for Disbursement (Blockchain Anchored)"
             else:
                 entry["status"] = "Rejected by Officer"
                 entry["monthly_stipend"] = 0.0

@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function WelfareManagement() {
+  const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -23,6 +25,34 @@ export default function WelfareManagement() {
 
   const handleReview = async (assessmentId, action) => {
     try {
+      if (action === "approve") {
+        // 1. Anchor eligibility verdict to blockchain ledger (Zero-PII)
+        try {
+          await fetch(`http://127.0.0.1:5001/api/welfare/aswesuma/applications/${assessmentId}/eligibility/blockchain`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" }
+          });
+        } catch (bcErr) {
+          console.warn("Blockchain anchoring notice:", bcErr);
+        }
+
+        // 2. Transition benefit lifecycle state to BENEFIT_ACTIVATED
+        try {
+          await fetch(`http://127.0.0.1:5001/api/welfare/aswesuma/applications/${assessmentId}/lifecycle`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              event: "BENEFIT_ACTIVATED",
+              officerId: "OFFICER-PROTOTYPE-001",
+              reason: "Approved & verified by Divisional Secretariat"
+            })
+          });
+        } catch (lcErr) {
+          console.warn("Lifecycle transition notice:", lcErr);
+        }
+      }
+
+      // 3. Update status in Python backend
       const res = await fetch(`http://127.0.0.1:8000/welfare/${assessmentId}/review`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -30,11 +60,12 @@ export default function WelfareManagement() {
       });
       if (res.ok) fetchApplications();
     } catch(err) {
+      console.error(err);
       alert("Failed to update status");
     }
   };
 
-  const pendingApps = applications.filter(a => a.status.startsWith('Eligible'));
+  const pendingApps = applications.filter(a => a.status.startsWith('Eligible') || a.status.includes('Pending'));
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
@@ -42,8 +73,18 @@ export default function WelfareManagement() {
       <div className="card" style={{ padding: 0, overflow: 'hidden', backgroundColor: 'white', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
         <div className="card-header bg-gray-50 m-0" style={{ padding: '24px 32px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 className="card-title m-0 text-xl" style={{ color: '#1f2937', fontWeight: 'bold' }}>Pending Welfare Applications</h2>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <span style={{ backgroundColor: '#dbeafe', color: '#1e40af', padding: '6px 16px', borderRadius: '9999px', fontSize: '14px', fontWeight: 'bold' }}>{pendingApps.length} Pending</span>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <span 
+              onClick={() => navigate("/")} 
+              style={{ backgroundColor: 'white', border: '1px solid #d1d5db', color: '#4b5563', padding: '6px 16px', borderRadius: '9999px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s' }}
+              onMouseOver={(e) => e.target.style.backgroundColor = '#f3f4f6'}
+              onMouseOut={(e) => e.target.style.backgroundColor = 'white'}
+            >
+              Loans
+            </span>
+            <span style={{ backgroundColor: '#dbeafe', color: '#1e40af', padding: '6px 16px', borderRadius: '9999px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>
+              Welfare ({pendingApps.length})
+            </span>
           </div>
         </div>
 

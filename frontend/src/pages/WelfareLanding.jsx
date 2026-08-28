@@ -20,7 +20,7 @@ export default function WelfareLanding() {
             <p style={{ fontSize: '14px', opacity: 0.9 }}>Government assistance for eligible families</p>
           </div>
           <button 
-            onClick={() => navigate("/welfare")} 
+            onClick={() => navigate("/welfare-apply")} 
             style={{ background: 'white', color: 'var(--success)', padding: '12px 32px', borderRadius: '8px', fontSize: '15px', fontWeight: 'bold', border: 'none', cursor: 'pointer', boxShadow: 'var(--shadow-sm)' }}
           >
             Apply for Welfare

@@ -10,8 +10,13 @@ class WelfareScreen extends StatefulWidget {
 
 class _WelfareScreenState extends State<WelfareScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+
   int familySize = 4;
+  int childrenCount = 2;
+  int elderlyCount = 0;
+  int disabledCount = 0;
+  double monthlyIncome = 45000;
+  double monthlyExpenses = 25000;
   bool isLoading = false;
 
   void _submitApplication() async {
@@ -24,28 +29,61 @@ class _WelfareScreenState extends State<WelfareScreen> {
 
     try {
       final payload = {
-        "monthly_income": 45000,
-        "other_income": 0,
-        "expenses": 25000,
-        "loan_amount": 0,
-        "loan_type": "welfare",
-        "savings_balance": 8000,
-        "existing_loans": 0,
-        "repayment_history": 1,
-        "guarantor_support_count": 0
+        "nic": "200223003053",
+        "full_name": "Aravinda Kumara",
+        "gn_division": "Minuwangoda North",
+        "family_size": familySize,
+        "dependents_children": childrenCount,
+        "elderly_count": elderlyCount,
+        "disabled_members": disabledCount,
+        "monthly_income": monthlyIncome,
+        "monthly_expenses": monthlyExpenses,
       };
 
       final prediction = await ApiService.assessWelfare(payload);
-      
+
       if (!mounted) return;
-      
+
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text(prediction['eligibility'] ?? 'Result'),
-          content: Text(prediction['message'] ?? ''),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              const Icon(Icons.check_circle, color: Color(0xFF059669), size: 28),
+              const SizedBox(width: 8),
+              const Text('Aswesuma Result', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Poverty Score: ${prediction['welfare_score']} pts',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFFEA580C)),
+              ),
+              const SizedBox(height: 6),
+              Text('Category: ${prediction['category'] ?? "POOR"}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 6),
+              Text(
+                'Eligible Monthly Stipend: Rs. ${prediction['monthly_stipend'] ?? 8500}',
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF059669)),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Your application and Zero-PII cryptographic proof will be anchored to the blockchain ledger upon Divisional Secretariat review.',
+                style: TextStyle(fontSize: 12, color: Colors.black54),
+              ),
+            ],
+          ),
           actions: [
-            TextButton(
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF059669),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
               onPressed: () {
                 Navigator.pop(context);
                 Navigator.pop(context);
@@ -71,7 +109,7 @@ class _WelfareScreenState extends State<WelfareScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Welfare Application', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF1E293B))),
+        title: const Text('Aswesuma Welfare Application', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF1E293B))),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -84,63 +122,81 @@ class _WelfareScreenState extends State<WelfareScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Family Size', style: TextStyle(fontSize: 14, color: Color(0xFF1E293B))),
+              const Text('Total Family Size', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1E293B))),
               const SizedBox(height: 8),
               TextFormField(
                 initialValue: '4',
                 decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey.shade300),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey.shade300),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF10B981)),
-                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF10B981))),
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) => value!.isEmpty ? 'Required' : null,
                 onSaved: (value) => familySize = int.parse(value!),
               ),
+              const SizedBox(height: 16),
+
+              const Text('Monthly Household Income (LKR)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1E293B))),
+              const SizedBox(height: 8),
+              TextFormField(
+                initialValue: '45000',
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF10B981))),
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) => value!.isEmpty ? 'Required' : null,
+                onSaved: (value) => monthlyIncome = double.parse(value!),
+              ),
+              const SizedBox(height: 16),
+
+              const Text('Monthly Expenses (LKR)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1E293B))),
+              const SizedBox(height: 8),
+              TextFormField(
+                initialValue: '25000',
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF10B981))),
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) => value!.isEmpty ? 'Required' : null,
+                onSaved: (value) => monthlyExpenses = double.parse(value!),
+              ),
               const SizedBox(height: 24),
-              
+
               // Note Card
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF0FDF4), // Light green background
+                  color: const Color(0xFFF0FDF4),
                   border: Border.all(color: const Color(0xFF86EFAC)),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Eligibility Note', style: TextStyle(color: Color(0xFF064E3B), fontSize: 14, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    Text('Families with 4+ members may qualify for additional support', style: TextStyle(color: Colors.grey[700], fontSize: 13)),
+                    const Text('Aswesuma PMT Scoring', style: TextStyle(color: Color(0xFF064E3B), fontSize: 14, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 6),
+                    Text('Proxy Means Test calculates multi-dimensional poverty index across 6 socio-economic dimensions.', style: TextStyle(color: Colors.grey[700], fontSize: 13)),
                   ],
                 ),
               ),
               const SizedBox(height: 32),
-              
+
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: isLoading ? null : _submitApplication,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 18),
-                    backgroundColor: const Color(0xFF059669), // Green
+                    backgroundColor: const Color(0xFF059669),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   child: isLoading
                       ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text('Submit Application', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      : const Text('Calculate & Submit', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],

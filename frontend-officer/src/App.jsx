@@ -3,7 +3,7 @@ import Sidebar from "./components/Sidebar";
 import Dashboard from "./pages/Dashboard";
 import ManagePrograms from "./pages/ManagePrograms";
 import WelfareManagement from "./pages/WelfareManagement";
-import KYCChecking from "./pages/KYCChecking";
+import { OfficerKYC } from "./pages/OfficerKYC";
 import AdminLogin from "./pages/AdminLogin";
 import AdminRegister from "./pages/AdminRegister";
 import OfficerManagement from "./pages/OfficerManagement";
@@ -52,7 +52,7 @@ export default function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/manage" element={<ManagePrograms />} />
             <Route path="/welfare" element={<WelfareManagement />} />
-            <Route path="/kyc" element={<KYCChecking />} />
+            <Route path="/kyc" element={<OfficerKYC />} />
             <Route path="/officers" element={<OfficerManagement />} />
           </Routes>
         </ProtectedLayout>

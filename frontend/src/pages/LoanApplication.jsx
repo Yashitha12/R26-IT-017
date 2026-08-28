@@ -3,10 +3,12 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import { predictLoan } from "../api/loanApi";
 import { loanProducts } from "../data/loanProducts";
+import { getCurrentUser } from "../utils/user";
 
 export default function LoanApplication() {
   const navigate = useNavigate();
   const location = useLocation();
+  const user = getCurrentUser();
 
   // Read the selected product from URL params or location state
   const queryParams = new URLSearchParams(location.search);
@@ -78,8 +80,9 @@ export default function LoanApplication() {
             ...form,
             loan_title: selectedProduct.title,
             interest_rate: selectedProduct.interestRate,
-            nic: "198723456789",
-            fullName: "Nimal Perera"
+            nic: user?.nic || "200223003053",
+            fullName: user?.name || "Aravinda Kumara",
+            did: user?.did || "did:smartgrama:prototype:001"
           },
         },
       });
