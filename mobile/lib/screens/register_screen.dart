@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../api_service.dart';
+import 'identity_kyc_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -9,12 +10,23 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   
-  String name = '';
+  // Personal Details
+  String fullName = '';
   String nic = '';
   String dob = '';
+  
+  // Contact Details
   String mobile = '';
-  String username = '';
-  String password = '';
+  String email = '';
+  String address = '';
+  
+  // Location Details
+  String district = 'Gampaha';
+  String gnDivision = 'Minuwangoda North';
+  
+  // Bank Details
+  String bankName = '';
+  String bankAccount = '';
 
   bool isLoading = false;
 
@@ -26,23 +38,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
     
     try {
       final payload = {
-        "name": name,
+        "name": fullName,
         "nic": nic,
         "dob": dob,
-        "mobile": mobile,
-        "username": username,
-        "password": password
+        "phone": mobile,
+        "email": email,
+        "address": address,
+        "district": district,
+        "gnDivision": gnDivision,
+        "bankName": bankName,
+        "accountNumber": bankAccount
       };
       
       final res = await ApiService.registerUser(payload);
       
-      // Store to blockchain stub
-      await ApiService.storeOnBlockchain("member_registration", payload);
+      final String identifier = res['user']?['_id'] ?? res['_id'] ?? res['id'] ?? nic;
       
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Registration Successful! ID: ${res["memberId"]}')),
+        SnackBar(content: Text('Registration Successful!')),
       );
-      Navigator.pop(context); // Go back to login
+      
+      // Navigate to KYC Screen directly
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => IdentityKYCScreen(identifier: identifier, userData: res['user'] ?? payload)),
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString())),
@@ -52,75 +72,119 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1D4ED8))),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Register'), backgroundColor: Color(0xFF1E3A8A)),
+      backgroundColor: Colors.white,
+      appBar: AppBar(title: Text('Citizen Registration', style: TextStyle(color: Colors.white)), backgroundColor: Color(0xFF1D4ED8)),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Form(
           key: _formKey,
           child: ListView(
             children: [
-              Icon(Icons.person_add, size: 64, color: Color(0xFF1E3A8A)),
-              SizedBox(height: 24),
+              Text('Create your SmartGrama account to access microfinance, welfare, and your digital identity.', style: TextStyle(color: Colors.grey.shade700, fontSize: 16)),
+              SizedBox(height: 16),
               
+              _buildSectionTitle('1. Personal Information'),
               TextFormField(
                 decoration: InputDecoration(labelText: 'Full Name', border: OutlineInputBorder()),
                 validator: (v) => v!.isEmpty ? 'Required' : null,
-                onSaved: (v) => name = v!,
+                onSaved: (v) => fullName = v!,
               ),
               SizedBox(height: 16),
-              
-              TextFormField(
-                decoration: InputDecoration(labelText: 'NIC Number', border: OutlineInputBorder()),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-                onSaved: (v) => nic = v!,
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      decoration: InputDecoration(labelText: 'NIC Number', border: OutlineInputBorder()),
+                      validator: (v) => v!.isEmpty ? 'Required' : null,
+                      onSaved: (v) => nic = v!,
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: TextFormField(
+                      decoration: InputDecoration(labelText: 'DOB (YYYY-MM-DD)', border: OutlineInputBorder()),
+                      onSaved: (v) => dob = v!,
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(height: 16),
               
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Date of Birth (YYYY-MM-DD)', border: OutlineInputBorder()),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-                onSaved: (v) => dob = v!,
-              ),
-              SizedBox(height: 16),
-              
+              _buildSectionTitle('2. Contact Details'),
               TextFormField(
                 decoration: InputDecoration(labelText: 'Mobile Number', border: OutlineInputBorder()),
                 validator: (v) => v!.isEmpty ? 'Required' : null,
                 onSaved: (v) => mobile = v!,
               ),
-              SizedBox(height: 32),
-              
-              Text('Account Security', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               SizedBox(height: 16),
-              
               TextFormField(
-                decoration: InputDecoration(labelText: 'Username', border: OutlineInputBorder()),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-                onSaved: (v) => username = v!,
+                decoration: InputDecoration(labelText: 'Email Address', border: OutlineInputBorder()),
+                onSaved: (v) => email = v!,
               ),
               SizedBox(height: 16),
-              
               TextFormField(
-                decoration: InputDecoration(labelText: 'Password', border: OutlineInputBorder()),
-                obscureText: true,
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-                onSaved: (v) => password = v!,
+                decoration: InputDecoration(labelText: 'Permanent Address', border: OutlineInputBorder()),
+                onSaved: (v) => address = v!,
               ),
+              
+              _buildSectionTitle('3. Location Details'),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      initialValue: district,
+                      decoration: InputDecoration(labelText: 'District', border: OutlineInputBorder()),
+                      onSaved: (v) => district = v!,
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: TextFormField(
+                      initialValue: gnDivision,
+                      decoration: InputDecoration(labelText: 'GN Division', border: OutlineInputBorder()),
+                      onSaved: (v) => gnDivision = v!,
+                    ),
+                  ),
+                ],
+              ),
+
+              _buildSectionTitle('4. Banking Details (Optional)'),
+              TextFormField(
+                decoration: InputDecoration(labelText: 'Bank Name', border: OutlineInputBorder()),
+                onSaved: (v) => bankName = v!,
+              ),
+              SizedBox(height: 16),
+              TextFormField(
+                decoration: InputDecoration(labelText: 'Account Number', border: OutlineInputBorder()),
+                onSaved: (v) => bankAccount = v!,
+              ),
+              
               SizedBox(height: 32),
               
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF1E3A8A),
-                  padding: EdgeInsets.symmetric(vertical: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 54,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF1D4ED8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
+                  ),
+                  onPressed: isLoading ? null : _register,
+                  child: isLoading 
+                    ? CircularProgressIndicator(color: Colors.white)
+                    : Text('Register Account', style: TextStyle(fontSize: 18)),
                 ),
-                onPressed: isLoading ? null : _register,
-                child: isLoading 
-                  ? CircularProgressIndicator(color: Colors.white)
-                  : Text('Register', style: TextStyle(fontSize: 18)),
-              )
+              ),
+              SizedBox(height: 48),
             ],
           ),
         ),
@@ -128,3 +192,4 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 }
+

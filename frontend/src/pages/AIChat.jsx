@@ -161,7 +161,7 @@ export default function AIChat() {
         ...prev,
         {
           sender: "bot",
-          text: language === "si-LK" 
+          text: language === "si-LK"
             ? "පද්ධතිය සමඟ සම්බන්ධ වීමේ දෝෂයක්. කරුණාකර පසුපස සේවාදායකය (Flask Backend) ක්‍රියාත්මක දැයි පරීක්ෂා කරන්න."
             : "Error connecting to the backend server. Please verify the Flask service is running on port 5000.",
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -233,180 +233,180 @@ export default function AIChat() {
       <div className="app-container">
         <div className="chat-container">
 
-        {/* ================= HEADER ================= */}
-        <div className="header">
-          <div className="header-left">
-            <div className="logo-badge">
-              <img
-                src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-                alt="SmartGrama AI Logo"
-                className="logo"
-              />
-              <span className="status-dot online"></span>
-            </div>
-            <div>
-              <div className="title-row">
-                <h1>SmartGrama AI Assistant</h1>
-                <span className={`rag-badge ${useRag ? 'rag-on' : 'rag-off'}`}>
-                  {useRag ? 'RAG Grounded' : 'Baseline LLM'}
-                </span>
+          {/* ================= HEADER ================= */}
+          <div className="header">
+            <div className="header-left">
+              <div className="logo-badge">
+                <img
+                  src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+                  alt="SmartGrama AI Logo"
+                  className="logo"
+                />
+                <span className="status-dot online"></span>
               </div>
-              <p>Multilingual Welfare & Micro-Loan Advisory System</p>
+              <div>
+                <div className="title-row">
+                  <h1>SmartGrama AI Assistant</h1>
+                  <span className={`rag-badge ${useRag ? 'rag-on' : 'rag-off'}`}>
+                    {useRag ? 'RAG Grounded' : 'Baseline LLM'}
+                  </span>
+                </div>
+                <p>Multilingual Welfare & Micro-Loan Advisory System</p>
+              </div>
+            </div>
+
+            <div className="header-right" ref={menuRef}>
+              <button
+                className="menu-button"
+                onClick={() => setMenuOpen(!menuOpen)}
+                title="Assistant Options"
+              >
+                ☰
+              </button>
+
+              {menuOpen && (
+                <div className="menu-dropdown">
+                  <div className="menu-item-header">Settings & Controls</div>
+                  <button className="menu-item" onClick={handleClearChat}>
+                    🗑️ {language === "si-LK" ? "සංවාදය මකන්න (Clear Chat)" : "Clear Conversation"}
+                  </button>
+                  <button
+                    className="menu-item"
+                    onClick={() => {
+                      setUseRag(!useRag);
+                      setMenuOpen(false);
+                    }}
+                  >
+                    ⚡ {useRag ? "Switch to Baseline (No RAG)" : "Enable RAG Mode (Knowledge-Grounded)"}
+                  </button>
+                  <div className="menu-divider"></div>
+                  <div className="menu-info">
+                    <strong>Stack:</strong> Flask + FAISS + SentenceTransformers + Ollama
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="header-right" ref={menuRef}>
-            <button 
-              className="menu-button"
-              onClick={() => setMenuOpen(!menuOpen)}
-              title="Assistant Options"
-            >
-              ☰
-            </button>
+          {/* ================= CHAT AREA ================= */}
+          <div className="chat-box">
+            {messages.map((msg, index) => (
+              <div
+                key={index}
+                className={`message-wrapper ${msg.sender === "user" ? "user-wrapper" : "bot-wrapper"}`}
+              >
+                <div className={`message ${msg.sender === "user" ? "user" : "bot"} ${msg.isError ? "error-bubble" : ""}`}>
+                  <div className="message-content">{msg.text}</div>
+                  <div className="message-footer">
+                    <span className="timestamp">{msg.time}</span>
+                    {msg.sender === "bot" && (
+                      <button
+                        className={`speak-btn ${speakingIndex === index ? 'speaking' : ''}`}
+                        onClick={() => handleSpeak(msg.text, index)}
+                        title="Read aloud"
+                      >
+                        {speakingIndex === index ? "⏹️ Stop" : "🔊 Listen"}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
 
-            {menuOpen && (
-              <div className="menu-dropdown">
-                <div className="menu-item-header">Settings & Controls</div>
-                <button className="menu-item" onClick={handleClearChat}>
-                  🗑️ {language === "si-LK" ? "සංවාදය මකන්න (Clear Chat)" : "Clear Conversation"}
-                </button>
-                <button 
-                  className="menu-item"
-                  onClick={() => {
-                    setUseRag(!useRag);
-                    setMenuOpen(false);
-                  }}
-                >
-                  ⚡ {useRag ? "Switch to Baseline (No RAG)" : "Enable RAG Mode (Knowledge-Grounded)"}
-                </button>
-                <div className="menu-divider"></div>
-                <div className="menu-info">
-                  <strong>Stack:</strong> Flask + FAISS + SentenceTransformers + Ollama
+            {/* Loading */}
+            {loading && (
+              <div className="message-wrapper bot-wrapper">
+                <div className="message bot loading">
+                  <div className="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                  <span className="loading-text">
+                    {language === "si-LK" ? "තොරතුරු සකසමින් පවතී..." : "Retrieving knowledge & generating answer..."}
+                  </span>
                 </div>
               </div>
             )}
-          </div>
-        </div>
 
-        {/* ================= CHAT AREA ================= */}
-        <div className="chat-box">
-          {messages.map((msg, index) => (
-            <div
-              key={index}
-              className={`message-wrapper ${msg.sender === "user" ? "user-wrapper" : "bot-wrapper"}`}
-            >
-              <div className={`message ${msg.sender === "user" ? "user" : "bot"} ${msg.isError ? "error-bubble" : ""}`}>
-                <div className="message-content">{msg.text}</div>
-                <div className="message-footer">
-                  <span className="timestamp">{msg.time}</span>
-                  {msg.sender === "bot" && (
-                    <button
-                      className={`speak-btn ${speakingIndex === index ? 'speaking' : ''}`}
-                      onClick={() => handleSpeak(msg.text, index)}
-                      title="Read aloud"
-                    >
-                      {speakingIndex === index ? "⏹️ Stop" : "🔊 Listen"}
-                    </button>
-                  )}
-                </div>
+            {/* Listening State */}
+            {listening && (
+              <div className="listening-box">
+                <span className="pulse-icon">🎙️</span>
+                <span>{language === "si-LK" ? "සවන් දෙමින් පවතී... කතා කරන්න" : "Listening... speak now"}</span>
+              </div>
+            )}
+
+            <div ref={chatEndRef}></div>
+          </div>
+
+          {/* ================= BOTTOM PANEL ================= */}
+          <div className="bottom-panel">
+
+            {/* Quick Questions Chips */}
+            <div className="example-box">
+              <span className="suggestions-label">
+                {language === "si-LK" ? "යෝජිත ප්‍රශ්න:" : "Suggested Questions:"}
+              </span>
+              <div className="chips-container">
+                {activeQuickQuestions.map((question, index) => (
+                  <button
+                    key={index}
+                    className="quick-chip"
+                    onClick={() => sendMessage(question)}
+                    disabled={loading}
+                  >
+                    {question}
+                  </button>
+                ))}
               </div>
             </div>
-          ))}
 
-          {/* Loading */}
-          {loading && (
-            <div className="message-wrapper bot-wrapper">
-              <div className="message bot loading">
-                <div className="typing-indicator">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-                <span className="loading-text">
-                  {language === "si-LK" ? "තොරතුරු සකසමින් පවතී..." : "Retrieving knowledge & generating answer..."}
-                </span>
-              </div>
+            {/* Input Controls Row */}
+            <div className="controls-row">
+              <select
+                value={language}
+                onChange={(e) => handleLanguageChange(e.target.value)}
+                className="language-dropdown"
+                title="Select Language"
+              >
+                <option value="en-US">🇬🇧 English</option>
+                <option value="si-LK">🇱🇰 සිංහල (Sinhala)</option>
+              </select>
+
+              <textarea
+                placeholder={language === "si-LK" ? "ඔබගේ පණිවිඩය මෙහි ටයිප් කරන්න..." : "Type your welfare or loan question..."}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={handleKeyDown}
+                rows="1"
+              />
+
+              {/* Microphone Button */}
+              <button
+                className={`mic-btn ${listening ? "listening" : ""}`}
+                onClick={startVoiceRecognition}
+                title={listening ? "Listening active..." : "Voice Input (Speech-to-Text)"}
+                type="button"
+              >
+                🎤
+              </button>
+
+              {/* Send Button */}
+              <button
+                className="send-btn"
+                onClick={() => sendMessage()}
+                disabled={loading || !message.trim()}
+                type="button"
+              >
+                {language === "si-LK" ? "යවන්න" : "Send"}
+              </button>
             </div>
-          )}
 
-          {/* Listening State */}
-          {listening && (
-            <div className="listening-box">
-              <span className="pulse-icon">🎙️</span>
-              <span>{language === "si-LK" ? "සවන් දෙමින් පවතී... කතා කරන්න" : "Listening... speak now"}</span>
-            </div>
-          )}
-
-          <div ref={chatEndRef}></div>
-        </div>
-
-        {/* ================= BOTTOM PANEL ================= */}
-        <div className="bottom-panel">
-
-          {/* Quick Questions Chips */}
-          <div className="example-box">
-            <span className="suggestions-label">
-              {language === "si-LK" ? "යෝජිත ප්‍රශ්න:" : "Suggested Questions:"}
-            </span>
-            <div className="chips-container">
-              {activeQuickQuestions.map((question, index) => (
-                <button
-                  key={index}
-                  className="quick-chip"
-                  onClick={() => sendMessage(question)}
-                  disabled={loading}
-                >
-                  {question}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Input Controls Row */}
-          <div className="controls-row">
-            <select
-              value={language}
-              onChange={(e) => handleLanguageChange(e.target.value)}
-              className="language-dropdown"
-              title="Select Language"
-            >
-              <option value="en-US">🇬🇧 English</option>
-              <option value="si-LK">🇱🇰 සිංහල (Sinhala)</option>
-            </select>
-
-            <textarea
-              placeholder={language === "si-LK" ? "ඔබගේ පණිවිඩය මෙහි ටයිප් කරන්න..." : "Type your welfare or loan question..."}
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyDown={handleKeyDown}
-              rows="1"
-            />
-
-            {/* Microphone Button */}
-            <button
-              className={`mic-btn ${listening ? "listening" : ""}`}
-              onClick={startVoiceRecognition}
-              title={listening ? "Listening active..." : "Voice Input (Speech-to-Text)"}
-              type="button"
-            >
-              🎤
-            </button>
-
-            {/* Send Button */}
-            <button
-              className="send-btn"
-              onClick={() => sendMessage()}
-              disabled={loading || !message.trim()}
-              type="button"
-            >
-              {language === "si-LK" ? "යවන්න" : "Send"}
-            </button>
           </div>
 
         </div>
-
       </div>
-    </div>
     </>
   );
 }

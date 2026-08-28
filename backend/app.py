@@ -198,6 +198,11 @@ def clean_response(reply):
 
     for phrase in junk_phrases:
         reply = reply.replace(phrase, "")
+        
+    # Strip any leading "To answer the user's question..." or similar hallucinated intro
+    reply = re.sub(r'(?i)^(To answer the user\'s question.*?,\s*)', '', reply)
+    reply = re.sub(r'(?i)^(Please provide the following information.*?:\s*)', '', reply)
+    reply = re.sub(r'(?i)^(To answer the user\'s question.*?:?\s*)', '', reply)
 
     # Remove markdown leading titles or colons
     reply = re.sub(r'^[A-Z\s]+:\s*', '', reply)
@@ -241,6 +246,7 @@ Instructions:
 4. Keep the answer natural, concise, and friendly (maximum 3-4 sentences).
 5. If the question is about loans or welfare eligibility, mention the criteria or required documents from the info.
 6. If the question asks about high monthly expenses, explain that the system may recommend a smaller loan amount.
+7. CRITICAL: Start your answer immediately. Do NOT use introductory phrases like "To answer the user's question".
 
 Friendly Answer:
 """

@@ -6,7 +6,8 @@ import 'profile_screen.dart';
 import 'ai_chat_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final Map<String, dynamic>? userData;
+  const HomeScreen({super.key, this.userData});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -22,6 +23,22 @@ class _HomeScreenState extends State<HomeScreen> {
     ProfileScreen(),
     AIChatScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Recreate _pages to pass userData to _HomeContent
+  }
+
+  List<Widget> _getPages() {
+    return [
+      _HomeContent(userData: widget.userData),
+      WalletScreen(),
+      Scaffold(body: Center(child: Text('Status Screen'))),
+      ProfileScreen(),
+      AIChatScreen(),
+    ];
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -57,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(icon: const Icon(Icons.menu), onPressed: () {}),
         ],
       ),
-      body: _pages.elementAt(_selectedIndex),
+      body: _getPages().elementAt(_selectedIndex),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: _onItemTapped,
@@ -74,7 +91,8 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class _HomeContent extends StatelessWidget {
-  const _HomeContent();
+  final Map<String, dynamic>? userData;
+  const _HomeContent({this.userData});
 
   @override
   Widget build(BuildContext context) {
@@ -109,7 +127,7 @@ class _HomeContent extends StatelessWidget {
                     ),
                   ],
                 ),
-                const Text('Nimal Perera', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+                Text(userData?['fullName'] ?? userData?['name'] ?? 'Citizen', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 24),
                 Container(
                   padding: const EdgeInsets.all(16),

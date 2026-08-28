@@ -245,30 +245,68 @@ class ApiService {
 
   static Future<Map<String, dynamic>> registerUser(Map<String, dynamic> data) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/auth/register'),
+      Uri.parse('$welfareBaseUrl/api/registration'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(data),
     );
 
-    if (response.statusCode == 200) {
+    if (response.statusCode == 201 || response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
       throw Exception('Failed to register: ${response.body}');
     }
   }
 
-  static Future<Map<String, dynamic>> loginUser(String username, String password) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/auth/login'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'username': username, 'password': password}),
+  static Future<Map<String, dynamic>> loginUser(String identifier) async {
+    // In decentralized flow, we look up the ID directly (simulating a DID auth challenge)
+    final response = await http.get(
+      Uri.parse('$welfareBaseUrl/api/registration/$identifier'),
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      final user = jsonDecode(response.body);
+      
+      // Fetch KYC status
+      String kycStatus = 'PENDING';
+      try {
+        final kycRes = await http.get(Uri.parse('$welfareBaseUrl/api/identity/user/$identifier'));
+        if (kycRes.statusCode == 200) {
+          final kycData = jsonDecode(kycRes.body);
+          kycStatus = kycData['kycStatus'] ?? 'PENDING';
+        }
+      } catch (e) {
+        print("KYC fetch error: $e");
+      }
+
+      user['kycStatus'] = kycStatus;
+      return user;
     } else {
-      throw Exception('Invalid credentials');
+      throw Exception('User not found. Please register first.');
     }
+  }
+
+  static Future<void> applyForIdentity(String identifier) async {
+    await http.post(
+      Uri.parse('$welfareBaseUrl/api/identity/apply'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'identifier': identifier}),
+    );
+  }
+
+  static Future<void> submitFaceEvidence(String identifier, String base64Image) async {
+    await http.post(
+      Uri.parse('$welfareBaseUrl/api/identity/evidence/face'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'identifier': identifier, 'faceData': base64Image}),
+    );
+  }
+
+  static Future<void> submitNicEvidence(String identifier, String base64Image) async {
+    await http.post(
+      Uri.parse('$welfareBaseUrl/api/identity/evidence/nic'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'identifier': identifier, 'nicData': base64Image}),
+    );
   }
 
   static Future<void> storeOnBlockchain(String type, Map<String, dynamic> data) async {
