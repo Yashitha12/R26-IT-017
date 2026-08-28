@@ -383,7 +383,7 @@ export const WelfareServices = () => {
                   type="button"
                   className="btn-continue"
                   style={{ maxWidth: '360px', margin: '0 auto', fontSize: '1.05rem', padding: '14px 28px' }}
-                  onClick={() => setCurrentView('wizard')}
+                  onClick={() => navigate('/welfare-apply')}
                 >
                   Proceed to Aswesuma Application &rarr;
                 </button>

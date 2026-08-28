@@ -1,13 +1,17 @@
-# -*- coding: utf-8 -*-
+# -- coding: utf-8 --
 
 import sys
 import os
-import numpy as np
-import io
-from flask import send_file \
-# pyrefly: ignore [missing-import]
-from gtts import gTTS
 
+# Enforce UTF-8 on Windows console stdout/stderr
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
+import numpy as np
 # Polyfill for np.object (deprecated in numpy 1.24, but used by transformers/tensorflow)
 if not hasattr(np, 'object'):
     np.object = object
@@ -19,8 +23,6 @@ if not hasattr(np, 'typeDict'):
 # Disable TensorFlow in transformers because of missing keras
 os.environ["USE_TF"] = "0"
 os.environ["USE_TORCH"] = "1"
-
-# Enforce UTF-8 on Windows console stdout/stderr
 if hasattr(sys.stdout, 'reconfigure'):
     try:
         sys.stdout.reconfigure(encoding='utf-8', errors='replace')
@@ -28,8 +30,10 @@ if hasattr(sys.stdout, 'reconfigure'):
     except Exception:
         pass
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
+import io
+from gtts import gTTS
 
 import ollama
 import re
@@ -44,7 +48,63 @@ from deep_translator import GoogleTranslator
 # -----------------------------------
 from sentence_transformers import SentenceTransformer
 import faiss
+import numpy as np
 import pickle
+
+
+# =========================================================
+# GLOSSARY PRESERVATION
+# =========================================================
+
+SINHALA_TERMS = {
+    "Aswesuma": "අස්වැසුම",
+    "Samurdhi": "සමෘද්ධි",
+    "Grama Niladhari": "ග්‍රාම නිලධාරී",
+    "SmartGrama": "SmartGrama"
+}
+
+ENGLISH_TERMS = {
+    "අස්වැසුම": "Aswesuma",
+    "සමෘද්ධි": "Samurdhi",
+    "ග්‍රාම නිලධාරී": "Grama Niladhari",
+    "ග්‍රාම නිලධාරි": "Grama Niladhari",
+    "ස්මාර්ට්ග්‍රාම": "SmartGrama"
+}
+
+def translate_to_sinhala_with_glossary(text):
+    if not text:
+        return text
+    placeholders = {}
+    for i, (en_term, si_term) in enumerate(SINHALA_TERMS.items()):
+        placeholder = f" XX{i}XX "
+        pattern = re.compile(r'\b' + re.escape(en_term) + r'\b', re.IGNORECASE)
+        if pattern.search(text):
+            placeholders[placeholder.strip()] = si_term
+            text = pattern.sub(placeholder, text)
+            
+    translated = GoogleTranslator(source='en', target='si').translate(text)
+    
+    for placeholder, si_term in placeholders.items():
+        translated = translated.replace(placeholder, si_term)
+        
+    return translated
+
+def translate_to_english_with_glossary(text):
+    if not text:
+        return text
+    placeholders = {}
+    for i, (si_term, en_term) in enumerate(ENGLISH_TERMS.items()):
+        placeholder = f" YY{i}YY "
+        if si_term in text:
+            placeholders[placeholder.strip()] = en_term
+            text = text.replace(si_term, placeholder)
+            
+    translated = GoogleTranslator(source='auto', target='en').translate(text)
+    
+    for placeholder, en_term in placeholders.items():
+        translated = translated.replace(placeholder, en_term)
+        
+    return translated
 
 
 # =========================================================
@@ -227,43 +287,35 @@ def clean_response(reply):
 
 def generate_human_response(context, question, use_rag=True):
     if use_rag and context:
-        prompt = f"""
-You are the SmartGrama AI Assistant for welfare and micro-loan services in Sri Lanka.
-
-Use ONLY the information provided in the SmartGrama Information section below to answer the user's question.
-Do NOT use outside knowledge or speculate.
-
-SmartGrama Information:
-{context}
-
-User Question:
-{question}
+        system_prompt = f"""You are the SmartGrama AI Assistant for welfare and micro-loan services in Sri Lanka.
 
 Instructions:
 1. Answer the user's question directly, clearly, and helpfully.
-2. Use only facts from the provided SmartGrama Information.
+2. Use ONLY the information provided in the SmartGrama Information section below to answer. Do NOT use outside knowledge.
 3. Do not invent facts or mention "context", "document", "chunk", or "RAG".
 4. Keep the answer natural, concise, and friendly (maximum 3-4 sentences).
 5. If the question is about loans or welfare eligibility, mention the criteria or required documents from the info.
 6. If the question asks about high monthly expenses, explain that the system may recommend a smaller loan amount.
 7. CRITICAL: Start your answer immediately. Do NOT use introductory phrases like "To answer the user's question".
 
-Friendly Answer:
-"""
+SmartGrama Information:
+{context}"""
+        user_prompt = question
     else:
         # Baseline model without RAG context (for research comparison)
-        prompt = f"""
-You are an AI Assistant for the SmartGrama welfare and micro-loan platform.
-User Question:
-{question}
-
-Please answer the user's question concisely in 2-3 sentences.
-"""
+        system_prompt = "You are an AI Assistant for the SmartGrama welfare and micro-loan platform. Please answer the user's question concisely in 2-3 sentences."
+        user_prompt = question
+        
     model_name = 'gemma:2b'
+    messages = [
+        {'role': 'system', 'content': system_prompt},
+        {'role': 'user', 'content': user_prompt}
+    ]
+    
     try:
         response = ollama.chat(
             model=model_name,
-            messages=[{'role': 'user', 'content': prompt}],
+            messages=messages,
             options={
                 "temperature": 0.2,
                 "num_predict": 120
@@ -273,7 +325,7 @@ Please answer the user's question concisely in 2-3 sentences.
         print(f"{model_name} error: {e}, falling back to tinyllama:latest...")
         response = ollama.chat(
             model='tinyllama:latest',
-            messages=[{'role': 'user', 'content': prompt}],
+            messages=messages,
             options={
                 "temperature": 0.2,
                 "num_predict": 120
@@ -365,10 +417,7 @@ def process_text(user_message, selected_lang="en-US", use_rag=True):
     # 7. English -> Sinhala Translation (if in Sinhala mode)
     if sinhala_mode:
         try:
-            reply = GoogleTranslator(
-                source='en',
-                target='si'
-            ).translate(reply)
+            reply = translate_to_sinhala_with_glossary(reply)
         except Exception as e:
             print(f"English -> Sinhala translation error: {e}")
 

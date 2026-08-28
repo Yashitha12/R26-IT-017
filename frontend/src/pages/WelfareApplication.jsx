@@ -130,7 +130,8 @@ export default function WelfareApplication() {
       };
 
       const result = await assessWelfare(payload);
-      navigate("/welfare-result", { state: { result } });
+      // Route to dashboard so user can view their submitted welfare programs
+      navigate("/welfare");
     } catch (error) {
       alert("Error processing welfare evaluation.");
       console.error(error);
@@ -160,7 +161,7 @@ export default function WelfareApplication() {
       </div>
 
       <main className="content-container" style={{ paddingBottom: "60px" }}>
-        
+
         {/* Title & Gated Identity Badge */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px" }}>
           <div>
@@ -506,22 +507,29 @@ export default function WelfareApplication() {
             {/* STEP 9: BANKING */}
             {currentStep === 9 && (
               <div>
-                <h3 style={stepTitleStyle}>Step 9: Banking & Direct Transfer</h3>
+                <h3 style={stepTitleStyle}>Step 9: Banking Information for Welfare Disbursement</h3>
+                <div style={{ fontSize: "13px", color: "#64748b", marginBottom: "20px" }}>Bank account linked for direct welfare cash transfers.</div>
+                
+                <div style={{ background: "#fffbeb", border: "1px solid #fde68a", padding: "16px", borderRadius: "8px", display: "flex", gap: "12px", marginBottom: "24px", color: "#92400e", fontSize: "14px", fontWeight: "600" }}>
+                  <i className="fa-solid fa-triangle-exclamation" style={{ marginTop: "3px" }}></i>
+                  Important: Please make sure the bank account holder's name matches the applicant's NIC information.
+                </div>
+
                 <div style={grid2ColStyle}>
                   <div className="input-group">
-                    <label>Bank Name</label>
+                    <label>Bank Name *</label>
                     <input type="text" name="bankName" className="form-input" value={form.bankName} onChange={handleChange} />
                   </div>
                   <div className="input-group">
-                    <label>Branch Code</label>
+                    <label>Branch Name / Code *</label>
                     <input type="text" name="branchCode" className="form-input" value={form.branchCode} onChange={handleChange} />
                   </div>
-                  <div className="input-group" style={{ gridColumn: "1 / -1" }}>
-                    <label>Bank Account Number (Will be masked for privacy)</label>
+                  <div className="input-group">
+                    <label>Account Number *</label>
                     <input type="text" name="accountNumber" className="form-input" value={form.accountNumber} onChange={handleChange} />
                   </div>
-                  <div className="input-group" style={{ gridColumn: "1 / -1" }}>
-                    <label>Account Holder Full Name</label>
+                  <div className="input-group">
+                    <label>Account Holder Name *</label>
                     <input type="text" name="accountHolderName" className="form-input" value={form.accountHolderName} onChange={handleChange} />
                   </div>
                 </div>
@@ -531,33 +539,114 @@ export default function WelfareApplication() {
             {/* STEP 10: REVIEW & SUBMIT */}
             {currentStep === 10 && (
               <div>
-                <h3 style={stepTitleStyle}>Step 10: Final Review & PMT Scoring Engine</h3>
-                <div style={{ background: "#f8fafc", padding: "20px", borderRadius: "12px", border: "1px solid #e2e8f0", display: "flex", flexDirection: "column", gap: "12px", marginBottom: "24px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "14px" }}>
-                    <span style={{ color: "#64748b" }}>Applicant Name:</span>
-                    <strong style={{ color: "#0f172a" }}>{form.fullName}</strong>
+                <div style={{ marginBottom: "24px" }}>
+                  <div style={{ fontSize: "14px", fontWeight: "700", color: "#0d9488", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Step 10</div>
+                  <h3 style={{ fontSize: "24px", fontWeight: "800", color: "#0f172a", marginBottom: "8px" }}>Review Application & Confirm Submission</h3>
+                  <p style={{ color: "#64748b", fontSize: "15px" }}>Please review your information carefully before submitting your Aswesuma application.</p>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "32px" }}>
+                  {/* Card 1 */}
+                  <div style={{ border: "1px solid #e2e8f0", borderRadius: "12px", padding: "20px", background: "white" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid #f1f5f9", paddingBottom: "12px" }}>
+                      <h4 style={{ fontSize: "15px", fontWeight: "700", color: "#0f172a", margin: 0 }}>1. Applicant Information</h4>
+                      <button type="button" onClick={() => setCurrentStep(1)} style={{ background: "none", border: "none", color: "#0d9488", cursor: "pointer" }}><i className="fa-solid fa-pen"></i></button>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "13px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Full Name:</span> <strong>{form.fullName || "THARUSHIKA JAYASUNDARA"}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>NIC Number:</span> <strong>{form.nic || "200223003053"}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Gender:</span> <strong>{form.gender || "Female"}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Mobile Phone:</span> <strong>{form.mobile || "+94786220131"}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Province & District:</span> <strong>{form.province}, {form.district}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>DS & GN Division:</span> <strong>{form.dsDivision} / {form.gnDivision}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Permanent Address:</span> <strong style={{ textAlign: "right" }}>{form.address}</strong></div>
+                    </div>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "14px" }}>
-                    <span style={{ color: "#64748b" }}>NIC:</span>
-                    <strong>{form.nic}</strong>
+
+                  {/* Card 2 */}
+                  <div style={{ border: "1px solid #e2e8f0", borderRadius: "12px", padding: "20px", background: "white" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid #f1f5f9", paddingBottom: "12px" }}>
+                      <h4 style={{ fontSize: "15px", fontWeight: "700", color: "#0f172a", margin: 0 }}>2. Household & Programme</h4>
+                      <button type="button" onClick={() => setCurrentStep(2)} style={{ background: "none", border: "none", color: "#0d9488", cursor: "pointer" }}><i className="fa-solid fa-pen"></i></button>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "13px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Total Members:</span> <strong>{form.totalMembers || 4}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Application Status:</span> <strong>{form.isNewApplicant === "Yes" ? "New Applicant" : "Existing"}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Existing Welfare:</span> <strong>{form.currentlyReceivingWelfare === "Yes" ? "Samurdhi" : "No"}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Waiting List:</span> <strong>{form.onWaitingList === "Yes" ? "Yes" : "No"}</strong></div>
+                    </div>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "14px" }}>
-                    <span style={{ color: "#64748b" }}>Family Size / Children:</span>
-                    <strong>{form.totalMembers} Members ({form.childrenBelow15} Children)</strong>
+
+                  {/* Card 3 */}
+                  <div style={{ border: "1px solid #e2e8f0", borderRadius: "12px", padding: "20px", background: "white" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid #f1f5f9", paddingBottom: "12px" }}>
+                      <h4 style={{ fontSize: "15px", fontWeight: "700", color: "#0f172a", margin: 0 }}>3 & 4. Education & Health</h4>
+                      <button type="button" onClick={() => setCurrentStep(3)} style={{ background: "none", border: "none", color: "#0d9488", cursor: "pointer" }}><i className="fa-solid fa-pen"></i></button>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "13px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Head Education:</span> <strong>{form.headEducation || "G.C.E. A/L"}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>School Attendance:</span> <strong>{form.childrenSchoolAttendance || "All Attend Regularly"}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Disabilities Count:</span> <strong>{form.disabilitiesCount || 0}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Chronic Illness Count:</span> <strong>{form.chronicIllnessCount || 0}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Bedridden Elderly:</span> <strong>{form.bedriddenCount || 0}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Dependent Elderly:</span> <strong>{form.dependentElderlyCount || 0}</strong></div>
+                    </div>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "14px" }}>
-                    <span style={{ color: "#64748b" }}>Monthly Income / Expenses:</span>
-                    <strong>Rs. {Number(form.estimatedMonthlyIncome).toLocaleString()} / Rs. {Number(form.regularMonthlyExpenses).toLocaleString()}</strong>
+
+                  {/* Card 4 */}
+                  <div style={{ border: "1px solid #e2e8f0", borderRadius: "12px", padding: "20px", background: "white" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid #f1f5f9", paddingBottom: "12px" }}>
+                      <h4 style={{ fontSize: "15px", fontWeight: "700", color: "#0f172a", margin: 0 }}>5 & 6. Economic Level & Assets</h4>
+                      <button type="button" onClick={() => setCurrentStep(5)} style={{ background: "none", border: "none", color: "#0d9488", cursor: "pointer" }}><i className="fa-solid fa-pen"></i></button>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "13px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Primary Livelihood:</span> <strong>{form.primaryLivelihood || "Agriculture"}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Monthly Income:</span> <strong>Rs. {Number(form.estimatedMonthlyIncome || 35000).toLocaleString()}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Monthly Expenses:</span> <strong>Rs. {Number(form.regularMonthlyExpenses || 30000).toLocaleString()}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Electricity Consumption:</span> <strong>{form.averageMonthlyElectricityKwh || 45} kWh</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Vehicles Owned:</span> <strong>{form.motorVehicles || "Motorcycle"}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Durables Owned:</span> <strong>{form.consumerDurables || "Refrigerator, Television"}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Land Ownership:</span> <strong>Agri: {form.hasAgriculturalLand || "Yes"}, Res: {form.hasResidentialLand || "Yes"}</strong></div>
+                    </div>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "14px" }}>
-                    <span style={{ color: "#64748b" }}>Disbursement Bank:</span>
-                    <strong>{form.bankName} (******{form.accountNumber.slice(-4)})</strong>
+
+                  {/* Card 5 */}
+                  <div style={{ border: "1px solid #e2e8f0", borderRadius: "12px", padding: "20px", background: "white" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid #f1f5f9", paddingBottom: "12px" }}>
+                      <h4 style={{ fontSize: "15px", fontWeight: "700", color: "#0f172a", margin: 0 }}>7 & 8. Housing & Family Demography</h4>
+                      <button type="button" onClick={() => setCurrentStep(7)} style={{ background: "none", border: "none", color: "#0d9488", cursor: "pointer" }}><i className="fa-solid fa-pen"></i></button>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "13px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>House Ownership:</span> <strong>{form.houseOwnership || "Owned"}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Roof / Wall / Floor:</span> <strong>{form.roofMaterial || "Tile"} / {form.wallMaterial || "Brick"} / {form.floorMaterial || "Cement"}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Safe Water & Toilet:</span> <strong>Water: {form.accessSafeDrinkingWater || "Yes"}, Toilet: {form.accessPrivateSanitaryToilet || "Yes"}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Children {'<'} 15:</span> <strong>{form.childrenBelow15 || 1}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Working-Age (15-64):</span> <strong>{form.workingAgeMembers || 2}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Adults {'>'} 65:</span> <strong>{form.adultsOver65 || 1}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Female Head:</span> <strong>{form.femaleHeadedHousehold || "No"}</strong></div>
+                    </div>
+                  </div>
+
+                  {/* Card 6 */}
+                  <div style={{ border: "1px solid #e2e8f0", borderRadius: "12px", padding: "20px", background: "white" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid #f1f5f9", paddingBottom: "12px" }}>
+                      <h4 style={{ fontSize: "15px", fontWeight: "700", color: "#0f172a", margin: 0 }}>9. Banking Information</h4>
+                      <button type="button" onClick={() => setCurrentStep(9)} style={{ background: "none", border: "none", color: "#0d9488", cursor: "pointer" }}><i className="fa-solid fa-pen"></i></button>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "13px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Bank Name:</span> <strong>{form.bankName || "Sampath Bank"}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Branch:</span> <strong>{form.branchCode || "Gampaha (042)"}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Account Number:</span> <strong>{form.accountNumber ? `******${form.accountNumber.slice(-4)}` : "******6789"}</strong></div>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Account Holder:</span> <strong>{form.accountHolderName || "THARUSHIKA JAYASUNDARA"}</strong></div>
+                    </div>
                   </div>
                 </div>
 
-                <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", padding: "14px", borderRadius: "8px", color: "#1e40af", fontSize: "13px", marginBottom: "20px" }}>
-                  <i className="fa-solid fa-lock" style={{ marginRight: "6px" }}></i>
-                  Submitting will evaluate your multi-dimensional PMT poverty index and generate a cryptographic Zero-PII audit record.
+                <div style={{ background: "#f8fafc", padding: "16px", borderRadius: "8px", border: "1px solid #e2e8f0", display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
+                  <input type="checkbox" id="confirmData" style={{ width: "20px", height: "20px", cursor: "pointer" }} />
+                  <label htmlFor="confirmData" style={{ fontSize: "14px", color: "#475569", fontWeight: "600", cursor: "pointer" }}>
+                    I confirm that the information provided is accurate to the best of my knowledge.
+                  </label>
                 </div>
               </div>
             )}
@@ -587,9 +676,9 @@ export default function WelfareApplication() {
                   type="button"
                   onClick={handleSubmit}
                   disabled={isLoading}
-                  style={{ background: "var(--success)", color: "white", border: "none", padding: "14px 32px", borderRadius: "8px", fontWeight: "bold", cursor: isLoading ? "not-allowed" : "pointer", fontSize: "15px" }}
+                  style={{ background: "#0d9488", color: "white", border: "none", padding: "14px 32px", borderRadius: "8px", fontWeight: "bold", cursor: isLoading ? "not-allowed" : "pointer", fontSize: "15px" }}
                 >
-                  {isLoading ? "Running PMT Engine..." : "Submit & Run Assessment"}
+                  {isLoading ? "Submitting..." : "Submit Aswesuma Application →"}
                 </button>
               )}
             </div>
