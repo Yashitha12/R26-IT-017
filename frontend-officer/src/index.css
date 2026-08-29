@@ -55,11 +55,7 @@ body {
 }
 
 #root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
+  width: 100%;
   min-height: 100svh;
   display: flex;
   flex-direction: column;
@@ -108,4 +104,71 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+}
+
+/* ============== NEW UI THEME CLASSES ============== */
+.theme-sidebar {
+  background: linear-gradient(rgb(31, 41, 51) 0%, rgb(22, 48, 64) 60%, rgba(133, 212, 190, 0.133) 100%) !important;
+  color: #fff !important;
+  border-right: none !important;
+}
+
+.theme-sidebar .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7) !important;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.theme-sidebar .brand-title,
+.theme-sidebar .brand-subtitle {
+  color: #fff !important;
+}
+
+.theme-sidebar .nav-item {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.theme-sidebar .nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+}
+
+.theme-sidebar .nav-item.active {
+  background-color: rgba(133, 212, 190, 0.2) !important;
+  color: #fff !important;
+}
+
+.theme-sidebar .profile-widget {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.theme-sidebar .profile-widget span {
+  color: #fff !important;
+}
+
+.theme-card-gradient {
+  background: linear-gradient(135deg, rgb(133, 212, 190), rgb(31, 41, 51)) !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+.theme-card-gradient h2, 
+.theme-card-gradient h3, 
+.theme-card-gradient p, 
+.theme-card-gradient span,
+.theme-card-gradient div {
+  color: #fff !important;
 }

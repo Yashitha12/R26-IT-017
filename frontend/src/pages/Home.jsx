@@ -21,7 +21,7 @@ export default function Home() {
       <main className="content-container">
         
         {/* Purple Balance Banner */}
-        <section style={{ background: 'linear-gradient(90deg, var(--primary), var(--primary-dark))', borderRadius: 'var(--radius-xl)', padding: '32px', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', boxShadow: 'var(--shadow-md)' }}>
+        <section className="theme-card-gradient" style={{ borderRadius: 'var(--radius-xl)', padding: '64px 48px', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', boxShadow: 'var(--shadow-md)' }}>
           <div>
             <div style={{ fontSize: '14px', opacity: 0.9 }}>Total Balance</div>
             <div style={{ fontSize: '36px', fontWeight: 'bold', margin: '4px 0' }}>Rs. 12,500</div>
@@ -41,8 +41,8 @@ export default function Home() {
 
         {/* Quick Actions */}
         <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '16px' }}>Quick Actions</h3>
-        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '32px' }}>
-          <div onClick={() => navigate("/loan-programs")} style={{ background: 'white', borderRadius: '16px', padding: '24px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', boxShadow: 'var(--shadow-sm)' }}>
+        <section style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '32px' }}>
+          <div onClick={() => navigate("/loan-programs")} style={{ background: 'white', borderRadius: '16px', padding: '24px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', aspectRatio: '1 / 1', cursor: 'pointer', boxShadow: 'var(--shadow-sm)' }}>
             <div style={{ background: 'var(--primary)', color: 'white', width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
               <i className="fa-solid fa-chart-line" style={{ fontSize: '20px' }}></i>
             </div>
@@ -50,7 +50,7 @@ export default function Home() {
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Quick funding</div>
           </div>
 
-          <div onClick={() => navigate("/welfare")} style={{ background: 'white', borderRadius: '16px', padding: '24px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', boxShadow: 'var(--shadow-sm)' }}>
+          <div onClick={() => navigate("/welfare")} style={{ background: 'white', borderRadius: '16px', padding: '24px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', aspectRatio: '1 / 1', cursor: 'pointer', boxShadow: 'var(--shadow-sm)' }}>
             <div style={{ background: 'var(--success)', color: 'white', width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
               <i className="fa-solid fa-gift" style={{ fontSize: '20px' }}></i>
             </div>
@@ -58,15 +58,15 @@ export default function Home() {
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Government aid</div>
           </div>
 
-          <div onClick={() => navigate("/wallet")} style={{ background: 'white', borderRadius: '16px', padding: '24px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', boxShadow: 'var(--shadow-sm)' }}>
-            <div style={{ background: 'var(--secondary)', color: 'white', width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+          <div onClick={() => navigate("/wallet")} style={{ background: 'white', borderRadius: '16px', padding: '24px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', aspectRatio: '1 / 1', cursor: 'pointer', boxShadow: 'var(--shadow-sm)' }}>
+            <div style={{ background: 'var(--info)', color: 'white', width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
               <i className="fa-solid fa-wallet" style={{ fontSize: '20px' }}></i>
             </div>
             <div style={{ fontWeight: 'bold', fontSize: '14px' }}>My Wallet</div>
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>View balance</div>
           </div>
 
-          <div onClick={() => navigate("/profile")} style={{ background: 'white', borderRadius: '16px', padding: '24px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', boxShadow: 'var(--shadow-sm)' }}>
+          <div onClick={() => navigate("/profile")} style={{ background: 'white', borderRadius: '16px', padding: '24px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', aspectRatio: '1 / 1', cursor: 'pointer', boxShadow: 'var(--shadow-sm)' }}>
             <div style={{ background: 'var(--warning)', color: 'white', width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
               <i className="fa-solid fa-user" style={{ fontSize: '20px' }}></i>
             </div>
@@ -118,29 +118,30 @@ export default function Home() {
           </div>
 
           {/* Right Column: AI & Stats */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4" style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
             
-            <div className="card" style={{ padding: '20px' }}>
-              <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Active Loans</div>
-              <div style={{ fontSize: '24px', fontWeight: 'bold', margin: '4px 0' }}>1</div>
-              <div style={{ fontSize: '12px', color: 'var(--accent)' }}>Rs. 150,000 outstanding</div>
-            </div>
-
-            <div className="card" style={{ padding: '20px' }}>
-              <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Welfare Programs</div>
-              <div style={{ fontSize: '24px', fontWeight: 'bold', margin: '4px 0' }}>1</div>
-              <div style={{ fontSize: '12px', color: 'var(--success)' }}>Monthly Samurdhi active</div>
-            </div>
-
-            <div onClick={() => navigate("/ai-chat")} style={{ background: 'var(--accent)', borderRadius: '16px', padding: '24px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', marginTop: 'auto' }}>
-              <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                <i className="fa-regular fa-comment-dots" style={{ fontSize: '24px' }}></i>
-                <div>
-                  <div style={{ fontWeight: 'bold', fontSize: '14px' }}>Ask AI Assistant</div>
-                  <div style={{ fontSize: '12px', opacity: 0.9 }}>Get instant help</div>
-                </div>
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <div className="card" style={{ padding: '20px', flex: 1, textAlign: 'center' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Active Loans</div>
+                <div style={{ fontSize: '24px', fontWeight: 'bold', margin: '4px 0' }}>1</div>
+                <div style={{ fontSize: '12px', color: 'var(--accent)' }}>Rs. 150,000 outstanding</div>
               </div>
-              <i className="fa-solid fa-chevron-right" style={{ fontSize: '12px' }}></i>
+
+              <div className="card" style={{ padding: '20px', flex: 1, textAlign: 'center' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Welfare Programs</div>
+                <div style={{ fontSize: '24px', fontWeight: 'bold', margin: '4px 0' }}>1</div>
+                <div style={{ fontSize: '12px', color: 'var(--success)' }}>Monthly Samurdhi active</div>
+              </div>
+            </div>
+
+            <div className="theme-card-gradient" style={{ borderRadius: '16px', padding: '24px', color: 'white', display: 'flex', flexDirection: 'column', gap: '16px', marginTop: 'auto' }}>
+              <div>
+                <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px' }}>Ask AI Assistant</div>
+                <div style={{ fontSize: '13px', opacity: 0.9 }}>Get instant help with loans, welfare & services</div>
+              </div>
+              <button onClick={() => navigate("/ai-chat")} style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '8px', color: 'white', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s' }}>
+                Chat Now &rarr;
+              </button>
             </div>
           </div>
         </div>

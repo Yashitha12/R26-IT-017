@@ -131,8 +131,7 @@ export default function LoanResult() {
             </div>
 
             {/* Blockchain Action */}
-            {!isRejected && (
-              <div style={{ marginTop: 'auto', borderTop: '1px solid var(--border)', paddingTop: '32px' }}>
+            <div style={{ marginTop: 'auto', borderTop: '1px solid var(--border)', paddingTop: '32px' }}>
                 {!txReceipt ? (
                   <div style={{ display: 'flex', gap: '16px' }}>
                     <button 
@@ -168,15 +167,12 @@ export default function LoanResult() {
                     </button>
                   </div>
                 )}
-              </div>
-            )}
-            
+            </div>
           </div>
 
           {/* Right Panel: Final Offer Terms */}
-          {!isRejected && (
-            <div style={{ height: 'fit-content', position: 'sticky', top: '100px' }}>
-              <div style={{ background: 'var(--primary-light)', borderRadius: 'var(--radius-lg)', padding: '40px 32px', border: '1px solid #d8b4fe' }}>
+          <div style={{ height: 'fit-content', position: 'sticky', top: '100px' }}>
+            <div style={{ background: 'var(--primary-light)', borderRadius: 'var(--radius-lg)', padding: '40px 32px', border: '1px solid #d8b4fe' }}>
                 <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', letterSpacing: '0.5px', marginBottom: '24px' }}>FINAL APPROVED TERMS</div>
                 
                 <div style={{ marginBottom: '24px' }}>
@@ -200,9 +196,8 @@ export default function LoanResult() {
                     <span style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{application?.interest_rate || 12}% APR</span>
                   </div>
                 </div>
-              </div>
             </div>
-          )}
+          </div>
 
         </div>
       </main>

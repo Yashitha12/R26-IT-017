@@ -4,14 +4,14 @@ import Header from "../components/Header";
 
 export default function Wallet() {
   const navigate = useNavigate();
-  const [activeLoans, setActiveLoans] = useState([]);
+  const [loans, setLoans] = useState([]);
 
   useEffect(() => {
     fetch("http://127.0.0.1:8000/applications/all")
       .then(res => res.json())
       .then(data => {
-        const approved = (data.loans || []).filter(l => l.status === 'Active');
-        setActiveLoans(approved);
+        // Show all loans so user can see Pending and Rejected status as well
+        setLoans(data.loans || []);
       })
       .catch(console.error);
   }, []);
@@ -26,7 +26,7 @@ export default function Wallet() {
       <main className="content-container flex flex-col gap-8">
         
         {/* Purple Balance Banner */}
-        <section style={{ background: 'linear-gradient(90deg, var(--primary), var(--primary-dark))', borderRadius: 'var(--radius-xl)', padding: '32px', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', boxShadow: 'var(--shadow-md)', position: 'relative' }}>
+        <section className="theme-card-gradient" style={{ borderRadius: 'var(--radius-xl)', padding: '32px', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', boxShadow: 'var(--shadow-md)', position: 'relative' }}>
           <div>
             <div style={{ fontSize: '14px', opacity: 0.9 }}>Total Balance</div>
             <div style={{ fontSize: '36px', fontWeight: 'bold', margin: '4px 0 32px 0' }}>Rs. 12,500</div>
@@ -52,20 +52,43 @@ export default function Wallet() {
           
           {/* Active Loans */}
           <div className="card" style={{ padding: '32px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '24px', color: 'var(--text-primary)' }}>Active Loans</h3>
+            <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '24px', color: 'var(--text-primary)' }}>My Loans</h3>
             
-            {activeLoans.length === 0 ? (
-              <p style={{ color: 'var(--text-secondary)' }}>No active loans.</p>
+            {loans.length === 0 ? (
+              <p style={{ color: 'var(--text-secondary)' }}>No loans found.</p>
             ) : (
-              activeLoans.map((loan, index) => (
-                <div key={index} style={{ marginBottom: '24px', borderBottom: index < activeLoans.length - 1 ? '1px solid var(--border)' : 'none', paddingBottom: index < activeLoans.length - 1 ? '24px' : '0' }}>
-                  <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
-                    <div style={{ background: 'var(--primary-light)', color: 'var(--accent)', width: '40px', height: '40px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <i className="fa-solid fa-chart-line"></i>
+              loans.map((loan, index) => {
+                let statusColor = "var(--info)";
+                let statusBg = "var(--primary-light)";
+                let statusIcon = "fa-clock";
+                let statusText = loan.status;
+                
+                if (loan.status === 'Active' || loan.status === 'Approved') {
+                  statusColor = "var(--success)";
+                  statusBg = "#dcfce7";
+                  statusIcon = "fa-check";
+                  statusText = "Approved";
+                } else if (loan.status === 'Rejected') {
+                  statusColor = "var(--error, #ef4444)";
+                  statusBg = "#fee2e2";
+                  statusIcon = "fa-xmark";
+                } else if (loan.status === 'Pending') {
+                  statusColor = "#f59e0b"; // warning orange
+                  statusBg = "#fef3c7";
+                }
+
+                return (
+                <div key={index} style={{ marginBottom: '24px', borderBottom: index < loans.length - 1 ? '1px solid var(--border)' : 'none', paddingBottom: index < loans.length - 1 ? '24px' : '0' }}>
+                  <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', alignItems: 'flex-start' }}>
+                    <div style={{ background: statusBg, color: statusColor, width: '40px', height: '40px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <i className={`fa-solid ${statusIcon}`}></i>
                     </div>
-                    <div>
-                      <h4 style={{ fontWeight: 'bold', fontSize: '14px' }}>{loan.loan_type}</h4>
-                      <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Approved via Blockchain</p>
+                    <div style={{ flex: 1 }}>
+                      <h4 style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '4px' }}>{loan.loan_type}</h4>
+                      <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{loan.consensus_status || "Processing..."}</p>
+                    </div>
+                    <div style={{ padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold', background: statusBg, color: statusColor }}>
+                      {statusText}
                     </div>
                   </div>
 
@@ -84,7 +107,8 @@ export default function Wallet() {
                     </div>
                   </div>
                 </div>
-              ))
+                );
+              })
             )}
           </div>
 

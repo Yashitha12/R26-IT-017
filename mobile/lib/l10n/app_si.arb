@@ -1,0 +1,11 @@
+{
+  "@@locale": "si",
+  "welcome": "SmartGrama වෙත සාදරයෙන් පිළිගනිමු",
+  "login": "පිවිසෙන්න",
+  "register": "ලියාපදිංචි වන්න",
+  "profile": "පැතිකඩ",
+  "logout": "ඉවත් වන්න",
+  "language": "භාෂාව",
+  "dashboard": "උපකරණ පුවරුව",
+  "smartgrama": "ස්මාර්ට්ග්‍රාම"
+}

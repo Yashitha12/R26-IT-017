@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../api_service.dart';
 import 'home_screen.dart';
 import 'register_screen.dart';
 import 'identity_kyc_screen.dart';
+import '../main.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -49,8 +51,31 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          DropdownButton<String>(
+            value: Localizations.localeOf(context).languageCode,
+            underline: SizedBox(),
+            icon: Icon(Icons.language, color: Color(0xFF1D4ED8)),
+            onChanged: (String? newValue) {
+              if (newValue != null) {
+                SmartGramaApp.setLocale(context, Locale(newValue, ''));
+              }
+            },
+            items: const [
+              DropdownMenuItem(value: 'en', child: Text('English')),
+              DropdownMenuItem(value: 'si', child: Text('සිංහල')),
+            ],
+          ),
+          SizedBox(width: 16),
+        ],
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: EdgeInsets.all(24),
@@ -61,8 +86,8 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 Icon(Icons.account_balance, size: 80, color: Color(0xFF1D4ED8)),
                 SizedBox(height: 16),
-                Text('SmartGrama', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF1D4ED8))),
-                Text('Microfinance & Welfare', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                Text(l10n.smartgrama, style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF1D4ED8))),
+                Text(l10n.welcome, style: TextStyle(fontSize: 16, color: Colors.grey, textAlign: TextAlign.center)),
                 SizedBox(height: 48),
                 
                 TextFormField(
@@ -87,7 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: isLoading ? null : _login,
                     child: isLoading 
                       ? CircularProgressIndicator(color: Colors.white)
-                      : Text('Access Portal', style: TextStyle(fontSize: 18)),
+                      : Text(l10n.login, style: TextStyle(fontSize: 18)),
                   ),
                 ),
                 SizedBox(height: 24),
@@ -99,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       MaterialPageRoute(builder: (context) => RegisterScreen()),
                     );
                   },
-                  child: Text('Don\'t have an account? Register here', style: TextStyle(color: Color(0xFF1D4ED8))),
+                  child: Text(l10n.register, style: TextStyle(color: Color(0xFF1D4ED8))),
                 )
               ],
             ),

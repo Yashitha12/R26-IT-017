@@ -1,18 +1,49 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'screens/login_screen.dart';
 
 void main() {
   runApp(const SmartGramaApp());
 }
 
-class SmartGramaApp extends StatelessWidget {
+class SmartGramaApp extends StatefulWidget {
   const SmartGramaApp({super.key});
+
+  static void setLocale(BuildContext context, Locale newLocale) {
+    _SmartGramaAppState? state = context.findAncestorStateOfType<_SmartGramaAppState>();
+    state?.setLocale(newLocale);
+  }
+
+  @override
+  State<SmartGramaApp> createState() => _SmartGramaAppState();
+}
+
+class _SmartGramaAppState extends State<SmartGramaApp> {
+  Locale _locale = const Locale('en');
+
+  void setLocale(Locale locale) {
+    setState(() {
+      _locale = locale;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'SmartGrama',
       debugShowCheckedModeBanner: false,
+      locale: _locale,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en', ''),
+        Locale('si', ''),
+      ],
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF1D4ED8),
@@ -21,7 +52,7 @@ class SmartGramaApp extends StatelessWidget {
           tertiary: const Color(0xFF10B981), // Green
         ),
         useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFFF0FDF4).withOpacity(0.3), // Very light teal/green tint background like screenshots
+        scaffoldBackgroundColor: const Color(0xFFF0FDF4).withOpacity(0.3),
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
           elevation: 0,
@@ -65,3 +96,4 @@ class SmartGramaApp extends StatelessWidget {
     );
   }
 }
+

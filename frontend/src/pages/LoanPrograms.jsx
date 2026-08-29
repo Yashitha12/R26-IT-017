@@ -47,7 +47,7 @@ export default function LoanPrograms() {
       <main className="content-container flex flex-col gap-8">
         
         {/* Blue Hero Banner */}
-        <section style={{ background: 'var(--accent)', borderRadius: 'var(--radius-xl)', padding: '40px', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: 'var(--shadow-md)' }}>
+        <section className="theme-card-gradient" style={{ borderRadius: 'var(--radius-xl)', padding: '40px', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: 'var(--shadow-md)' }}>
           <div>
             <div style={{ background: 'rgba(255,255,255,0.2)', width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
               <i className="fa-solid fa-chart-line" style={{ fontSize: '24px' }}></i>
@@ -62,30 +62,28 @@ export default function LoanPrograms() {
         ) : (
           <>
             {/* Bank Selection */}
-            <div style={{ display: 'flex', gap: '16px', borderBottom: '2px solid var(--border)', paddingBottom: '16px', overflowX: 'auto' }}>
-              {banks.map(bank => (
-                <button 
-                  key={bank.id}
-                  onClick={() => { 
-                    setSelectedBankId(bank.id); 
-                    const progs = allPrograms.filter(p => p.bank_id === bank.id);
-                    if(progs.length > 0) setSelectedProductId(progs[0].id);
-                  }}
-                  style={{ 
-                    padding: '12px 24px', 
-                    borderRadius: '30px', 
-                    fontWeight: 'bold', 
-                    fontSize: '14px', 
-                    border: 'none', 
-                    cursor: 'pointer', 
-                    whiteSpace: 'nowrap',
-                    background: selectedBankId === bank.id ? 'var(--accent)' : 'transparent', 
-                    color: selectedBankId === bank.id ? 'white' : 'var(--text-secondary)' 
-                  }}
-                >
-                  {bank.name}
-                </button>
-              ))}
+            <div style={{ marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '16px' }}>Select Financial Institution</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '16px' }}>
+                {banks.map(bank => (
+                  <div 
+                    key={bank.id}
+                    className={`bank-card ${selectedBankId === bank.id ? 'selected' : ''}`}
+                    onClick={() => { 
+                      setSelectedBankId(bank.id); 
+                      const progs = allPrograms.filter(p => p.bank_id === bank.id);
+                      if(progs.length > 0) setSelectedProductId(progs[0].id);
+                    }}
+                  >
+                    <div className="bank-icon-placeholder">
+                      <i className="fa-solid fa-building-columns"></i>
+                    </div>
+                    <span style={{ fontWeight: 'bold', fontSize: '14px', color: selectedBankId === bank.id ? 'var(--primary)' : 'var(--text-primary)' }}>
+                      {bank.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Products Grid */}

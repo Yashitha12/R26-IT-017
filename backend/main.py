@@ -532,7 +532,7 @@ banks_db = [
 
 loan_programs_db = [
     {
-        "id": "lp1",
+        "id": "below_25000",
         "bank_id": "b1",
         "title": "Below Rs. 25,000 Micro-Loan",
         "subtitle": "Quick emergency micro-credit with minimal documentation",
@@ -544,7 +544,7 @@ loan_programs_db = [
         "features": ["No collateral required", "Approval within 24 hours", "Repayment up to 24 months"]
     },
     {
-        "id": "lp2",
+        "id": "above_25000",
         "bank_id": "b1",
         "title": "Above Rs. 25,000 Development Loan",
         "subtitle": "Affordable capital financing for local micro-enterprises",
@@ -556,7 +556,7 @@ loan_programs_db = [
         "features": ["Business plan required", "Group guarantee options"]
     },
     {
-        "id": "lp3",
+        "id": "long_term",
         "bank_id": "b1",
         "title": "Long Term Investment Loan",
         "subtitle": "Extended term capital financing for equipment & asset building",
@@ -568,7 +568,7 @@ loan_programs_db = [
         "features": ["Asset backed security", "Grace period available"]
     },
     {
-        "id": "lp4",
+        "id": "epf_loan",
         "bank_id": "b1",
         "title": "EPF Backed Secured Loan",
         "subtitle": "Low rate credit secured against your employee provident fund",
@@ -580,7 +580,7 @@ loan_programs_db = [
         "features": ["Directly secured by EPF", "Fast processing"]
     },
     {
-        "id": "lp5",
+        "id": "lakjaya",
         "bank_id": "b2",
         "title": "Lak Jaya Microloan (ලක් ජය)",
         "subtitle": "Livelihood & cottage industry micro-capital",
@@ -592,7 +592,7 @@ loan_programs_db = [
         "features": ["Designed for low-income entrepreneurs", "Group guarantee acceptance", "No hidden processing fees"]
     },
     {
-        "id": "lp6",
+        "id": "lak_wasana",
         "bank_id": "b2",
         "title": "Lak Wasana Business Loan (ලක් වාසනා)",
         "subtitle": "Enterprise expansion capital for established micro-businesses",
@@ -604,7 +604,7 @@ loan_programs_db = [
         "features": ["Business registration required", "Flexible repayment schedules"]
     },
     {
-        "id": "lp7",
+        "id": "liya_sawiya",
         "bank_id": "b2",
         "title": "Liya Sawiya Women Loan (ලිය සවිය)",
         "subtitle": "Special subsidized micro-finance empowering female entrepreneurs",
@@ -616,7 +616,7 @@ loan_programs_db = [
         "features": ["Female applicants only", "Skill development training included"]
     },
     {
-        "id": "lp8",
+        "id": "jiwanopaya",
         "bank_id": "b2",
         "title": "Jiwanopaya Livelihood Loan (ජීවනෝපාය)",
         "subtitle": "Farming, poultry, and home-based craft enhancement loan",
@@ -628,7 +628,7 @@ loan_programs_db = [
         "features": ["No collateral", "Quick disbursement"]
     },
     {
-        "id": "lp9",
+        "id": "chakrya",
         "bank_id": "b2",
         "title": "Chakrya Revolving Loan (චක්රීය ණය)",
         "subtitle": "Rotating community credit fund with ultra-low interest",

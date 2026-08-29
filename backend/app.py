@@ -41,7 +41,7 @@ import re
 # -----------------------------------
 # Translation
 # -----------------------------------
-from deep_translator import GoogleTranslator
+from deep_translator import GoogleTranslator, MyMemoryTranslator
 
 # -----------------------------------
 # RAG Imports
@@ -82,8 +82,14 @@ def translate_to_sinhala_with_glossary(text):
             placeholders[placeholder.strip()] = si_term
             text = pattern.sub(placeholder, text)
             
-    translated = GoogleTranslator(source='en', target='si').translate(text)
-    
+    try:
+        translated = GoogleTranslator(source='en', target='si').translate(text)
+        if translated and ("Error 500" in translated or "That's an error" in translated):
+            raise Exception("GoogleTranslator returned HTML error page")
+    except Exception as e:
+        print(f"GoogleTranslator failed: {e}. Falling back to MyMemoryTranslator.")
+        translated = MyMemoryTranslator(source='en-GB', target='si-LK').translate(text)
+
     for placeholder, si_term in placeholders.items():
         translated = translated.replace(placeholder, si_term)
         
@@ -99,7 +105,13 @@ def translate_to_english_with_glossary(text):
             placeholders[placeholder.strip()] = en_term
             text = text.replace(si_term, placeholder)
             
-    translated = GoogleTranslator(source='auto', target='en').translate(text)
+    try:
+        translated = GoogleTranslator(source='auto', target='en').translate(text)
+        if translated and ("Error 500" in translated or "That's an error" in translated):
+            raise Exception("GoogleTranslator returned HTML error page")
+    except Exception as e:
+        print(f"GoogleTranslator failed: {e}. Falling back to MyMemoryTranslator.")
+        translated = MyMemoryTranslator(source='si-LK', target='en-GB').translate(text)
     
     for placeholder, en_term in placeholders.items():
         translated = translated.replace(placeholder, en_term)
@@ -366,14 +378,15 @@ def process_text(user_message, selected_lang="en-US", use_rag=True):
     if sinhala_mode:
         print(f"[Sinhala detected] Input: {user_message}")
         try:
-            translated_query = GoogleTranslator(
-                source='auto',
-                target='en'
-            ).translate(user_message)
+            translated_query = translate_to_english_with_glossary(user_message)
             print(f"[Translated to English]: {translated_query}")
         except Exception as e:
             print(f"Sinhala -> English translation error: {e}")
-            translated_query = user_message
+            return {
+                "reply": "පරිවර්තන සේවාවේ තාවකාලික දෝෂයක් පවතී. කරුණාකර සුළු මොහොතකින් නැවත උත්සාහ කරන්න.",
+                "language": selected_lang,
+                "rag_used": use_rag
+            }
 
     # 4. RAG Retrieval (if enabled)
     retrieved_context = ""
@@ -395,9 +408,9 @@ def process_text(user_message, selected_lang="en-US", use_rag=True):
             fallback = "I am specifically designed to provide assistance with SmartGrama welfare schemes, micro-loans, eligibility, and profile guidelines. I do not have information on this topic."
             if sinhala_mode:
                 try:
-                    fallback = GoogleTranslator(source='en', target='si').translate(fallback)
+                    fallback = translate_to_sinhala_with_glossary(fallback)
                 except Exception:
-                    pass
+                    fallback = "මට උදව් කළ හැක්කේ SmartGrama සුබසාධන යෝජනා ක්‍රම සහ ක්ෂුද්‍ර ණය සම්බන්ධයෙන් පමණි. මෙම මාතෘකාව පිළිබඳ තොරතුරු මා සතුව නොමැත."
             return {"reply": fallback, "language": selected_lang, "rag_used": use_rag}
 
     # 5. Response Generation via LLM
@@ -420,6 +433,7 @@ def process_text(user_message, selected_lang="en-US", use_rag=True):
             reply = translate_to_sinhala_with_glossary(reply)
         except Exception as e:
             print(f"English -> Sinhala translation error: {e}")
+            reply = "පිළිතුර සකස් කළ නමුත් පරිවර්තනය කිරීමේදී දෝෂයක් ඇති විය. කරුණාකර නැවත උත්සාහ කරන්න."
 
     return {
         "reply": reply,

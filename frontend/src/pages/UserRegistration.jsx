@@ -1,11 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useApp } from '../context/AppContext';
 import { PresetsBar } from '../components/common/PresetsBar';
 import * as api from '../services/api';
 
 export const UserRegistration = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const {
     currentRegStep,
     setCurrentRegStep,
@@ -103,8 +105,8 @@ export const UserRegistration = () => {
         <div className="figma-card" style={{ background: '#ffffff', borderRadius: '16px', padding: '36px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.3)' }}>
           {/* Card Header */}
           <div className="figma-header">
-            <h1 className="form-main-title">Create Your SmartGrama Account</h1>
-            <p className="form-step-subtitle">Step {currentRegStep} of 4</p>
+            <h1 className="form-main-title">{t('create_account')}</h1>
+            <p className="form-step-subtitle">{t('step_of', { current: currentRegStep, total: 4 })}</p>
           </div>
 
           {/* Stepper Navigation */}
@@ -142,10 +144,10 @@ export const UserRegistration = () => {
             {/* STEP 1: Personal Details */}
             {currentRegStep === 1 && (
               <div className="step-section active">
-                <h2 className="section-heading">Personal Details</h2>
+                <h2 className="section-heading">{t('personal_details')}</h2>
 
                 <div className="figma-group">
-                  <label htmlFor="inpFullName">Full Name *</label>
+                  <label htmlFor="inpFullName">{t('full_name')}</label>
                   <input
                     type="text"
                     id="inpFullName"
@@ -157,7 +159,7 @@ export const UserRegistration = () => {
                 </div>
 
                 <div className="figma-group">
-                  <label htmlFor="inpNicNumber">NIC Number (National Identity Card) *</label>
+                  <label htmlFor="inpNicNumber">{t('nic_number')}</label>
                   <input
                     type="text"
                     id="inpNicNumber"
@@ -169,7 +171,7 @@ export const UserRegistration = () => {
                 </div>
 
                 <div className="figma-group">
-                  <label htmlFor="inpDob">Date of Birth</label>
+                  <label htmlFor="inpDob">{t('dob')}</label>
                   <input
                     type="text"
                     id="inpDob"
@@ -181,7 +183,7 @@ export const UserRegistration = () => {
                 </div>
 
                 <div className="figma-group">
-                  <label htmlFor="inpMobile">Mobile Phone *</label>
+                  <label htmlFor="inpMobile">{t('mobile_phone')}</label>
                   <input
                     type="text"
                     id="inpMobile"
@@ -193,7 +195,7 @@ export const UserRegistration = () => {
                 </div>
 
                 <div className="figma-group">
-                  <label htmlFor="inpEmail">Email Address *</label>
+                  <label htmlFor="inpEmail">{t('email_address')}</label>
                   <input
                     type="email"
                     id="inpEmail"
@@ -210,7 +212,7 @@ export const UserRegistration = () => {
                     className="btn-continue"
                     onClick={() => handleNext(1)}
                   >
-                    Continue &rarr;
+                    {t('continue')}
                   </button>
                 </div>
               </div>
@@ -219,10 +221,10 @@ export const UserRegistration = () => {
             {/* STEP 2: Address & GN Division */}
             {currentRegStep === 2 && (
               <div className="step-section active">
-                <h2 className="section-heading">Address &amp; GN Division</h2>
+                <h2 className="section-heading">{t('address_gn')}</h2>
 
                 <div className="figma-group">
-                  <label htmlFor="inpHomeAddress">Home Address *</label>
+                  <label htmlFor="inpHomeAddress">{t('home_address')}</label>
                   <input
                     type="text"
                     id="inpHomeAddress"
@@ -234,7 +236,7 @@ export const UserRegistration = () => {
                 </div>
 
                 <div className="figma-group">
-                  <label htmlFor="inpCity">City</label>
+                  <label htmlFor="inpCity">{t('city')}</label>
                   <input
                     type="text"
                     id="inpCity"
@@ -246,7 +248,7 @@ export const UserRegistration = () => {
                 </div>
 
                 <div className="figma-group">
-                  <label htmlFor="inpDistrict">District</label>
+                  <label htmlFor="inpDistrict">{t('district')}</label>
                   <input
                     type="text"
                     id="inpDistrict"
@@ -258,7 +260,7 @@ export const UserRegistration = () => {
                 </div>
 
                 <div className="figma-group">
-                  <label htmlFor="inpGnDivision">Grama Niladhari Division *</label>
+                  <label htmlFor="inpGnDivision">{t('gn_division')}</label>
                   <input
                     type="text"
                     id="inpGnDivision"
@@ -275,14 +277,14 @@ export const UserRegistration = () => {
                     className="btn-back"
                     onClick={() => handlePrev(2)}
                   >
-                    &larr; Back
+                    {t('back')}
                   </button>
                   <button
                     type="button"
                     className="btn-continue"
                     onClick={() => handleNext(2)}
                   >
-                    Continue &rarr;
+                    {t('continue')}
                   </button>
                 </div>
               </div>
@@ -291,10 +293,10 @@ export const UserRegistration = () => {
             {/* STEP 3: Family & Income */}
             {currentRegStep === 3 && (
               <div className="step-section active">
-                <h2 className="section-heading">Family &amp; Income</h2>
+                <h2 className="section-heading">{t('family_income')}</h2>
 
                 <div className="figma-group">
-                  <label htmlFor="inpFamilySize">Family Size</label>
+                  <label htmlFor="inpFamilySize">{t('family_size')}</label>
                   <input
                     type="number"
                     id="inpFamilySize"
@@ -306,7 +308,7 @@ export const UserRegistration = () => {
                 </div>
 
                 <div className="figma-group">
-                  <label htmlFor="inpNoOfDependents">No of Dependents</label>
+                  <label htmlFor="inpNoOfDependents">{t('dependents')}</label>
                   <input
                     type="number"
                     id="inpNoOfDependents"
@@ -318,7 +320,7 @@ export const UserRegistration = () => {
                 </div>
 
                 <div className="figma-group">
-                  <label htmlFor="inpMonthlyIncome">Monthly Income (Rs.)</label>
+                  <label htmlFor="inpMonthlyIncome">{t('monthly_income')}</label>
                   <input
                     type="number"
                     id="inpMonthlyIncome"
@@ -330,7 +332,7 @@ export const UserRegistration = () => {
                 </div>
 
                 <div className="figma-group">
-                  <label htmlFor="inpMonthlyExpenses">Monthly Expenses (Rs.)</label>
+                  <label htmlFor="inpMonthlyExpenses">{t('monthly_expenses')}</label>
                   <input
                     type="number"
                     id="inpMonthlyExpenses"
@@ -342,7 +344,7 @@ export const UserRegistration = () => {
                 </div>
 
                 <div className="figma-group">
-                  <label htmlFor="inpEmploymentType">Employment Type</label>
+                  <label htmlFor="inpEmploymentType">{t('employment_type')}</label>
                   <input
                     type="text"
                     id="inpEmploymentType"
@@ -359,14 +361,14 @@ export const UserRegistration = () => {
                     className="btn-back"
                     onClick={() => handlePrev(3)}
                   >
-                    &larr; Back
+                    {t('back')}
                   </button>
                   <button
                     type="button"
                     className="btn-continue"
                     onClick={() => handleNext(3)}
                   >
-                    Continue &rarr;
+                    {t('continue')}
                   </button>
                 </div>
               </div>
@@ -375,10 +377,10 @@ export const UserRegistration = () => {
             {/* STEP 4: Bank & Wallet Details */}
             {currentRegStep === 4 && (
               <div className="step-section active">
-                <h2 className="section-heading">Bank &amp; Wallet Details</h2>
+                <h2 className="section-heading">{t('bank_wallet')}</h2>
 
                 <div className="figma-group">
-                  <label htmlFor="inpBankName">Bank Name</label>
+                  <label htmlFor="inpBankName">{t('bank_name')}</label>
                   <input
                     type="text"
                     id="inpBankName"
@@ -390,7 +392,7 @@ export const UserRegistration = () => {
                 </div>
 
                 <div className="figma-group">
-                  <label htmlFor="inpAccountNumber">Account Number</label>
+                  <label htmlFor="inpAccountNumber">{t('account_number')}</label>
                   <input
                     type="text"
                     id="inpAccountNumber"
@@ -402,7 +404,7 @@ export const UserRegistration = () => {
                 </div>
 
                 <div className="figma-group">
-                  <label htmlFor="inpBranch">Branch</label>
+                  <label htmlFor="inpBranch">{t('branch')}</label>
                   <input
                     type="text"
                     id="inpBranch"
@@ -417,7 +419,7 @@ export const UserRegistration = () => {
                 <div className="wallet-info-alert">
                   <div className="info-icon">ⓘ</div>
                   <div className="info-text">
-                    A SmartGrama digital wallet will be created automatically and linked to your bank account upon identity verification
+                    {t('wallet_alert')}
                   </div>
                 </div>
 
@@ -427,14 +429,14 @@ export const UserRegistration = () => {
                     className="btn-back"
                     onClick={() => handlePrev(4)}
                   >
-                    &larr; Back
+                    {t('back')}
                   </button>
                   <button
                     type="button"
                     className="btn-continue btn-proceed-did"
                     onClick={handleCompleteRegistration}
                   >
-                    Complete Registration &amp; Apply for Identity &rarr;
+                    {t('complete_registration')}
                   </button>
                 </div>
               </div>

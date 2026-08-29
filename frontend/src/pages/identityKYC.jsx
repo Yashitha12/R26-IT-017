@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useApp } from '../context/AppContext';
 import * as api from '../services/api';
 
 export const IdentityKYC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const {
     regData,
     activeUserId,
@@ -222,30 +224,30 @@ export const IdentityKYC = () => {
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             <path d="m9 12 2 2 4-4" />
           </svg>
-          SmartGrama Identity Layer
+          {t('identity_layer')}
         </div>
 
-        <h1 className="intro-title">Digital Identity Application &amp; KYC Adjudication</h1>
+        <h1 className="intro-title">{t('digital_identity_app')}</h1>
         <p className="intro-lead">
-          Submit your real-time Face ID and National Identity Card (NIC) to create your verified Decentralized Digital Identity (DID).
+          {t('identity_intro')}
         </p>
 
         {/* Verification Pipeline */}
         <div className="two-steps-callout">
-          <div className="callout-label">Citizen Verification Pipeline:</div>
+          <div className="callout-label">{t('verification_pipeline')}</div>
           <div className="steps-flow-badge">
-            <span className="flow-pill">📝 1. Submit Application</span>
+            <span className="flow-pill">📝 {t('submit_app')}</span>
             <span className="flow-arrow">&rarr;</span>
-            <span className="flow-pill">📷 2. Live Webcam / Selfie</span>
+            <span className="flow-pill">📷 {t('live_webcam')}</span>
             <span className="flow-arrow">&rarr;</span>
-            <span className="flow-pill">🪪 3. Real NIC Document Upload</span>
+            <span className="flow-pill">🪪 {t('real_nic')}</span>
             <span className="flow-arrow">&rarr;</span>
-            <span className="flow-pill highlight">🛡️ 4. Officer Review &amp; Approval</span>
+            <span className="flow-pill highlight">🛡️ {t('officer_review')}</span>
           </div>
         </div>
 
         <p className="intro-officer-note">
-          <strong>Business Rule:</strong> Submitting forms or biometric evidence does <em>not</em> issue a DID. A Digital Identity (DID) is <strong>strictly issued only when an authorized Grama Niladhari Officer compares the selfie against the NIC and records an APPROVED decision</strong>.
+          <strong>{t('business_rule')}</strong> {t('business_rule_desc')}
         </p>
       </div>
 
@@ -255,33 +257,33 @@ export const IdentityKYC = () => {
         <div className="did-panel-card">
           <div className="panel-card-header">
             <div>
-              <h2>1. Inherited Registration Data &amp; Application</h2>
-              <p className="card-subtitle">Zero re-entry: Pre-filled from registration profile</p>
+              <h2>{t('inherited_data')}</h2>
+              <p className="card-subtitle">{t('inherited_desc')}</p>
             </div>
-            <span className="badge-auto-filled">Pre-filled</span>
+            <span className="badge-auto-filled">{t('pre_filled')}</span>
           </div>
 
           <div className="panel-card-body">
             <div className="inherited-data-box">
               <div className="data-grid-2col">
                 <div className="data-item">
-                  <span className="d-label">Full Name</span>
+                  <span className="d-label">{t('full_name')}</span>
                   <strong className="d-val">{regData.fullName}</strong>
                 </div>
                 <div className="data-item">
-                  <span className="d-label">NIC Number</span>
+                  <span className="d-label">{t('nic_number')}</span>
                   <strong className="d-val">{regData.nicNumber}</strong>
                 </div>
                 <div className="data-item">
-                  <span className="d-label">Mobile</span>
+                  <span className="d-label">{t('mobile_phone')}</span>
                   <span className="d-val">{regData.mobile}</span>
                 </div>
                 <div className="data-item">
-                  <span className="d-label">Email</span>
+                  <span className="d-label">{t('email_address')}</span>
                   <span className="d-val">{regData.email}</span>
                 </div>
                 <div className="data-item full">
-                  <span className="d-label">Address &amp; GN Division</span>
+                  <span className="d-label">{t('address_gn')}</span>
                   <span className="d-val">
                     {regData.homeAddress}, {regData.gnDivision} ({regData.district})
                   </span>
@@ -291,7 +293,7 @@ export const IdentityKYC = () => {
 
             <div className="form-row-compact">
               <div className="figma-group flex-1">
-                <label htmlFor="didPreferredLang">Preferred Language</label>
+                <label htmlFor="didPreferredLang">{t('preferred_lang')}</label>
                 <select
                   id="didPreferredLang"
                   className="figma-input form-sm"
@@ -304,7 +306,7 @@ export const IdentityKYC = () => {
                 </select>
               </div>
               <div className="figma-group flex-1">
-                <label htmlFor="didEmergencyContact">Emergency Contact</label>
+                <label htmlFor="didEmergencyContact">{t('emergency_contact')}</label>
                 <input
                   type="text"
                   id="didEmergencyContact"
@@ -328,7 +330,7 @@ export const IdentityKYC = () => {
                 <line x1="16" y1="17" x2="8" y2="17" />
                 <polyline points="10 9 9 9 8 9" />
               </svg>
-              Submit Identity Application (Pending KYC)
+              {t('submit_identity_app')}
             </button>
 
             {appRegistered && (
@@ -357,8 +359,8 @@ export const IdentityKYC = () => {
         <div className="did-panel-card">
           <div className="panel-card-header">
             <div>
-              <h2>2. Submit Biometric &amp; NIC Evidence</h2>
-              <p className="card-subtitle">Live Camera or Real Uploads Supported</p>
+              <h2>{t('submit_evidence')}</h2>
+              <p className="card-subtitle">{t('live_camera_support')}</p>
             </div>
           </div>
 
@@ -368,8 +370,8 @@ export const IdentityKYC = () => {
               <div className="ev-item-card">
                 <div className="ev-header">
                   <div>
-                    <span className="ev-num">Step A</span>
-                    <h3>📷 Live Face ID Selfie</h3>
+                    <span className="ev-num">{t('step_a')}</span>
+                    <h3>{t('live_face_id')}</h3>
                   </div>
                   <span className={`status-pill ${verificationStatus?.facialVerificationStatus?.toLowerCase()}`}>
                     {verificationStatus?.facialVerificationStatus || 'NOT_SUBMITTED'}
@@ -399,7 +401,7 @@ export const IdentityKYC = () => {
                       <div className="avatar-icon">🧑</div>
                     </div>
                   )}
-                  <div className="score-tag">Live Biometric Ready</div>
+                  <div className="score-tag">{t('live_biometric_ready')}</div>
                 </div>
 
                 <canvas ref={canvasRef} style={{ display: 'none' }} width="400" height="300" />
@@ -419,7 +421,7 @@ export const IdentityKYC = () => {
                       style={{ flex: 1 }}
                       onClick={toggleCamera}
                     >
-                      {isCameraActive ? '⏹️ Stop Camera' : '📷 Start Live Camera'}
+                      {isCameraActive ? t('stop_camera') : t('start_camera')}
                     </button>
                     {isCameraActive && (
                       <button
@@ -428,7 +430,7 @@ export const IdentityKYC = () => {
                         style={{ flex: 1, background: '#06b6d4' }}
                         onClick={snapPhoto}
                       >
-                        📸 Snap &amp; Submit
+                        {t('snap_submit')}
                       </button>
                     )}
                   </div>
@@ -439,7 +441,7 @@ export const IdentityKYC = () => {
                       style={{ flex: 1, background: '#334155' }}
                       onClick={() => selfieFileRef.current?.click()}
                     >
-                      📁 Upload Selfie Image
+                      {t('upload_selfie')}
                     </button>
                     <button
                       type="button"
@@ -447,7 +449,7 @@ export const IdentityKYC = () => {
                       style={{ flex: 1, background: '#1e293b', border: '1px solid #475569' }}
                       onClick={handleQuickSampleSelfie}
                     >
-                      ⚡ Quick Sample
+                      {t('quick_sample')}
                     </button>
                   </div>
                 </div>
@@ -457,8 +459,8 @@ export const IdentityKYC = () => {
               <div className="ev-item-card">
                 <div className="ev-header">
                   <div>
-                    <span className="ev-num">Step B</span>
-                    <h3>🪪 Real NIC Document</h3>
+                    <span className="ev-num">{t('step_b')}</span>
+                    <h3>{t('real_nic_doc')}</h3>
                   </div>
                   <span className={`status-pill ${verificationStatus?.documentVerificationStatus?.toLowerCase()}`}>
                     {verificationStatus?.documentVerificationStatus || 'NOT_SUBMITTED'}
@@ -501,7 +503,7 @@ export const IdentityKYC = () => {
                     className="btn-submit-ev btn-doc-theme"
                     onClick={() => nicFileRef.current?.click()}
                   >
-                    📁 Upload Real NIC Photo / Scan
+                    {t('upload_real_nic')}
                   </button>
                   <button
                     type="button"
@@ -509,7 +511,7 @@ export const IdentityKYC = () => {
                     style={{ background: '#1e293b', border: '1px solid #475569' }}
                     onClick={handleQuickSampleNic}
                   >
-                    ⚡ Quick Sample NIC
+                    {t('quick_sample_nic')}
                   </button>
                 </div>
               </div>
@@ -522,8 +524,8 @@ export const IdentityKYC = () => {
       <div className="status-tracker-card mt-lg">
         <div className="panel-card-header">
           <div>
-            <h2>3. Real-Time KYC Status &amp; Verified Digital Identity (DID)</h2>
-            <p className="card-subtitle">Officer adjudication state and officially issued decentralized credential</p>
+            <h2>{t('realtime_kyc')}</h2>
+            <p className="card-subtitle">{t('realtime_kyc_desc')}</p>
           </div>
           <button
             type="button"
@@ -533,7 +535,7 @@ export const IdentityKYC = () => {
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
             </svg>
-            Refresh Status
+            {t('refresh_status')}
           </button>
         </div>
 
@@ -548,7 +550,7 @@ export const IdentityKYC = () => {
                   : 'verdict-pending'
               }`}
             >
-              <span className="verdict-label">OVERALL KYC VERDICT</span>
+              <span className="verdict-label">{t('overall_verdict')}</span>
               <div className="verdict-text">{verificationStatus?.finalStatus || 'PENDING'}</div>
               <span className="verdict-detail">
                 {isApproved
@@ -581,16 +583,16 @@ export const IdentityKYC = () => {
               <div className="did-card-header">
                 <div className="did-badge-icon">🛡️</div>
                 <div>
-                  <div className="did-card-title">OFFICIALLY ISSUED DIGITAL IDENTITY (DID)</div>
+                  <div className="did-card-title">{t('officially_issued_did')}</div>
                   <div className="did-card-subtitle">Democratic Socialist Republic of Sri Lanka &bull; SmartGrama Welfare Framework</div>
                 </div>
-                <span className="pill-active-did">● ACTIVE &amp; VERIFIED</span>
+                <span className="pill-active-did">{t('active_verified')}</span>
               </div>
 
               <div className="verified-did-showcase-grid">
                 {/* Face Evidence */}
                 <div className="verified-evidence-box">
-                  <div className="ve-badge-tag success">✓ Verified Face ID</div>
+                  <div className="ve-badge-tag success">{t('verified_face')}</div>
                   <div className="ve-photo-frame">
                     {selfiePreviewUrl ? (
                       <img src={selfiePreviewUrl} alt="Verified Face" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -603,7 +605,7 @@ export const IdentityKYC = () => {
 
                 {/* NIC Evidence */}
                 <div className="verified-evidence-box">
-                  <div className="ve-badge-tag info">✓ Verified NIC Document</div>
+                  <div className="ve-badge-tag info">{t('verified_nic')}</div>
                   <div className="ve-photo-frame doc-frame">
                     {nicPreviewUrl ? (
                       <img src={nicPreviewUrl} alt="Verified NIC" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
@@ -679,7 +681,7 @@ export const IdentityKYC = () => {
                 style={{ background: '#059669', padding: '10px 20px', borderRadius: '8px', color: 'white', fontWeight: 'bold', cursor: 'pointer', border: 'none' }}
                 onClick={handleProceedToDashboard}
               >
-                Proceed to Dashboard &rarr;
+                {t('proceed_dashboard')}
               </button>
             </div>
           </div>

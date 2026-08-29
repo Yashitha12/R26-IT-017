@@ -29,6 +29,12 @@ export default function LoanApplication() {
   });
 
   const [emi, setEmi] = useState(0);
+  
+  const [selectedBank, setSelectedBank] = useState("BOC");
+  const banks = [
+    { id: "SAMUPAKARA", name: "SAMUPAKARA BANK" },
+    { id: "SAMURDHI", name: "Samurdhi Bank" }
+  ];
 
   // Live EMI Calculator
   useEffect(() => {
@@ -143,7 +149,7 @@ export default function LoanApplication() {
               </div>
             </div>
 
-            {/* Step 2: Financial Details */}
+            {/* Step 2: Financial Profile */}
             <div>
               <h3 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid var(--border)', paddingBottom: '8px', marginBottom: '16px' }}>2. Financial Profile</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -193,7 +199,7 @@ export default function LoanApplication() {
               </div>
             </div>
 
-            {/* Step 3: Credit & Guarantor Details */}
+            {/* Step 3: Guarantor & Credit */}
             <div>
               <h3 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid var(--border)', paddingBottom: '8px', marginBottom: '16px' }}>3. Guarantor & Credit</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>

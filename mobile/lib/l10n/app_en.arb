@@ -1,0 +1,11 @@
+{
+  "@@locale": "en",
+  "welcome": "Welcome to SmartGrama",
+  "login": "Login",
+  "register": "Register",
+  "profile": "Profile",
+  "logout": "Logout",
+  "language": "Language",
+  "dashboard": "Dashboard",
+  "smartgrama": "SmartGrama"
+}
