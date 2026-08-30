@@ -1,140 +1,132 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import "./AIChat.css";
-import Header from "../components/Header";
+import "./App.css";
+import botLogo from "./bot-logo.jpg";
 
-// Multilingual Greetings
-const getWelcomeMessage = (lang) => {
-  if (lang === "si-LK") {
-    return "ආයුබෝවන්! මම ඔබගේ SmartGrama AI සහායකයා.\nසුබසාධන සේවා, සමෘද්ධි/අස්වැසුම, ක්ෂුද්‍ර ණය සහ අයදුම් කිරීමේ ක්‍රමවේද පිළිබඳ ඕනෑම ප්‍රශ්නයක් විමසන්න.";
+// Multilingual Quick Topics
+const quickTopics = {
+  "en-US": {
+    welfare: [
+      { text: "What welfare assistance is available?", icon: "🏛️" },
+      { text: "How to apply for Samurdhi?", icon: "📝" },
+      { text: "Disability allowance eligibility?", icon: "♿" }
+    ],
+    loan: [
+      { text: "How can I apply for a micro-loan?", icon: "💰" },
+      { text: "What documents are required?", icon: "📄" },
+      { text: "Loan interest rates?", icon: "📈" }
+    ]
+  },
+  "si-LK": {
+    welfare: [
+      { text: "සුබසාධන ආධාර මොනවාද?", icon: "🏛️" },
+      { text: "සමෘද්ධි සඳහා අයදුම් කරන්නේ කෙසේද?", icon: "📝" },
+      { text: "ආබාධිත දීමනා සුදුසුකම්?", icon: "♿" }
+    ],
+    loan: [
+      { text: "මට ක්ෂුද්‍ර ණයක් ලබාගන්නේ කෙසේද?", icon: "💰" },
+      { text: "අවශ්‍ය ලියකියවිලි මොනවාද?", icon: "📄" },
+      { text: "ණය පොලී අනුපාත?", icon: "📈" }
+    ]
   }
-  return "Hello! I'm your SmartGrama AI Assistant.\nAsk me anything about welfare schemes, Samurdhi/Aswesuma, micro-loans, and eligibility criteria.";
 };
 
-// Multilingual Quick Questions
-const quickQuestionsMap = {
-  "en-US": [
-    "What welfare assistance is available?",
-    "How can I apply for a micro-loan?",
-    "What documents are required for eligibility?",
-    "How does high monthly expense affect my loan?"
-  ],
-  "si-LK": [
-    "මට ණයක් ලබාගන්න පුළුවන්ද?",
-    "සුබසාධන ආධාර ලබාගන්නේ කෙසේද?",
-    "ණය සඳහා අවශ්‍ය ලියකියවිලි මොනවාද?",
-    "වැඩි වියදම් ඇති විට ණය මුදලට කුමක් සිදුවේද?"
-  ]
-};
-
-export default function AIChat() {
-  // =========================
-  // STATES
-  // =========================
+function App() {
   const [message, setMessage] = useState("");
   const [language, setLanguage] = useState("en-US");
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
   const [useRag, setUseRag] = useState(true);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [speakingIndex, setSpeakingIndex] = useState(null);
+  const [ttsLoadingIndex, setTtsLoadingIndex] = useState(null);
+  const [messages, setMessages] = useState([]);
 
-  const [messages, setMessages] = useState([
-    {
-      sender: "bot",
-      text: getWelcomeMessage("en-US"),
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    }
-  ]);
-
-  // Auto Scroll Ref
   const chatEndRef = useRef(null);
-  const menuRef = useRef(null);
+  const audioRef = useRef(null);
 
-  // AUTO SCROLL
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
-
-  // CLOSE MENU ON OUTSIDE CLICK
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // LANGUAGE CHANGE (Preserve conversation history, update initial welcome message if untouched)
-  const handleLanguageChange = (newLang) => {
-    setLanguage(newLang);
-    if (messages.length === 1 && messages[0].sender === "bot") {
-      setMessages([
-        {
-          sender: "bot",
-          text: getWelcomeMessage(newLang),
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }
-      ]);
+  const stopAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
     }
-  };
-
-  // CLEAR CHAT
-  const handleClearChat = () => {
     if (window.speechSynthesis) {
       window.speechSynthesis.cancel();
     }
     setSpeakingIndex(null);
-    setMessages([
-      {
-        sender: "bot",
-        text: getWelcomeMessage(language),
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    setTtsLoadingIndex(null);
+  };
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
+
+  useEffect(() => {
+    return () => stopAudio();
+  }, []);
+
+  const handleLanguageChange = (newLang) => {
+    stopAudio();
+    setLanguage(newLang);
+  };
+
+  const handleClearChat = () => {
+    stopAudio();
+    setMessages([]);
+  };
+
+  const handleSpeak = async (text, index) => {
+    if (speakingIndex === index || ttsLoadingIndex === index) {
+      stopAudio();
+      return;
+    }
+    stopAudio();
+    try {
+      setTtsLoadingIndex(index);
+      const response = await axios.post("http://127.0.0.1:5000/tts", { text, language }, { responseType: "blob" });
+      const audioBlob = new Blob([response.data], { type: "audio/mp3" });
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+      setTtsLoadingIndex(null);
+      setSpeakingIndex(index);
+      audio.onended = () => { setSpeakingIndex(null); audioRef.current = null; URL.revokeObjectURL(audioUrl); };
+      audio.onerror = () => { setSpeakingIndex(null); audioRef.current = null; URL.revokeObjectURL(audioUrl); };
+      await audio.play();
+    } catch (err) {
+      console.warn("Backend TTS failed, trying browser Web Speech fallback:", err);
+      setTtsLoadingIndex(null);
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = language === "si-LK" ? "si-LK" : "en-US";
+        utterance.rate = 0.95;
+        utterance.onend = () => setSpeakingIndex(null);
+        utterance.onerror = () => setSpeakingIndex(null);
+        setSpeakingIndex(index);
+        window.speechSynthesis.speak(utterance);
+      } else {
+        alert("Text-to-speech failed to load audio.");
       }
-    ]);
-    setMenuOpen(false);
+    }
   };
 
-  // TEXT-TO-SPEECH (TTS)
-  const handleSpeak = (text, index) => {
-    if (!('speechSynthesis' in window)) {
-      alert("Text-to-speech is not supported on this browser.");
-      return;
-    }
-
-    if (speakingIndex === index) {
-      window.speechSynthesis.cancel();
-      setSpeakingIndex(null);
-      return;
-    }
-
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = language === "si-LK" ? "si-LK" : "en-US";
-    utterance.rate = 0.95;
-
-    utterance.onend = () => setSpeakingIndex(null);
-    utterance.onerror = () => setSpeakingIndex(null);
-
-    setSpeakingIndex(index);
-    window.speechSynthesis.speak(utterance);
+  const handleFeedback = (index, type) => {
+    setMessages((prev) => prev.map((msg, i) => {
+      if (i === index) {
+        return { ...msg, feedback: msg.feedback === type ? null : type };
+      }
+      return msg;
+    }));
+    console.log(`[Telemetry] User rated message ${index} as ${type}`);
   };
 
-  // SEND MESSAGE
   const sendMessage = async (customMessage = null) => {
     const finalMessage = customMessage || message;
     if (!finalMessage || !finalMessage.trim() || loading) return;
 
     const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-    // User Message
-    const userMessage = {
-      sender: "user",
-      text: finalMessage.trim(),
-      time: timeStr
-    };
+    const userMessage = { sender: "user", text: finalMessage.trim(), time: timeStr };
 
     setMessages((prev) => [...prev, userMessage]);
     setMessage("");
@@ -151,73 +143,54 @@ export default function AIChat() {
         sender: "bot",
         text: response.data.reply || (language === "si-LK" ? "පිළිතුරක් නොලැබුණි." : "No response received."),
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        ragUsed: response.data.rag_used
+        ragUsed: response.data.rag_used,
+        feedback: null
       };
 
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
-      console.error("Chat error:", error);
-      setMessages((prev) => [
-        ...prev,
-        {
-          sender: "bot",
-          text: language === "si-LK"
-            ? "පද්ධතිය සමඟ සම්බන්ධ වීමේ දෝෂයක්. කරුණාකර පසුපස සේවාදායකය (Flask Backend) ක්‍රියාත්මක දැයි පරීක්ෂා කරන්න."
-            : "Error connecting to the backend server. Please verify the Flask service is running on port 5000.",
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          isError: true
-        }
-      ]);
+      setMessages((prev) => [...prev, {
+        sender: "bot",
+        text: language === "si-LK"
+          ? "පද්ධතිය සමඟ සම්බන්ධ වීමේ දෝෂයක්. කරුණාකර පසුපස සේවාදායකය (Flask Backend) ක්‍රියාත්මක දැයි පරීක්ෂා කරන්න."
+          : "Error connecting to the backend server. Please verify the Flask service is running on port 5000.",
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isError: true,
+        feedback: null
+      }]);
     } finally {
       setLoading(false);
     }
   };
 
-  // VOICE RECOGNITION (STT)
   const startVoiceRecognition = async () => {
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch (err) {
       alert("Microphone permission denied. Please allow microphone access.");
-      console.error("Mic error:", err);
       return;
     }
-
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       alert("Speech Recognition is not supported in this browser. Please use Chrome.");
       return;
     }
-
     const recognition = new SpeechRecognition();
     recognition.lang = language === "si-LK" ? "si-LK" : "en-US";
     recognition.continuous = false;
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
-
-    recognition.onstart = () => {
-      setListening(true);
-    };
-
+    recognition.onstart = () => setListening(true);
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
       setMessage(transcript);
       sendMessage(transcript);
     };
-
-    recognition.onerror = (event) => {
-      console.warn("Speech recognition error:", event.error);
-      setListening(false);
-    };
-
-    recognition.onend = () => {
-      setListening(false);
-    };
-
+    recognition.onerror = () => setListening(false);
+    recognition.onend = () => setListening(false);
     recognition.start();
   };
 
-  // ENTER KEY SUBMIT
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -225,188 +198,166 @@ export default function AIChat() {
     }
   };
 
-  const activeQuickQuestions = quickQuestionsMap[language] || quickQuestionsMap["en-US"];
+  const activeTopics = quickTopics[language] || quickTopics["en-US"];
+
+  const renderInputBar = () => (
+    <div className="input-bar-container">
+      <textarea
+        placeholder={language === "si-LK" ? "ඔබගේ ප්‍රශ්නය අසන්න..." : "Ask your question..."}
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        onKeyDown={handleKeyDown}
+        rows="1"
+      />
+      <button
+        className={`mic-btn-inline ${listening ? "listening" : ""}`}
+        onClick={startVoiceRecognition}
+        title="Voice Input"
+      >
+        🎤
+      </button>
+      <button
+        className="send-btn-inline"
+        onClick={() => sendMessage()}
+        disabled={loading || !message.trim()}
+      >
+        ➔
+      </button>
+    </div>
+  );
 
   return (
-    <>
-      <Header title="AI Assistant" />
-      <div className="app-container">
-        <div className="chat-container">
-
-          {/* ================= HEADER ================= */}
-          <div className="header">
-            <div className="header-left">
-              <div className="logo-badge">
-                <img
-                  src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-                  alt="SmartGrama AI Logo"
-                  className="logo"
-                />
-                <span className="status-dot online"></span>
-              </div>
-              <div>
-                <div className="title-row">
-                  <h1>SmartGrama AI Assistant</h1>
-                  <span className={`rag-badge ${useRag ? 'rag-on' : 'rag-off'}`}>
-                    {useRag ? 'RAG Grounded' : 'Baseline LLM'}
-                  </span>
-                </div>
-                <p>Multilingual Welfare & Micro-Loan Advisory System</p>
-              </div>
-            </div>
-
-            <div className="header-right" ref={menuRef}>
-              <button
-                className="menu-button"
-                onClick={() => setMenuOpen(!menuOpen)}
-                title="Assistant Options"
-              >
-                ☰
-              </button>
-
-              {menuOpen && (
-                <div className="menu-dropdown">
-                  <div className="menu-item-header">Settings & Controls</div>
-                  <button className="menu-item" onClick={handleClearChat}>
-                    🗑️ {language === "si-LK" ? "සංවාදය මකන්න (Clear Chat)" : "Clear Conversation"}
-                  </button>
-                  <button
-                    className="menu-item"
-                    onClick={() => {
-                      setUseRag(!useRag);
-                      setMenuOpen(false);
-                    }}
-                  >
-                    ⚡ {useRag ? "Switch to Baseline (No RAG)" : "Enable RAG Mode (Knowledge-Grounded)"}
-                  </button>
-                  <div className="menu-divider"></div>
-                  <div className="menu-info">
-                    <strong>Stack:</strong> Flask + FAISS + SentenceTransformers + Ollama
-                  </div>
-                </div>
-              )}
-            </div>
+    <div className="app-layout">
+      {/* UNIQUE HEADER NAV */}
+      <nav className="top-nav">
+        <div className="nav-left">
+          <img src={botLogo} alt="SmartGrama Logo" className="nav-logo" />
+          <div className="nav-brand">
+            <span className="brand-name">SmartGrama</span>
+            <span className="brand-tag">AI ASSISTANT</span>
           </div>
-
-          {/* ================= CHAT AREA ================= */}
-          <div className="chat-box">
-            {messages.map((msg, index) => (
-              <div
-                key={index}
-                className={`message-wrapper ${msg.sender === "user" ? "user-wrapper" : "bot-wrapper"}`}
-              >
-                <div className={`message ${msg.sender === "user" ? "user" : "bot"} ${msg.isError ? "error-bubble" : ""}`}>
-                  <div className="message-content">{msg.text}</div>
-                  <div className="message-footer">
-                    <span className="timestamp">{msg.time}</span>
-                    {msg.sender === "bot" && (
-                      <button
-                        className={`speak-btn ${speakingIndex === index ? 'speaking' : ''}`}
-                        onClick={() => handleSpeak(msg.text, index)}
-                        title="Read aloud"
-                      >
-                        {speakingIndex === index ? "⏹️ Stop" : "🔊 Listen"}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {/* Loading */}
-            {loading && (
-              <div className="message-wrapper bot-wrapper">
-                <div className="message bot loading">
-                  <div className="typing-indicator">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                  </div>
-                  <span className="loading-text">
-                    {language === "si-LK" ? "තොරතුරු සකසමින් පවතී..." : "Retrieving knowledge & generating answer..."}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* Listening State */}
-            {listening && (
-              <div className="listening-box">
-                <span className="pulse-icon">🎙️</span>
-                <span>{language === "si-LK" ? "සවන් දෙමින් පවතී... කතා කරන්න" : "Listening... speak now"}</span>
-              </div>
-            )}
-
-            <div ref={chatEndRef}></div>
-          </div>
-
-          {/* ================= BOTTOM PANEL ================= */}
-          <div className="bottom-panel">
-
-            {/* Quick Questions Chips */}
-            <div className="example-box">
-              <span className="suggestions-label">
-                {language === "si-LK" ? "යෝජිත ප්‍රශ්න:" : "Suggested Questions:"}
-              </span>
-              <div className="chips-container">
-                {activeQuickQuestions.map((question, index) => (
-                  <button
-                    key={index}
-                    className="quick-chip"
-                    onClick={() => sendMessage(question)}
-                    disabled={loading}
-                  >
-                    {question}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Input Controls Row */}
-            <div className="controls-row">
-              <select
-                value={language}
-                onChange={(e) => handleLanguageChange(e.target.value)}
-                className="language-dropdown"
-                title="Select Language"
-              >
-                <option value="en-US">🇬🇧 English</option>
-                <option value="si-LK">🇱🇰 සිංහල (Sinhala)</option>
-              </select>
-
-              <textarea
-                placeholder={language === "si-LK" ? "ඔබගේ පණිවිඩය මෙහි ටයිප් කරන්න..." : "Type your welfare or loan question..."}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyDown={handleKeyDown}
-                rows="1"
-              />
-
-              {/* Microphone Button */}
-              <button
-                className={`mic-btn ${listening ? "listening" : ""}`}
-                onClick={startVoiceRecognition}
-                title={listening ? "Listening active..." : "Voice Input (Speech-to-Text)"}
-                type="button"
-              >
-                🎤
-              </button>
-
-              {/* Send Button */}
-              <button
-                className="send-btn"
-                onClick={() => sendMessage()}
-                disabled={loading || !message.trim()}
-                type="button"
-              >
-                {language === "si-LK" ? "යවන්න" : "Send"}
-              </button>
-            </div>
-
-          </div>
-
         </div>
+        <div className="nav-right">
+          <button className="new-chat-btn" onClick={handleClearChat}>
+            + {language === "si-LK" ? "නව සංවාදයක්" : "New chat"}
+          </button>
+          <div className="lang-switcher">
+            <span className="globe-icon">🌐</span>
+            <select value={language} onChange={(e) => handleLanguageChange(e.target.value)}>
+              <option value="en-US">EN</option>
+              <option value="si-LK">සිංහල</option>
+            </select>
+          </div>
+        </div>
+      </nav>
+
+      <div className="main-content">
+        {messages.length === 0 ? (
+          /* HERO SCREEN */
+          <div className="hero-screen">
+            <div className="hero-content">
+              <h1 className="hero-greeting">
+                {language === "si-LK" ? "ආයුබෝවන්! 👋" : "Hi! 👋"}
+              </h1>
+              <h2 className="hero-headline">
+                {language === "si-LK" ? "අපට ඔබට උපකාර කළ හැක්කේ කෙසේද?" : "How can we help you?"}
+              </h2>
+              <p className="hero-subtitle">
+                {language === "si-LK" ? "සුබසාධන සේවා, සමෘද්ධි, සහ ක්ෂුද්‍ර ණය පිළිබඳ ඉක්මන් පිළිතුරු ලබා ගන්න." : "Ask about welfare schemes, micro-loans, and eligibility. Get quick answers anytime."}
+              </p>
+
+              <div className="hero-input-wrapper">
+                {renderInputBar()}
+              </div>
+
+              <div className="divider-container">
+                <div className="line"></div>
+                <span className="divider-text">{language === "si-LK" ? "ඉක්මන් මාතෘකා" : "Quick topics"}</span>
+                <div className="line"></div>
+              </div>
+
+              <div className="topics-layout">
+                <div className="topic-column">
+                  <h3 className="topic-col-title">{language === "si-LK" ? "සුබසාධන ප්‍රශ්න" : "Welfare Questions"}</h3>
+                  <div className="topic-grid">
+                    {activeTopics.welfare.map((topic, i) => (
+                      <button key={`w-${i}`} className="topic-card" onClick={() => sendMessage(topic.text)}>
+                        <span className="topic-icon">{topic.icon}</span>
+                        <span className="topic-text">{topic.text}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="topic-column">
+                  <h3 className="topic-col-title">{language === "si-LK" ? "ණය ප්‍රශ්න" : "Loan Questions"}</h3>
+                  <div className="topic-grid">
+                    {activeTopics.loan.map((topic, i) => (
+                      <button key={`l-${i}`} className="topic-card" onClick={() => sendMessage(topic.text)}>
+                        <span className="topic-icon">{topic.icon}</span>
+                        <span className="topic-text">{topic.text}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* CHAT SCREEN */
+          <div className="chat-interface">
+            <div className="chat-scroll-area">
+              <div className="chat-messages-container">
+                {messages.map((msg, index) => (
+                  <div key={index} className={`message-row ${msg.sender === "user" ? "user-row" : "bot-row"}`}>
+                    <div className={`message-bubble ${msg.sender === "user" ? "user-bubble" : "bot-bubble"} ${msg.isError ? "error-bubble" : ""}`}>
+                      <div className="message-content">{msg.text}</div>
+                      <div className="message-footer">
+                        <span className="timestamp">{msg.time}</span>
+                        {msg.sender === "bot" && (
+                          <div className="bot-controls">
+                            <div className="feedback-controls">
+                              <button className={`feedback-btn ${msg.feedback === 'up' ? 'active-up' : ''}`} onClick={() => handleFeedback(index, 'up')}>👍</button>
+                              <button className={`feedback-btn ${msg.feedback === 'down' ? 'active-down' : ''}`} onClick={() => handleFeedback(index, 'down')}>👎</button>
+                            </div>
+                            <button
+                              className={`speak-btn ${speakingIndex === index ? 'speaking' : ''}`}
+                              onClick={() => handleSpeak(msg.text, index)}
+                              disabled={ttsLoadingIndex === index}
+                            >
+                              {ttsLoadingIndex === index ? "⏳" : speakingIndex === index ? "⏹️" : "🔊"}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {loading && (
+                  <div className="message-row bot-row">
+                    <div className="message-bubble bot-bubble loading">
+                      <div className="typing-dots"><span></span><span></span><span></span></div>
+                    </div>
+                  </div>
+                )}
+                {listening && (
+                  <div className="listening-indicator">🎙️ {language === "si-LK" ? "සවන් දෙමින් පවතී..." : "Listening..."}</div>
+                )}
+                <div ref={chatEndRef}></div>
+              </div>
+            </div>
+
+            <div className="chat-input-area">
+              <div className="chat-input-wrapper">
+                {renderInputBar()}
+              </div>
+              <div className="footer-note">Trusted information | Available 24/7</div>
+            </div>
+          </div>
+        )}
       </div>
-    </>
+    </div>
   );
 }
+
+export default App;

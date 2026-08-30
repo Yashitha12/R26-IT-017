@@ -72,7 +72,9 @@ export default function Header() {
           ></span>
         </button>
         <button className="user-profile-btn" onClick={() => navigate("/profile")}>
-          <div className="avatar-sm">{getInitials(displayName)}</div>
+          <div className="avatar-sm" style={{ overflow: "hidden" }}>
+            {user?.photo ? <img src={user.photo} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : getInitials(displayName)}
+          </div>
         </button>
       </div>
     </header>

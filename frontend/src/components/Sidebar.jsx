@@ -52,8 +52,8 @@ export default function Sidebar() {
 
         <div style={{ marginTop: "auto", paddingBottom: "16px", display: "flex", flexDirection: "column", gap: "8px" }}>
           <div className="profile-widget" style={{ padding: '12px', display: 'flex', alignItems: 'center', gap: '12px', borderRadius: '8px', cursor: 'pointer' }} onClick={() => navigate("/profile")}>
-            <div style={{ width: '32px', height: '32px', backgroundColor: 'var(--primary)', color: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold' }}>
-              {initials}
+            <div style={{ width: '32px', height: '32px', backgroundColor: 'var(--primary)', color: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold', overflow: 'hidden' }}>
+              {user?.photo ? <img src={user.photo} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : initials}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <span style={{ fontSize: '13px', fontWeight: '600' }}>{displayName}</span>

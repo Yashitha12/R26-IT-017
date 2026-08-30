@@ -27,3 +27,17 @@ All welfare distribution records, loan approvals, and official Grama Niladhari v
 
 MULTILINGUAL AI CONVERSATIONAL ASSISTANT:
 The SmartGrama AI Assistant supports both Sinhala (සිංහල) and English languages. It utilizes Retrieval-Augmented Generation (RAG), vector similarity search with FAISS, multilingual translation, and speech-to-text recognition to provide accurate, context-grounded guidance for all citizen inquiries.
+
+MICRO-LOAN INTEREST RATES:
+Samupakara (Cooperative Rural Banks) Interest Rates:
+- Short term loans (Below 25,000 LKR): 8%
+- Short term loans (Above 25,000 LKR): 8%
+- Long term loans: 20%
+- EPF (Employees' Provident Fund) backed loans: 13%
+
+Samurdhi Bank Interest Rates:
+- Lakjaya loan (ලක්ජය): 15%
+- Lakwasana loan (ලක්වසන): 16%
+- Laksaviya loan (ලක්සවිය): 12%
+- Jeevanopaya loan (ජීවනෝපාය): 40%
+- Chakriya loan (චක්‍රීය): 10%
