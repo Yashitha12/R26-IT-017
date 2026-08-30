@@ -251,31 +251,33 @@ def clean_response(reply):
 
 def generate_human_response(context, question, use_rag=True):
     if use_rag and context:
-        prompt = f"""You are the SmartGrama AI Assistant. Use ONLY the following information to answer the question.
-Provide your answer using short bullet points for easy reading. Keep it very brief and factual.
-
-Information:
-{context}
-
-Question:
-{question}
-
-Answer (in bullet points):
-"""
+        messages = [
+            {
+                'role': 'system',
+                'content': f"You are the SmartGrama AI Assistant. You MUST use ONLY the provided background information to answer. DO NOT copy the information word-for-word. Summarize the answer into short bullet points.\n\nBackground Information:\n{context}"
+            },
+            {
+                'role': 'user',
+                'content': question
+            }
+        ]
     else:
-        # Baseline model without RAG context (for research comparison)
-        prompt = f"""You are the SmartGrama AI Assistant. Please answer the user's question concisely using short bullet points.
-User Question:
-{question}
-
-Answer (in bullet points):
-"""
+        messages = [
+            {
+                'role': 'system',
+                'content': "You are the SmartGrama AI Assistant. Please answer the user's question concisely using short bullet points."
+            },
+            {
+                'role': 'user',
+                'content': question
+            }
+        ]
 
     model_name = 'tinyllama:latest'
     try:
         response = ollama.chat(
             model=model_name,
-            messages=[{'role': 'user', 'content': prompt}],
+            messages=messages,
             options={
                 "temperature": 0.2,
                 "num_predict": 300
@@ -285,7 +287,7 @@ Answer (in bullet points):
         print(f"{model_name} error: {e}, falling back to gemma:2b...")
         response = ollama.chat(
             model='gemma:2b',
-            messages=[{'role': 'user', 'content': prompt}],
+            messages=messages,
             options={
                 "temperature": 0.2,
                 "num_predict": 300
