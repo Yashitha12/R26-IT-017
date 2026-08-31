@@ -11,3 +11,5 @@ ollama
 deep-translator
 sentence-transformers
 faiss-cpu
+mysql-connector-python
+python-dotenv
