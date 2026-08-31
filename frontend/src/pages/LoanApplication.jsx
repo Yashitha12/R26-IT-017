@@ -196,13 +196,6 @@ export default function LoanApplication() {
                     required
                   />
                 </div>
-              </div>
-            </div>
-
-            {/* Step 3: Guarantor & Credit */}
-            <div>
-              <h3 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid var(--border)', paddingBottom: '8px', marginBottom: '16px' }}>3. Guarantor & Credit</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div className="input-group" style={{ marginBottom: 0 }}>
                   <label>Existing Active Loans</label>
                   <select name="existing_loans" className="form-input" value={form.existing_loans} onChange={handleChange}>
@@ -211,6 +204,13 @@ export default function LoanApplication() {
                     <option value="2">2 or more</option>
                   </select>
                 </div>
+              </div>
+            </div>
+
+            {/* Step 3: Guarantor & Credit */}
+            <div>
+              <h3 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid var(--border)', paddingBottom: '8px', marginBottom: '16px' }}>3. Guarantor & Credit</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div className="input-group" style={{ marginBottom: 0 }}>
                   <label>Guarantor Support Count</label>
                   <select name="guarantor_support_count" className="form-input" value={form.guarantor_support_count} onChange={handleChange}>

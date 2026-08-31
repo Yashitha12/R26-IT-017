@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../l10n/app_localizations.dart';
 import '../api_service.dart';
 import 'home_screen.dart';
 import 'register_screen.dart';
@@ -87,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Icon(Icons.account_balance, size: 80, color: Color(0xFF1D4ED8)),
                 SizedBox(height: 16),
                 Text(l10n.smartgrama, style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF1D4ED8))),
-                Text(l10n.welcome, style: TextStyle(fontSize: 16, color: Colors.grey, textAlign: TextAlign.center)),
+                Text(l10n.welcome, style: TextStyle(fontSize: 16, color: Colors.grey), textAlign: TextAlign.center),
                 SizedBox(height: 48),
                 
                 TextFormField(

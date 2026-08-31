@@ -209,6 +209,12 @@ export const IdentityKYC = () => {
     return () => { if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop()); };
   }, []);
 
+  useEffect(() => {
+    if (isCameraActive && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+    }
+  }, [isCameraActive]);
+
   const vs = verificationStatus;
   const isApproved = vs?.finalStatus === "VERIFIED";
   const isRejected = vs?.finalStatus === "REJECTED";

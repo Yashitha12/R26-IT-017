@@ -12,6 +12,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   http: ^1.1.0
+  image_picker: ^1.2.3
   intl: ^0.20.3
   permission_handler: ^13.0.1
   speech_to_text: ^7.4.0

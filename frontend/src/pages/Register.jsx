@@ -11,11 +11,11 @@ export default function Register() {
     nic: "",
     dob: "",
     gender: "Male",
-    phone: "",
+    phone: "+94",
     email: "",
     address: "",
-    district: "Gampaha",
-    gnDivision: "Minuwangoda North",
+    district: "",
+    gnDivision: "",
     occupation: "",
     username: "",
     password: "",
@@ -249,7 +249,7 @@ export default function Register() {
 
             <div>
               <label style={labelStyle}>National Identity Card (NIC) *</label>
-              <input type="text" name="nic" value={formData.nic} onChange={handleChange} required placeholder="e.g. 200223003053" style={inputStyle} />
+              <input type="text" name="nic" value={formData.nic} onChange={handleChange} required pattern="^([0-9]{9}[vVxX]|[0-9]{12})$" title="12 digits or 9 digits followed by v" placeholder="e.g. 200223003053" style={inputStyle} />
             </div>
 
             <div>
@@ -268,17 +268,44 @@ export default function Register() {
 
             <div>
               <label style={labelStyle}>Mobile Phone *</label>
-              <input type="text" name="phone" value={formData.phone} onChange={handleChange} required placeholder="e.g. +94 78 145 3248" style={inputStyle} />
+              <input type="tel" name="phone" value={formData.phone} onChange={handleChange} required pattern="^\+94\d{9}$" maxLength={12} title="+94 followed by 9 digits" placeholder="+94781453248" style={inputStyle} />
             </div>
 
             <div>
               <label style={labelStyle}>Email Address *</label>
-              <input type="email" name="email" value={formData.email} onChange={handleChange} required placeholder="e.g. citizen@example.com" style={inputStyle} />
+              <input type="email" name="email" value={formData.email} onChange={handleChange} required pattern=".*@gmail\.com$" title="Must be a @gmail.com address" placeholder="e.g. citizen@gmail.com" style={inputStyle} />
             </div>
 
             <div>
               <label style={labelStyle}>District *</label>
-              <input type="text" name="district" value={formData.district} onChange={handleChange} required placeholder="e.g. Gampaha" style={inputStyle} />
+              <select name="district" value={formData.district} onChange={handleChange} required style={inputStyle}>
+                <option value="" disabled>Select District</option>
+                <option value="Ampara">Ampara</option>
+                <option value="Anuradhapura">Anuradhapura</option>
+                <option value="Badulla">Badulla</option>
+                <option value="Batticaloa">Batticaloa</option>
+                <option value="Colombo">Colombo</option>
+                <option value="Galle">Galle</option>
+                <option value="Gampaha">Gampaha</option>
+                <option value="Hambantota">Hambantota</option>
+                <option value="Jaffna">Jaffna</option>
+                <option value="Kalutara">Kalutara</option>
+                <option value="Kandy">Kandy</option>
+                <option value="Kegalle">Kegalle</option>
+                <option value="Kilinochchi">Kilinochchi</option>
+                <option value="Kurunegala">Kurunegala</option>
+                <option value="Mannar">Mannar</option>
+                <option value="Matale">Matale</option>
+                <option value="Matara">Matara</option>
+                <option value="Moneragala">Moneragala</option>
+                <option value="Mullaitivu">Mullaitivu</option>
+                <option value="Nuwara Eliya">Nuwara Eliya</option>
+                <option value="Polonnaruwa">Polonnaruwa</option>
+                <option value="Puttalam">Puttalam</option>
+                <option value="Ratnapura">Ratnapura</option>
+                <option value="Trincomalee">Trincomalee</option>
+                <option value="Vavuniya">Vavuniya</option>
+              </select>
             </div>
 
             <div style={{ gridColumn: "1 / -1" }}>

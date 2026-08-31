@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { fetchBlockchainLedger } from "../api/loanApi";
 import { getCurrentUser, getInitials } from "../utils/user";
 import dashboardBg from "../assets/smartgrama_dashboard_bg.jpg";
-
+import botLogo from "./new-bot-logo.jpg";
 /* ─── Inline SVG icons ─── */
 const Ico = {
   loan: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="3"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>,
@@ -317,52 +317,85 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* SmartGrama AI card */}
-              <div style={{
-                borderRadius:22, padding:"24px",
-                background:"linear-gradient(140deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%)",
-                color:"#fff",
-                boxShadow:"0 12px 32px rgba(76,29,149,0.32)",
-                display:"flex", flexDirection:"column", gap:16,
-              }}>
-                <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-                  <div style={{ width:48, height:48, borderRadius:15, background:"rgba(255,255,255,0.14)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    {Ico.ai}
-                  </div>
-                  <div>
-                    <div style={{ fontWeight:900, fontSize:17, letterSpacing:-0.3 }}>SmartGrama AI</div>
-                    <div style={{ fontSize:12, color:"rgba(255,255,255,0.65)", marginTop:2 }}>Your welfare assistant</div>
-                  </div>
-                </div>
-
-                <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-                  {["Am I eligible for Samurdhi?", "How do I apply for a loan?", "Check my application status"].map(q => (
-                    <div
-                      key={q}
-                      onClick={() => navigate("/ai-chat")}
-                      style={{ padding:"10px 14px", borderRadius:12, background:"rgba(255,255,255,0.09)", border:"1px solid rgba(255,255,255,0.14)", fontSize:12, color:"rgba(255,255,255,0.85)", cursor:"pointer", transition:"background 0.15s" }}
-                      onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.18)"}
-                      onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.09)"}
-                    >
-                      "{q}"
-                    </div>
-                  ))}
-                </div>
-
-                <button
-                  onClick={() => navigate("/ai-chat")}
-                  style={{ padding:"13px", borderRadius:14, border:"1px solid rgba(255,255,255,0.28)", background:"rgba(255,255,255,0.16)", color:"#fff", fontWeight:700, fontSize:14, cursor:"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:8, transition:"background 0.15s" }}
-                  onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.24)"}
-                  onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.16)"}
-                >
-                  Open AI Chat {Ico.arrow}
-                </button>
-              </div>
-
             </div>
           </div>
 
         </main>
+      </div>
+
+      {/* Floating Action Button */}
+      <div style={{ position: "fixed", bottom: "30px", right: "30px", zIndex: 1000, display: "flex", alignItems: "center", gap: "16px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          <div style={{
+            background: "#fff9c4",
+            color: "#333",
+            padding: "8px 16px",
+            borderRadius: "12px",
+            fontWeight: 700,
+            fontSize: "14px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            position: "relative",
+            textAlign: "center"
+          }}>
+            AI සහයක
+            <div style={{
+              position: "absolute",
+              right: "-6px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              width: "0",
+              height: "0",
+              borderTop: "6px solid transparent",
+              borderBottom: "6px solid transparent",
+              borderLeft: "6px solid #fff9c4",
+            }}></div>
+          </div>
+          <div style={{
+            background: "#fff9c4",
+            color: "#333",
+            padding: "8px 16px",
+            borderRadius: "12px",
+            fontWeight: 700,
+            fontSize: "14px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            position: "relative",
+            textAlign: "center"
+          }}>
+            AI Assist
+            <div style={{
+              position: "absolute",
+              right: "-6px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              width: "0",
+              height: "0",
+              borderTop: "6px solid transparent",
+              borderBottom: "6px solid transparent",
+              borderLeft: "6px solid #fff9c4",
+            }}></div>
+          </div>
+        </div>
+        <button
+          className="fab-attention"
+          onClick={() => navigate("/ai-chat")}
+          style={{
+            width: "180px",
+            height: "180px",
+            borderRadius: "50%",
+            background: "#fff",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 0,
+            overflow: "hidden",
+            transition: "transform 0.2s"
+          }}
+          onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"}
+          onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+        >
+          <img src={botLogo} alt="AI Assist" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+        </button>
       </div>
     </div>
   );

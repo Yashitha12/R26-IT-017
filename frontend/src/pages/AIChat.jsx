@@ -1,9 +1,20 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import "./App.css";
+import "./AIChat.css";
 import botLogo from "./bot-logo.jpg";
 
 // Multilingual Quick Topics
+const categories = {
+  "en-US": [
+    { id: "welfare", text: "Welfare", icon: "🏛️" },
+    { id: "loan", text: "Loans", icon: "💰" }
+  ],
+  "si-LK": [
+    { id: "welfare", text: "සුබසාධන", icon: "🏛️" },
+    { id: "loan", text: "ණය", icon: "💰" }
+  ]
+};
+
 const quickTopics = {
   "en-US": {
     welfare: [
@@ -40,6 +51,7 @@ function App() {
   const [speakingIndex, setSpeakingIndex] = useState(null);
   const [ttsLoadingIndex, setTtsLoadingIndex] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   const chatEndRef = useRef(null);
   const audioRef = useRef(null);
@@ -73,6 +85,7 @@ function App() {
   const handleClearChat = () => {
     stopAudio();
     setMessages([]);
+    setSelectedCategory(null);
   };
 
   const handleSpeak = async (text, index) => {
@@ -201,43 +214,37 @@ function App() {
   const activeTopics = quickTopics[language] || quickTopics["en-US"];
 
   const renderInputBar = () => (
-    <div className="input-bar-container">
-      <textarea
-        placeholder={language === "si-LK" ? "ඔබගේ ප්‍රශ්නය අසන්න..." : "Ask your question..."}
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        onKeyDown={handleKeyDown}
-        rows="1"
-      />
-      <button
-        className={`mic-btn-inline ${listening ? "listening" : ""}`}
-        onClick={startVoiceRecognition}
-        title="Voice Input"
-      >
-        🎤
-      </button>
-      <button
-        className="send-btn-inline"
-        onClick={() => sendMessage()}
-        disabled={loading || !message.trim()}
-      >
-        ➔
-      </button>
-    </div>
-  );
-
-  return (
-    <div className="app-layout">
-      {/* UNIQUE HEADER NAV */}
-      <nav className="top-nav">
-        <div className="nav-left">
-          <img src={botLogo} alt="SmartGrama Logo" className="nav-logo" />
-          <div className="nav-brand">
-            <span className="brand-name">SmartGrama</span>
-            <span className="brand-tag">AI ASSISTANT</span>
-          </div>
+    <>
+      <div className="input-bar-container">
+        <textarea
+          placeholder={language === "si-LK" ? "ඔබගේ ප්‍රශ්නය අසන්න..." : "Ask your question..."}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={handleKeyDown}
+          rows="1"
+        />
+        <button
+          className={`mic-btn-inline ${listening ? "listening" : ""}`}
+          onClick={startVoiceRecognition}
+          title="Voice Input"
+        >
+          🎤
+        </button>
+        <button
+          className="send-btn-inline"
+          onClick={() => sendMessage()}
+          disabled={loading || !message.trim()}
+        >
+          ➔
+        </button>
+      </div>
+      <div className="input-bar-footer">
+        <div className="input-helper-text">
+          {language === "si-LK" 
+            ? "යැවීමට Enter ඔබන්න · නව රේඛාවක් සඳහා Shift + Enter ඔබන්න"
+            : "Press Enter to send · Shift + Enter for new line"}
         </div>
-        <div className="nav-right">
+        <div className="input-bar-actions">
           <button className="new-chat-btn" onClick={handleClearChat}>
             + {language === "si-LK" ? "නව සංවාදයක්" : "New chat"}
           </button>
@@ -247,6 +254,21 @@ function App() {
               <option value="en-US">EN</option>
               <option value="si-LK">සිංහල</option>
             </select>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+
+  return (
+    <div className="ai-chat-layout">
+      {/* UNIQUE HEADER NAV */}
+      <nav className="top-nav">
+        <div className="nav-left">
+          <img src={botLogo} alt="SmartGrama Logo" className="nav-logo" />
+          <div className="nav-brand">
+            <span className="brand-name">SmartGrama</span>
+            <span className="brand-tag">AI ASSISTANT</span>
           </div>
         </div>
       </nav>
@@ -260,7 +282,11 @@ function App() {
                 {language === "si-LK" ? "ආයුබෝවන්! 👋" : "Hi! 👋"}
               </h1>
               <h2 className="hero-headline">
-                {language === "si-LK" ? "අපට ඔබට උපකාර කළ හැක්කේ කෙසේද?" : "How can we help you?"}
+                {language === "si-LK" ? (
+                  <>මට ඔබට <span className="highlight">උපකාර කළ හැක්කේ කෙසේද?</span></>
+                ) : (
+                  <>How can I <span className="highlight">help you?</span></>
+                )}
               </h2>
               <p className="hero-subtitle">
                 {language === "si-LK" ? "සුබසාධන සේවා, සමෘද්ධි, සහ ක්ෂුද්‍ර ණය පිළිබඳ ඉක්මන් පිළිතුරු ලබා ගන්න." : "Ask about welfare schemes, micro-loans, and eligibility. Get quick answers anytime."}
@@ -277,28 +303,30 @@ function App() {
               </div>
 
               <div className="topics-layout">
-                <div className="topic-column">
-                  <h3 className="topic-col-title">{language === "si-LK" ? "සුබසාධන ප්‍රශ්න" : "Welfare Questions"}</h3>
-                  <div className="topic-grid">
-                    {activeTopics.welfare.map((topic, i) => (
-                      <button key={`w-${i}`} className="topic-card" onClick={() => sendMessage(topic.text)}>
-                        <span className="topic-icon">{topic.icon}</span>
-                        <span className="topic-text">{topic.text}</span>
+                {!selectedCategory ? (
+                  <div className="topics-row">
+                    {categories[language].map(cat => (
+                      <button key={cat.id} className="category-card" onClick={() => setSelectedCategory(cat.id)}>
+                        <span className="category-icon">{cat.icon}</span>
+                        <span className="category-text">{cat.text}</span>
                       </button>
                     ))}
                   </div>
-                </div>
-                <div className="topic-column">
-                  <h3 className="topic-col-title">{language === "si-LK" ? "ණය ප්‍රශ්න" : "Loan Questions"}</h3>
-                  <div className="topic-grid">
-                    {activeTopics.loan.map((topic, i) => (
-                      <button key={`l-${i}`} className="topic-card" onClick={() => sendMessage(topic.text)}>
-                        <span className="topic-icon">{topic.icon}</span>
-                        <span className="topic-text">{topic.text}</span>
-                      </button>
-                    ))}
+                ) : (
+                  <div className="subtopics-container">
+                    <button className="back-btn" onClick={() => setSelectedCategory(null)}>
+                      ← {language === "si-LK" ? "ආපසු" : "Back"}
+                    </button>
+                    <div className="topics-row">
+                      {activeTopics[selectedCategory].map((topic, i) => (
+                        <button key={i} className="topic-card-horizontal" onClick={() => sendMessage(topic.text)}>
+                          <span className="topic-icon">{topic.icon}</span>
+                          <span className="topic-text">{topic.text}</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>

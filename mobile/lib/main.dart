@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'l10n/app_localizations.dart';
 import 'screens/login_screen.dart';
 
 void main() {
@@ -34,7 +34,7 @@ class _SmartGramaAppState extends State<SmartGramaApp> {
       title: 'SmartGrama',
       debugShowCheckedModeBanner: false,
       locale: _locale,
-      localizationsDelegates: const [
+      localizationsDelegates: [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,

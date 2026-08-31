@@ -1094,14 +1094,12 @@ export default function WelfareApplication() {
                   <div style={grid2ColStyle}>
                     <div className="input-group">
                       <label style={labelStyle}>Bank Name *</label>
-                      <input
-                        type="text"
-                        name="bankName"
-                        style={{ ...inputStyle, borderColor: errors.bankName ? "#ef4444" : "#e2e8f0" }}
-                        value={form.bankName}
-                        onChange={handleChange}
-                        placeholder="e.g. People's Bank / Bank of Ceylon"
-                      />
+                      <select name="bankName" value={form.bankName} onChange={handleChange} required className="w-full bg-white border border-slate-200 rounded-lg px-4 py-3 text-slate-700 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-colors">
+              <option value="" disabled>Select Bank</option>
+              <option value="Samurdhi Bank">Samurdhi Bank</option>
+              <option value="Samupakara Bank">Samupakara Bank</option>
+              <option value="Sanasa Bank">Sanasa Bank</option>
+            </select>
                       {renderError("bankName")}
                     </div>
                     <div className="input-group">
