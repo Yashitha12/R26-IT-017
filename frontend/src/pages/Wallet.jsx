@@ -26,6 +26,7 @@ export default function Wallet() {
   const { t } = useTranslation();
   const user = getCurrentUser();
   const [loans, setLoans] = useState([]);
+  const [welfareApps, setWelfareApps] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
   const [showToastMsg, setShowToastMsg] = useState("");
 
@@ -34,13 +35,20 @@ export default function Wallet() {
     setTimeout(() => setShowToastMsg(""), 3500);
   };
 
-  useEffect(() => {
+  const fetchWalletData = () => {
     fetch("http://127.0.0.1:8000/applications/all")
       .then(res => res.json())
       .then(data => {
         setLoans(data.loans || []);
+        setWelfareApps(data.welfare || []);
       })
       .catch(console.error);
+  };
+
+  useEffect(() => {
+    fetchWalletData();
+    const interval = setInterval(fetchWalletData, 3000);
+    return () => clearInterval(interval);
   }, []);
 
   const name = user?.name || "Aravinda Kumara";
@@ -48,7 +56,36 @@ export default function Wallet() {
   const division = user?.gnDivision || user?.district || "Minuwangoda North";
   const did = user?.did || "did:smartgrama:200223003053";
 
+  // Filter approved welfare applications
+  const approvedWelfare = welfareApps.filter(w =>
+    w.status && (
+      w.status.toLowerCase().includes("approved") ||
+      w.status.toLowerCase().includes("disbursement") ||
+      w.status.toLowerCase().includes("active")
+    )
+  );
+
+  const baseSavings = 8000;
+  const baseSamurdhi = 4500;
+  const approvedAswesumaTotal = approvedWelfare.reduce((sum, w) => sum + Number(w.monthly_stipend || 0), 0);
+  const totalWelfareAmount = baseSamurdhi + approvedAswesumaTotal;
+  const totalAvailableBalance = baseSavings + totalWelfareAmount;
+
+  // Build live transactions from approved welfare grants
+  const liveWelfareTx = approvedWelfare.map(w => ({
+    id: `TX-DBT-${(w.assessment_id || 'ASW').replace(/[^a-zA-Z0-9]/g, '').slice(-4) || '9591'}`,
+    title: `Aswesuma Welfare Monthly Grant (${w.tier || 'POOR'})`,
+    type: "welfare",
+    date: w.officer_reviewed_at || w.assessed_at || "Oct 16, 2026",
+    amount: `+ Rs. ${Number(w.monthly_stipend || 8500).toLocaleString()}`,
+    channel: "Direct DBT to DID Wallet",
+    isCredit: true,
+    status: "Committed & Disbursed",
+    isLive: true,
+  }));
+
   const transactions = [
+    ...liveWelfareTx,
     { id: "TX-9941", title: t("monthly_samurdhi_benefit"), type: "welfare", date: "May 01, 2026", amount: "+ Rs. 4,500", channel: t("welfare_grant_balance"), isCredit: true },
     { id: "TX-9903", title: t("agricultural_microloan"), type: "loan", date: "Apr 15, 2026", amount: "+ Rs. 150,000", channel: t("bank_linked_sub"), isCredit: true },
     { id: "TX-9872", title: t("show_qr_voucher"), type: "welfare", date: "Apr 02, 2026", amount: "- Rs. 3,200", channel: t("redeem_coop"), isCredit: false },
@@ -159,7 +196,7 @@ export default function Wallet() {
                     {t("total_available_balance")}
                   </div>
                   <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: -1, lineHeight: 1.1, marginTop: 2 }}>
-                    Rs. 12,500
+                    Rs. {totalAvailableBalance.toLocaleString()}
                   </div>
                   <div style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", marginTop: 4 }}>
                     {t("beneficiary")}: <strong style={{ color: "#fff" }}>{name}</strong> &nbsp;&middot;&nbsp; {t("nic")}: <code style={{ fontFamily: "monospace", color: "#6ee7b7", fontSize: 12 }}>{nic}</code>
@@ -178,7 +215,7 @@ export default function Wallet() {
                     <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 3 }}>
                       {t("lkr_savings_account")}
                     </div>
-                    <div style={{ fontSize: 18, fontWeight: 900, color: "#fff" }}>Rs. 8,000</div>
+                    <div style={{ fontSize: 18, fontWeight: 900, color: "#fff" }}>Rs. {baseSavings.toLocaleString()}</div>
                     <div style={{ fontSize: 10, color: "#6ee7b7", marginTop: 2 }}>{t("personal_savings_balance")}</div>
                   </div>
 
@@ -192,8 +229,12 @@ export default function Wallet() {
                     <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 3 }}>
                       {t("welfare_grant_balance")}
                     </div>
-                    <div style={{ fontSize: 18, fontWeight: 900, color: "#6ee7b7" }}>Rs. 4,500</div>
-                    <div style={{ fontSize: 10, color: "rgba(255,255,255,0.7)", marginTop: 2 }}>{t("samurdhi_disbursement")}</div>
+                    <div style={{ fontSize: 18, fontWeight: 900, color: "#6ee7b7" }}>
+                      Rs. {totalWelfareAmount.toLocaleString()}
+                    </div>
+                    <div style={{ fontSize: 10, color: "rgba(255,255,255,0.7)", marginTop: 2 }}>
+                      {approvedWelfare.length > 0 ? "Samurdhi + Aswesuma DBT Active" : t("samurdhi_disbursement")}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -440,18 +481,52 @@ export default function Wallet() {
                   </span>
                 </div>
 
+                {approvedWelfare.map((app, idx) => (
+                  <div key={idx} style={{
+                    background: "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)",
+                    border: "1.5px solid #6ee7b7",
+                    borderRadius: 18,
+                    padding: "20px 22px",
+                    marginBottom: 16,
+                    boxShadow: "0 6px 18px rgba(5,150,105,0.08)",
+                  }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+                      <div>
+                        <div style={{ fontSize: 16, fontWeight: 900, color: "#064e3b" }}>
+                          Aswesuma Household Benefit ({app.tier || "POOR"})
+                        </div>
+                        <div style={{ fontSize: 11, color: "#047857", fontWeight: 700, marginTop: 2 }}>
+                          Assessment: <code style={{ fontFamily: "monospace" }}>{app.assessment_id}</code> &bull; GN: {app.gn_division || division}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <div style={{ fontSize: 20, fontWeight: 900, color: "#047857" }}>
+                          Rs. {Number(app.monthly_stipend).toLocaleString()} / mo
+                        </div>
+                        <span style={{ display: "inline-block", fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: 50, background: "#059669", color: "#ffffff", marginTop: 4 }}>
+                          ✓ Active & Disbursed
+                        </span>
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 12, color: "#166534", lineHeight: 1.5, background: "rgba(255,255,255,0.8)", padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(16,185,129,0.25)" }}>
+                      <strong>Officer Status:</strong> {app.status || "Approved for Disbursement (Blockchain Anchored)"}<br />
+                      Poverty Index Score: <strong>{app.welfare_score || "565.0"} pts</strong> &bull; Direct benefit transfer anchored to decentralized ledger.
+                    </div>
+                  </div>
+                ))}
+
                 <div style={{
                   background: "#f0fdf4",
                   border: "1.5px solid #bbf7d0",
                   borderRadius: 18,
-                  padding: "20px 22px",
+                  padding: "18px 22px",
                   marginBottom: 16,
                 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                    <div style={{ fontSize: 16, fontWeight: 800, color: "#064e3b" }}>{t("monthly_samurdhi_benefit")}</div>
-                    <div style={{ fontSize: 20, fontWeight: 900, color: "#047857" }}>Rs. 4,500 / mo</div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: "#064e3b" }}>{t("monthly_samurdhi_benefit")}</div>
+                    <div style={{ fontSize: 18, fontWeight: 900, color: "#047857" }}>Rs. 4,500 / mo</div>
                   </div>
-                  <div style={{ fontSize: 13, color: "#166534", lineHeight: 1.6 }}>
+                  <div style={{ fontSize: 12, color: "#166534", lineHeight: 1.5 }}>
                     {t("samurdhi_credited_sub")}
                   </div>
                 </div>

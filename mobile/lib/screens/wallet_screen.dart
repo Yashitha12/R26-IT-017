@@ -13,6 +13,7 @@ class WalletScreen extends StatefulWidget {
 
 class _WalletScreenState extends State<WalletScreen> {
   List<dynamic> ledger = [];
+  List<dynamic> welfareApps = [];
   bool isLoading = true;
 
   @override
@@ -23,10 +24,17 @@ class _WalletScreenState extends State<WalletScreen> {
 
   Future<void> _loadLedger() async {
     try {
-      final data = await ApiService.fetchLedger();
+      final ledgerData = await ApiService.fetchLedger();
+      List<dynamic> wApps = [];
+      try {
+        final allApps = await ApiService.fetchAllApplications();
+        wApps = allApps['welfare'] ?? [];
+      } catch (_) {}
+
       if (!mounted) return;
       setState(() {
-        ledger = data.isNotEmpty ? data : _sampleTransactions;
+        ledger = ledgerData.isNotEmpty ? ledgerData : _sampleTransactions;
+        welfareApps = wApps;
         isLoading = false;
       });
     } catch (e) {
@@ -55,11 +63,54 @@ class _WalletScreenState extends State<WalletScreen> {
       "partner_bank": "Divisional Secretariat",
       "approved_amount": 8500,
       "duration_months": 1,
-      "status": "Pending",
-      "timestamp": "2026-10-14 09:15",
+      "status": "Active",
+      "type": "welfare",
+      "timestamp": "2026-10-16 15:15",
       "tx_hash": "0x9c2d...4e5f"
     }
   ];
+
+  List<dynamic> get approvedWelfare {
+    final list = <dynamic>[];
+    for (var w in welfareApps) {
+      final status = (w['status'] ?? '').toString().toLowerCase();
+      if (status.contains('approved') || status.contains('disbursement') || status.contains('active')) {
+        list.add(w);
+      }
+    }
+    // Also include from ledger if not present
+    for (var tx in ledger) {
+      final isWelfare = tx['type'] == 'welfare' || (tx['loan_type']?.toString().toLowerCase().contains('aswesuma') ?? false);
+      final isApproved = tx['status'] == 'Active' || tx['status'] == 'Approved';
+      final assessId = tx['assessment_id'] ?? '';
+      if (isWelfare && isApproved) {
+        if (!list.any((item) => (item['assessment_id'] ?? '') == assessId && assessId.isNotEmpty)) {
+          list.add({
+            'assessment_id': assessId.isNotEmpty ? assessId : 'ASW-959157',
+            'tier': (tx['loan_type']?.toString().contains('POOR') ?? false) ? 'POOR' : 'POOR',
+            'monthly_stipend': tx['approved_amount'] ?? 8500.0,
+            'status': 'Approved for Disbursement (Blockchain Anchored)',
+            'applicant_name': tx['applicant_name'] ?? 'Citizen Beneficiary',
+          });
+        }
+      }
+    }
+    return list;
+  }
+
+  double get baseSavings => 8000.0;
+  double get baseSamurdhi => 4500.0;
+
+  double get approvedAswesumaTotal {
+    double total = 0.0;
+    for (var w in approvedWelfare) {
+      total += double.tryParse(w['monthly_stipend']?.toString() ?? '0') ?? 0.0;
+    }
+    return total;
+  }
+
+  double get totalWelfareBalance => baseSamurdhi + approvedAswesumaTotal;
+  double get totalAvailableBalance => baseSavings + totalWelfareBalance;
 
   @override
   Widget build(BuildContext context) {
@@ -79,22 +130,22 @@ class _WalletScreenState extends State<WalletScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Digital Passbook Hero Card (Deep Purple & Slate Gradient)
+                      // Digital Passbook Hero Card (Deep Indigo & Violet Gradient)
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(24),
+                        padding: const EdgeInsets.all(22),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [Color(0xFF312E81), Color(0xFF4338CA), Color(0xFF6366F1)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(22),
                           boxShadow: const [
                             BoxShadow(
-                              color: Color(0x243730A3),
-                              blurRadius: 16,
-                              offset: Offset(0, 6),
+                              color: Color(0x303730A3),
+                              blurRadius: 18,
+                              offset: Offset(0, 8),
                             ),
                           ],
                         ),
@@ -132,15 +183,15 @@ class _WalletScreenState extends State<WalletScreen> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 20),
                             Text(
                               s.totalBalance,
                               style: const TextStyle(color: Colors.white70, fontSize: 13),
                             ),
                             const SizedBox(height: 4),
-                            const Text(
-                              'Rs. 12,500.00',
-                              style: TextStyle(
+                            Text(
+                              'Rs. ${totalAvailableBalance.toStringAsFixed(2)}',
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 32,
                                 fontWeight: FontWeight.w800,
@@ -148,14 +199,71 @@ class _WalletScreenState extends State<WalletScreen> {
                               ),
                             ),
                             const SizedBox(height: 16),
+                            // Sub-balances Breakdown
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.10),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: Colors.white.withOpacity(0.15)),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          s.isSinhala ? 'පුද්ගලික ඉතිරිකිරීම්' : 'LKR Savings',
+                                          style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w600),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'Rs. ${baseSavings.toStringAsFixed(2)}',
+                                          style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w800),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF10B981).withOpacity(0.20),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: const Color(0xFF34D399).withOpacity(0.5)),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          s.isSinhala ? 'සුබසාධන දීමනා' : 'Welfare Grants',
+                                          style: const TextStyle(color: Color(0xFFD1FAE5), fontSize: 10, fontWeight: FontWeight.w600),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'Rs. ${totalWelfareBalance.toStringAsFixed(2)}',
+                                          style: const TextStyle(color: Color(0xFF6EE7B7), fontSize: 14, fontWeight: FontWeight.w800),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 14),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: const [
+                              children: [
                                 Text(
-                                  'Account: 100456789012 (Samurdhi)',
-                                  style: TextStyle(color: Colors.white60, fontSize: 11, fontFamily: 'monospace'),
+                                  approvedWelfare.isNotEmpty
+                                      ? 'Account: 100456789012 (Samurdhi + Aswesuma DBT)'
+                                      : 'Account: 100456789012 (Samurdhi)',
+                                  style: const TextStyle(color: Colors.white60, fontSize: 10, fontFamily: 'monospace'),
                                 ),
-                                Text(
+                                const Text(
                                   'DID Verified',
                                   style: TextStyle(color: Color(0xFF6EE7B7), fontSize: 11, fontWeight: FontWeight.bold),
                                 ),
@@ -165,7 +273,7 @@ class _WalletScreenState extends State<WalletScreen> {
                         ),
                       ),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
 
                       // Quick Action Buttons
                       Row(
@@ -196,16 +304,156 @@ class _WalletScreenState extends State<WalletScreen> {
                         ],
                       ),
 
-                      const SizedBox(height: 28),
+                      const SizedBox(height: 26),
 
-                      // Section Header
+                      // Government Welfare Grants Section (Identical to Web Experience)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF10B981).withOpacity(0.12),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(Icons.volunteer_activism, color: Color(0xFF059669), size: 18),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                s.isSinhala ? 'රජයේ සුබසාධන දීමනා' : 'Government Welfare Grants',
+                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981).withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFF34D399)),
+                            ),
+                            child: const Text('Direct DBT', style: TextStyle(color: Color(0xFF047857), fontSize: 10, fontWeight: FontWeight.bold)),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Dynamic Approved Aswesuma Grants Card
+                      if (approvedWelfare.isNotEmpty)
+                        ...approvedWelfare.map((app) => Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFECFDF5), Color(0xFFD1FAE5)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFF6EE7B7), width: 1.5),
+                            boxShadow: const [
+                              BoxShadow(color: Color(0x0F059669), blurRadius: 10, offset: Offset(0, 4)),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      'Aswesuma Household Benefit (${app['tier'] ?? 'POOR'})',
+                                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF064E3B)),
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF059669),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Text('✓ Active & Disbursed', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Rs. ${double.tryParse(app['monthly_stipend']?.toString() ?? '8500')?.toStringAsFixed(2) ?? '8,500.00'} / mo',
+                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFF047857)),
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.85),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: const Color(0xFF10B981).withOpacity(0.3)),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Officer Status: ${app['status'] ?? 'Approved for Disbursement'}',
+                                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF166534)),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'ID: ${app['assessment_id'] ?? 'ASW-959157'} • Direct benefit transfer to DID wallet',
+                                      style: const TextStyle(fontSize: 10, color: Color(0xFF047857)),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        )),
+
+                      // Monthly Samurdhi Baseline Card
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 24),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF0FDF4),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFBBF7D0)),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  s.isSinhala ? 'මාසික සමෘද්ධි සහනාධාරය' : 'Monthly Samurdhi Relief',
+                                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF064E3B)),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  s.isSinhala ? 'සමෘද්ධි බැංකු ගිණුම වෙත සෘජුව බැර කෙරේ' : 'Direct credit to Samurdhi Passbook',
+                                  style: const TextStyle(fontSize: 11, color: Color(0xFF166534)),
+                                ),
+                              ],
+                            ),
+                            const Text(
+                              'Rs. 4,500.00 / mo',
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Color(0xFF047857)),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Blockchain Transaction History / Ledger Section Header
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
                             s.walletLedgerTitle,
                             style: const TextStyle(
-                              fontSize: 16,
+                              fontSize: 15,
                               fontWeight: FontWeight.w700,
                               color: AppColors.textPrimary,
                             ),
@@ -230,6 +478,7 @@ class _WalletScreenState extends State<WalletScreen> {
                           final status = tx['status'] ?? 'Pending';
                           final isApproved = status == 'Active' || status == 'Approved';
                           final isRejected = status == 'Rejected';
+                          final isWelfare = tx['type'] == 'welfare' || (tx['loan_type']?.toString().toLowerCase().contains('aswesuma') ?? false);
 
                           final Color statusColor = isRejected
                               ? AppColors.danger
@@ -242,7 +491,9 @@ class _WalletScreenState extends State<WalletScreen> {
                               : (isApproved ? AppColors.successBorder : AppColors.warningBorder);
                           final IconData statusIcon = isRejected
                               ? Icons.cancel
-                              : (isApproved ? Icons.check_circle : Icons.hourglass_top);
+                              : (isWelfare
+                                  ? Icons.volunteer_activism
+                                  : (isApproved ? Icons.check_circle : Icons.hourglass_top));
 
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 14),
@@ -256,11 +507,11 @@ class _WalletScreenState extends State<WalletScreen> {
                                       Container(
                                         padding: const EdgeInsets.all(10),
                                         decoration: BoxDecoration(
-                                          color: statusBg,
+                                          color: isWelfare ? const Color(0xFFECFDF5) : statusBg,
                                           borderRadius: BorderRadius.circular(10),
-                                          border: Border.all(color: statusBorder),
+                                          border: Border.all(color: isWelfare ? const Color(0xFF6EE7B7) : statusBorder),
                                         ),
-                                        child: Icon(statusIcon, color: statusColor, size: 20),
+                                        child: Icon(statusIcon, color: isWelfare ? const Color(0xFF059669) : statusColor, size: 20),
                                       ),
                                       const SizedBox(width: 14),
                                       Expanded(
@@ -268,7 +519,7 @@ class _WalletScreenState extends State<WalletScreen> {
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              tx['loan_type'] ?? 'Loan Facility',
+                                              tx['loan_type'] ?? (isWelfare ? 'Aswesuma Grant' : 'Loan Facility'),
                                               style: const TextStyle(
                                                 fontSize: 15,
                                                 fontWeight: FontWeight.bold,
@@ -284,10 +535,10 @@ class _WalletScreenState extends State<WalletScreen> {
                                         ),
                                       ),
                                       AppComponents.statusBadge(
-                                        label: status,
-                                        background: statusBg,
-                                        textColor: statusColor,
-                                        borderColor: statusBorder,
+                                        label: isApproved ? 'Active' : status,
+                                        background: isWelfare ? const Color(0xFFDCFCE7) : statusBg,
+                                        textColor: isWelfare ? const Color(0xFF166534) : statusColor,
+                                        borderColor: isWelfare ? const Color(0xFF86EFAC) : statusBorder,
                                       ),
                                     ],
                                   ),
@@ -295,9 +546,17 @@ class _WalletScreenState extends State<WalletScreen> {
                                   const Divider(height: 1, color: AppColors.border),
                                   const SizedBox(height: 12),
 
-                                  _ledgerRow('Disbursed Amount', 'Rs. ${tx['approved_amount'] ?? 0}', isBold: true),
+                                  _ledgerRow(
+                                    isWelfare ? 'Disbursed Monthly Grant' : 'Disbursed Amount',
+                                    '${isWelfare ? "+ " : ""}Rs. ${tx['approved_amount'] ?? 0}',
+                                    isBold: true,
+                                    valueColor: isWelfare ? const Color(0xFF047857) : null,
+                                  ),
                                   const SizedBox(height: 8),
-                                  _ledgerRow('Repayment Period', '${tx['duration_months'] ?? 0} Months'),
+                                  _ledgerRow(
+                                    isWelfare ? 'Disbursement Channel' : 'Repayment Period',
+                                    isWelfare ? 'Direct Benefit Transfer (DBT)' : '${tx['duration_months'] ?? 0} Months',
+                                  ),
 
                                   if (isApproved) ...[
                                     const SizedBox(height: 12),
@@ -314,7 +573,9 @@ class _WalletScreenState extends State<WalletScreen> {
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: Text(
-                                              s.officerApproved,
+                                              isWelfare
+                                                  ? (s.isSinhala ? 'නිලධාරියා විසින් අනුමත කරන ලදී. ඩිජිටල් පසුම්බියට මුදල් බැර කර ඇත.' : 'Officer verified & approved. Disbursed directly to DID Wallet.')
+                                                  : s.officerApproved,
                                               style: const TextStyle(color: AppColors.welfareDark, fontSize: 11, fontWeight: FontWeight.w500),
                                             ),
                                           ),
@@ -380,7 +641,7 @@ class _WalletScreenState extends State<WalletScreen> {
     );
   }
 
-  Widget _ledgerRow(String label, String value, {bool isBold = false}) {
+  Widget _ledgerRow(String label, String value, {bool isBold = false, Color? valueColor}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -390,7 +651,7 @@ class _WalletScreenState extends State<WalletScreen> {
           style: TextStyle(
             fontSize: 13,
             fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
-            color: isBold ? AppColors.textPrimary : AppColors.textSecondary,
+            color: valueColor ?? (isBold ? AppColors.textPrimary : AppColors.textSecondary),
           ),
         ),
       ],

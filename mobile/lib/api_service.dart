@@ -49,6 +49,15 @@ class ApiService {
     }
   }
 
+  static Future<Map<String, dynamic>> fetchAllApplications() async {
+    final response = await http.get(Uri.parse('$baseUrl/applications/all'));
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to fetch applications');
+    }
+  }
+
   static Future<List<dynamic>> fetchBanks() async {
     final response = await http.get(Uri.parse('$baseUrl/banks'));
     if (response.statusCode == 200) {

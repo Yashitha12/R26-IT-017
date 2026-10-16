@@ -506,6 +506,42 @@ def review_welfare(assessment_id: str, decision: WelfareReviewDecision):
         if entry.get("assessment_id") == assessment_id or entry.get("applicationId") == assessment_id:
             if decision.action == "approve":
                 entry["status"] = "Approved for Disbursement (Blockchain Anchored)"
+                entry["officer_reviewed_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
+
+                # Anchor transaction to Blockchain Ledger
+                stipend = float(entry.get("monthly_stipend") or 8500.0)
+                did = entry.get("did") or "did:smartgrama:prototype:001"
+                app_name = entry.get("applicant_name") or "Citizen Beneficiary"
+                tier = entry.get("tier") or "POOR"
+                timestamp = int(time.time())
+                tx_hash = "0x" + hashlib.sha256(f"{did}:{assessment_id}:{stipend}:{timestamp}".encode()).hexdigest()
+                block_num = 1845200 + len(blockchain_ledger_db) + 1
+
+                ledger_entry = {
+                    "tx_hash": tx_hash,
+                    "block_number": block_num,
+                    "timestamp": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(timestamp)),
+                    "did": did,
+                    "applicant_name": app_name,
+                    "loan_type": f"Aswesuma Social Grant ({tier})",
+                    "partner_bank": "Divisional Secretariat (DBT)",
+                    "approved_amount": stipend,
+                    "interest_rate": "0% (Grant)",
+                    "duration_months": 1,
+                    "risk_level": "Low (Poverty Verified)",
+                    "decision": "Approved for Direct Benefit Transfer",
+                    "smart_contract": "0x89D24A32c5890eD23eB3d3408a0dEb29AcD10955",
+                    "channel": "sg-welfare-benefit-disbursal-channel",
+                    "consensus_status": "Committed & Disbursed to DID Wallet",
+                    "status": "Active",
+                    "type": "welfare",
+                    "assessment_id": assessment_id,
+                }
+
+                # Avoid duplicate ledger entries
+                if not any(t.get("assessment_id") == assessment_id for t in blockchain_ledger_db):
+                    blockchain_ledger_db.append(ledger_entry)
+
             else:
                 entry["status"] = "Rejected by Officer"
                 entry["monthly_stipend"] = 0.0
@@ -562,9 +598,85 @@ def review_kyc(did: str, decision: KYCReviewDecision):
 # -------------------------------------------------------------
 # 3. BLOCKCHAIN DLT & TAMPER-RESISTANT ANCHORING
 # -------------------------------------------------------------
-blockchain_ledger_db = []
-loan_applications_db = []
-welfare_applications_db = []
+blockchain_ledger_db = [
+    {
+        "tx_hash": "0x3f7a8b9c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a",
+        "block_number": 1845201,
+        "timestamp": "2026-04-10 14:32:00",
+        "did": "did:sg:198723456789",
+        "applicant_name": "Nimal Perera",
+        "loan_type": "Agricultural Microloan",
+        "approved_amount": 150000.0,
+        "interest_rate": "12%",
+        "duration_months": 48,
+        "risk_level": "Low Risk",
+        "decision": "Approved",
+        "smart_contract": "0x71C8A33E2B6c0f81A2b1d3A84988f4AcE9812",
+        "channel": "sg-interbank-financial-channel",
+        "consensus_status": "Verified & Committed (Hyperledger/DLT Anchor)",
+        "status": "Approved",
+        "type": "loan"
+    },
+    {
+        "tx_hash": "0x89d24a32c5890ed23eb3d3408a0deb29acd109558912",
+        "block_number": 1845202,
+        "timestamp": "2026-10-16 15:15:59",
+        "did": "did:smartgrama:prototype:1429",
+        "applicant_name": "DENETH",
+        "loan_type": "Aswesuma Social Grant (POOR)",
+        "partner_bank": "Divisional Secretariat (DBT)",
+        "approved_amount": 8500.0,
+        "interest_rate": "0% (Grant)",
+        "duration_months": 1,
+        "risk_level": "Low (Poverty Verified)",
+        "decision": "Approved for Direct Benefit Transfer",
+        "smart_contract": "0x89D24A32c5890eD23eB3d3408a0dEb29AcD10955",
+        "channel": "sg-welfare-benefit-disbursal-channel",
+        "consensus_status": "Committed & Disbursed to DID Wallet",
+        "status": "Active",
+        "type": "welfare",
+        "assessment_id": "ASW-959157"
+    }
+]
+
+loan_applications_db = [
+    {
+        "tx_hash": "0x3f7a8b9c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a",
+        "block_number": 1845201,
+        "timestamp": "2026-04-10 14:32:00",
+        "did": "did:sg:198723456789",
+        "applicant_name": "Nimal Perera",
+        "loan_type": "Agricultural Microloan",
+        "approved_amount": 150000.0,
+        "interest_rate": "12%",
+        "duration_months": 48,
+        "risk_level": "Low Risk",
+        "decision": "Approved",
+        "smart_contract": "0x71C8A33E2B6c0f81A2b1d3A84988f4AcE9812",
+        "channel": "sg-interbank-financial-channel",
+        "consensus_status": "Verified & Committed (Hyperledger/DLT Anchor)",
+        "status": "Approved"
+    }
+]
+
+welfare_applications_db = [
+    {
+        "assessment_id": "ASW-959157",
+        "applicationId": "ASW-959157",
+        "did": "did:smartgrama:prototype:1429",
+        "applicant_name": "DENETH",
+        "gn_division": "udumulla",
+        "welfare_score": 565.0,
+        "tier": "POOR",
+        "monthly_stipend": 8500.0,
+        "status": "Approved for Disbursement (Blockchain Anchored)",
+        "recommended_programs": [
+            "Aswesuma Social Safety Net"
+        ],
+        "assessed_at": "2026-10-16 15:15:59",
+        "officer_reviewed_at": "2026-10-16 15:15:59"
+    }
+]
 
 class BlockchainLoanRecord(BaseModel):
     applicant_name: str
