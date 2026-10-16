@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import Header from "../components/Header";
 import { recordLoanOnBlockchain } from "../api/loanApi";
 
 export default function LoanResult() {
   const { state } = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [isRecording, setIsRecording] = useState(false);
   const [txReceipt, setTxReceipt] = useState(null);
 
@@ -17,8 +19,8 @@ export default function LoanResult() {
       <>
         <Header />
         <main className="content-container flex flex-col justify-center items-center" style={{ minHeight: '60vh', gap: '16px' }}>
-          <p style={{ color: 'var(--text-secondary)' }}>No prediction data found. Please submit an application.</p>
-          <button style={{ padding: '12px 24px', background: 'var(--accent)', color: 'white', borderRadius: '8px', border: 'none', cursor: 'pointer' }} onClick={() => navigate("/")}>Go Home</button>
+          <p style={{ color: 'var(--text-secondary)' }}>{t("no_prediction_data")}</p>
+          <button style={{ padding: '12px 24px', background: 'var(--accent)', color: 'white', borderRadius: '8px', border: 'none', cursor: 'pointer' }} onClick={() => navigate("/")}>{t("go_home")}</button>
         </main>
       </>
     );
@@ -28,24 +30,23 @@ export default function LoanResult() {
   const isRejected = decision.includes("Rejected");
   const isReduced = decision.includes("Reduced");
   const isCaution = decision.includes("Caution");
-  const isFullyApproved = !isRejected && !isReduced && !isCaution;
 
   let statusColor = "var(--success)";
   let statusIcon = "fa-check";
-  let statusTitle = "Approved!";
+  let statusTitle = t("decision_approved");
 
   if (isRejected) {
     statusColor = "var(--error, #ef4444)";
     statusIcon = "fa-xmark";
-    statusTitle = "Application Rejected";
+    statusTitle = t("decision_rejected");
   } else if (isReduced) {
     statusColor = "#eab308"; // yellow
     statusIcon = "fa-scale-balanced";
-    statusTitle = "Amount Adjusted";
+    statusTitle = t("decision_adjusted");
   } else if (isCaution) {
     statusColor = "#f97316"; // orange
     statusIcon = "fa-triangle-exclamation";
-    statusTitle = "Approved with Caution";
+    statusTitle = t("decision_caution");
   }
 
   let riskColor = "var(--success)";
@@ -101,29 +102,29 @@ export default function LoanResult() {
                   {statusTitle}
                 </h2>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
-                  SmartGrama AI Evaluation Complete
+                  {t("ai_eval_complete")}
                 </p>
               </div>
             </div>
 
             <div style={{ background: 'var(--background)', borderRadius: '12px', padding: '24px', marginBottom: '32px', borderLeft: `4px solid ${statusColor}` }}>
-              <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '8px', textTransform: 'uppercase' }}>AI Reasoning</div>
+              <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', marginBottom: '8px', textTransform: 'uppercase' }}>{t("ai_reasoning")}</div>
               <div style={{ fontSize: '15px', color: 'var(--text-primary)', lineHeight: 1.5 }}>
                 {prediction.reason}
               </div>
             </div>
 
-            <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '24px', color: 'var(--text-primary)' }}>Detailed Assessment</h3>
+            <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '24px', color: 'var(--text-primary)' }}>{t("detailed_assessment")}</h3>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '32px' }}>
               <div style={{ border: '1px solid var(--border)', borderRadius: '12px', padding: '20px' }}>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>Predicted Risk Profile</div>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>{t("predicted_risk_profile")}</div>
                 <div style={{ fontSize: '18px', fontWeight: 'bold', color: riskColor, display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <i className="fa-solid fa-shield-cat"></i> {riskLevel}
                 </div>
               </div>
               <div style={{ border: '1px solid var(--border)', borderRadius: '12px', padding: '20px' }}>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>Requested Amount</div>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>{t("requested_amount")}</div>
                 <div style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                   Rs. {Number(prediction.requested_loan_amount || 0).toLocaleString()}
                 </div>
@@ -139,31 +140,31 @@ export default function LoanResult() {
                       disabled={isRecording}
                       style={{ flex: 1, background: 'var(--success)', color: 'white', border: 'none', padding: '16px', borderRadius: '8px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                     >
-                      {isRecording ? "Processing..." : <>Accept Suggestion</>}
+                      {isRecording ? t("running_ai_eval") : t("accept_suggestion")}
                     </button>
                     <button 
                       onClick={() => navigate("/")}
                       disabled={isRecording}
                       style={{ flex: 1, background: 'white', color: 'var(--error, #ef4444)', border: '1px solid var(--error, #ef4444)', padding: '16px', borderRadius: '8px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                     >
-                      Reject Application
+                      {t("reject_application")}
                     </button>
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div style={{ padding: '16px', background: '#fffbeb', borderRadius: '8px', border: '1px solid #f59e0b' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#d97706', fontWeight: 'bold', marginBottom: '8px' }}>
-                        <i className="fa-solid fa-clock"></i> Application Pending Officer Review
+                        <i className="fa-solid fa-clock"></i> {t("pending_officer_review")}
                       </div>
                       <div style={{ fontSize: '12px', color: '#b45309', wordBreak: 'break-all', fontFamily: 'monospace' }}>
-                        Tracking ID: {txReceipt.tx_hash}
+                        {t("tracking_id")}: {txReceipt.tx_hash}
                       </div>
                     </div>
                     <button 
                       style={{ background: 'var(--accent)', color: 'white', border: 'none', padding: '16px', borderRadius: '8px', width: '100%', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer' }}
                       onClick={() => navigate("/wallet")}
                     >
-                      View in Wallet
+                      {t("view_in_wallet")}
                     </button>
                   </div>
                 )}
@@ -173,10 +174,10 @@ export default function LoanResult() {
           {/* Right Panel: Final Offer Terms */}
           <div style={{ height: 'fit-content', position: 'sticky', top: '100px' }}>
             <div style={{ background: 'var(--primary-light)', borderRadius: 'var(--radius-lg)', padding: '40px 32px', border: '1px solid #d8b4fe' }}>
-                <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', letterSpacing: '0.5px', marginBottom: '24px' }}>FINAL APPROVED TERMS</div>
+                <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', letterSpacing: '0.5px', marginBottom: '24px' }}>{t("final_approved_terms")}</div>
                 
                 <div style={{ marginBottom: '24px' }}>
-                  <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Approved Amount</div>
+                  <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '4px' }}>{t("approved_amount")}</div>
                   <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--primary)' }}>
                     Rs. {Number(prediction.recommended_loan_amount || 0).toLocaleString()}
                   </div>
@@ -184,15 +185,15 @@ export default function LoanResult() {
                 
                 <div style={{ borderTop: '1px solid #d8b4fe', paddingTop: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Monthly EMI</span>
+                    <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{t("monthly_emi")}</span>
                     <span style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>Rs. {Number(prediction.suggested_monthly_installment || 0).toLocaleString()}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Duration</span>
-                    <span style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{prediction.estimated_repayment_duration_months || 12} months</span>
+                    <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{t("duration")}</span>
+                    <span style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{prediction.estimated_repayment_duration_months || 12} {t("months")}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Interest Rate</span>
+                    <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{t("interest_rate")}</span>
                     <span style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{application?.interest_rate || 12}% APR</span>
                   </div>
                 </div>

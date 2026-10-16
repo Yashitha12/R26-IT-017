@@ -213,6 +213,66 @@ export async function assessWelfare(welfareData) {
       console.warn("Could not sync reference to Python backend:", refErr);
     }
 
+    const translations = eligibilityData?.translations || {
+      category: {
+        en: category === "SEVERELY_POOR" ? "Severely Impoverished (Tier 1)" : (category === "POOR" ? "Poor Household Tier (Tier 2)" : (category === "VULNERABLE" ? "Vulnerable Household Tier (Tier 3)" : "Transitional Cushion Tier (Tier 4)")),
+        si: category === "SEVERELY_POOR" ? "අතිශය දුප්පත් කාණ්ඩය (ප්‍රමුඛතා මට්ටම 1)" : (category === "POOR" ? "දුප්පත් පවුල් කාණ්ඩය (මට්ටම 2)" : (category === "VULNERABLE" ? "අවදානමට ලක්වූ කාණ්ඩය (මට්ටම 3)" : "සංක්‍රාන්තික කාණ්ඩය (මට්ටම 4)"))
+      },
+      status: {
+        en: "Eligible for Aswesuma Direct Grant",
+        si: "අස්වැසුම සෘජු දීමනාව සඳහා සුදුසුකම් සපුරා ඇත"
+      },
+      stipendFormatted: {
+        en: `Rs. ${Number(monthlyStipend).toLocaleString()} / month`,
+        si: `රු. ${Number(monthlyStipend).toLocaleString()} / මසකට`
+      }
+    };
+
+    const dimensionList = [
+      {
+        key: "EDUCATION",
+        name_en: "Education Level",
+        name_si: "අධ්‍යාපන මට්ටම",
+        score: eligibilityData?.dimensionBreakdown?.EDUCATION?.score || 18.0,
+        max_score: 30.0,
+      },
+      {
+        key: "HEALTH_AND_SPECIAL_NEEDS",
+        name_en: "Health & Special Needs",
+        name_si: "සෞඛ්‍ය සහ විශේෂ අවශ්‍යතා",
+        score: eligibilityData?.dimensionBreakdown?.HEALTH_AND_SPECIAL_NEEDS?.score || (Number(welfareData.disabled_members) > 0 ? 25.0 : 10.0),
+        max_score: 30.0,
+      },
+      {
+        key: "ECONOMIC_LEVEL_AND_INCOME",
+        name_en: "Economic Level & Income",
+        name_si: "ආර්ථික මට්ටම සහ ආදායම",
+        score: eligibilityData?.dimensionBreakdown?.ECONOMIC_LEVEL_AND_INCOME?.score || 45.0,
+        max_score: 50.0,
+      },
+      {
+        key: "ASSETS_AND_OWNERSHIP",
+        name_en: "Assets & Land Holdings",
+        name_si: "වත්කම් සහ ඉඩම් හිමිකාරිත්වය",
+        score: eligibilityData?.dimensionBreakdown?.ASSETS_AND_OWNERSHIP?.score || 12.0,
+        max_score: 20.0,
+      },
+      {
+        key: "HOUSING_CONDITIONS",
+        name_en: "Housing Conditions",
+        name_si: "නිවාස සහ ජීවන තත්ත්වය",
+        score: eligibilityData?.dimensionBreakdown?.HOUSING_CONDITIONS?.score || 22.0,
+        max_score: 30.0,
+      },
+      {
+        key: "FAMILY_DEMOGRAPHY",
+        name_en: "Family Demography",
+        name_si: "පවුල් ජනගහන විස්තර",
+        score: eligibilityData?.dimensionBreakdown?.FAMILY_DEMOGRAPHY?.score || 28.0,
+        max_score: 35.0,
+      },
+    ];
+
     return {
       applicationId: applicationId,
       assessment_id: applicationId,
@@ -221,13 +281,25 @@ export async function assessWelfare(welfareData) {
       gn_division: welfareData.gn_division || "Minuwangoda North",
       welfare_score: calculatedScore,
       tier: category,
+      tier_en: translations.category.en,
+      tier_si: translations.category.si,
       category: category,
       monthly_stipend: monthlyStipend,
+      stipend_formatted_en: translations.stipendFormatted.en,
+      stipend_formatted_si: translations.stipendFormatted.si,
       status: eligibilityData?.eligibilityStatus || "ELIGIBLE",
+      status_en: translations.status.en,
+      status_si: translations.status.si,
+      translations: translations,
+      dimension_breakdown: dimensionList,
       eligibilityResult: eligibilityData,
       recommended_programs: [
         "Aswesuma Social Safety Net",
         "Samurdhi Community Livelihood Scheme",
+      ],
+      recommended_programs_si: [
+        "අස්වැසුම සමාජ ආරක්ෂණ ජාලය",
+        "සමෘද්ධි ප්‍රජා ජීවනෝපාය යෝජනා ක්‍රමය",
       ],
       assessed_at: new Date().toISOString().slice(0, 10),
     };
@@ -241,12 +313,35 @@ export async function assessWelfare(welfareData) {
       gn_division: welfareData.gn_division || "Minuwangoda North",
       welfare_score: 565.0,
       tier: "POOR",
+      tier_en: "Poor Household Tier (Tier 2)",
+      tier_si: "දුප්පත් පවුල් කාණ්ඩය (මට්ටම 2)",
       category: "POOR",
       monthly_stipend: 8500.0,
+      stipend_formatted_en: "Rs. 8,500 / month",
+      stipend_formatted_si: "රු. 8,500 / මසකට",
       status: "ELIGIBLE",
+      status_en: "Eligible for Aswesuma Direct Grant",
+      status_si: "අස්වැසුම සෘජු දීමනාව සඳහා සුදුසුකම් සපුරා ඇත",
+      translations: {
+        category: { en: "Poor Household Tier (Tier 2)", si: "දුප්පත් පවුල් කාණ්ඩය (මට්ටම 2)" },
+        status: { en: "Eligible for Aswesuma Direct Grant", si: "අස්වැසුම සෘජු දීමනාව සඳහා සුදුසුකම් සපුරා ඇත" },
+        stipendFormatted: { en: "Rs. 8,500 / month", si: "රු. 8,500 / මසකට" },
+      },
+      dimension_breakdown: [
+        { key: "EDUCATION", name_en: "Education Level", name_si: "අධ්‍යාපන මට්ටම", score: 18.0, max_score: 30.0 },
+        { key: "HEALTH_AND_SPECIAL_NEEDS", name_en: "Health & Special Needs", name_si: "සෞඛ්‍ය සහ විශේෂ අවශ්‍යතා", score: 20.0, max_score: 30.0 },
+        { key: "ECONOMIC_LEVEL_AND_INCOME", name_en: "Economic Level & Income", name_si: "ආර්ථික මට්ටම සහ ආදායම", score: 45.0, max_score: 50.0 },
+        { key: "ASSETS_AND_OWNERSHIP", name_en: "Assets & Land Holdings", name_si: "වත්කම් සහ ඉඩම් හිමිකාරිත්වය", score: 12.0, max_score: 20.0 },
+        { key: "HOUSING_CONDITIONS", name_en: "Housing Conditions", name_si: "නිවාස සහ ජීවන තත්ත්වය", score: 22.0, max_score: 30.0 },
+        { key: "FAMILY_DEMOGRAPHY", name_en: "Family Demography", name_si: "පවුල් ජනගහන විස්තර", score: 28.0, max_score: 35.0 },
+      ],
       recommended_programs: [
         "Aswesuma Social Safety Net",
         "Samurdhi Community Livelihood Scheme",
+      ],
+      recommended_programs_si: [
+        "අස්වැසුම සමාජ ආරක්ෂණ ජාලය",
+        "සමෘද්ධි ප්‍රජා ජීවනෝපාය යෝජනා ක්‍රමය",
       ],
       assessed_at: new Date().toISOString().slice(0, 10),
     };

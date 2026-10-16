@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import axios from "axios";
 import "./AIChat.css";
 import botLogo from "./bot-logo.jpg";
@@ -43,8 +45,10 @@ const quickTopics = {
 };
 
 function App() {
+  const navigate = useNavigate();
+  const { i18n } = useTranslation();
   const [message, setMessage] = useState("");
-  const [language, setLanguage] = useState("en-US");
+  const [language, setLanguage] = useState(i18n.language === "si" ? "si-LK" : "en-US");
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
   const [useRag, setUseRag] = useState(true);
@@ -77,9 +81,23 @@ function App() {
     return () => stopAudio();
   }, []);
 
+  // Synchronize with global language switcher
+  useEffect(() => {
+    if (i18n.language === "si" && language !== "si-LK") {
+      setLanguage("si-LK");
+    } else if (i18n.language !== "si" && language !== "en-US") {
+      setLanguage("en-US");
+    }
+  }, [i18n.language]);
+
   const handleLanguageChange = (newLang) => {
     stopAudio();
     setLanguage(newLang);
+    if (newLang === "si-LK") {
+      i18n.changeLanguage("si");
+    } else {
+      i18n.changeLanguage("en");
+    }
   };
 
   const handleClearChat = () => {
@@ -270,6 +288,27 @@ function App() {
             <span className="brand-name">SmartGrama</span>
             <span className="brand-tag">AI ASSISTANT</span>
           </div>
+        </div>
+        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
+          <button
+            onClick={() => navigate("/")}
+            style={{
+              background: "rgba(255, 255, 255, 0.12)",
+              border: "1px solid rgba(255, 255, 255, 0.25)",
+              color: "#fff",
+              padding: "7px 14px",
+              borderRadius: "8px",
+              fontSize: "12px",
+              fontWeight: "700",
+              cursor: "pointer",
+              fontFamily: "inherit",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+            }}
+          >
+            ← {language === "si-LK" ? "ප්‍රධාන පුවරුවට" : "Back to Dashboard"}
+          </button>
         </div>
       </nav>
 

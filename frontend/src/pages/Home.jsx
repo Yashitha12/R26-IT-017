@@ -3,6 +3,7 @@ import Header from "../components/Header";
 import { useEffect, useState } from "react";
 import { fetchBlockchainLedger } from "../api/loanApi";
 import { getCurrentUser, getInitials } from "../utils/user";
+import { useTranslation } from "react-i18next";
 import dashboardBg from "../assets/smartgrama_dashboard_bg.jpg";
 import botLogo from "./new-bot-logo.jpg";
 /* ─── Inline SVG icons ─── */
@@ -20,27 +21,28 @@ const Ico = {
   check: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>,
 };
 
-const services = [
-  { id: "loan",    label: "Micro-Loan",       sub: "Apply for funding",       route: "/loan-programs",   color: "#4338ca", light: "#eef2ff", icon: "loan"    },
-  { id: "welfare", label: "Welfare Program",  sub: "Samurdhi & benefits",     route: "/welfare-landing", color: "#047857", light: "#ecfdf5", icon: "welfare"  },
-  { id: "wallet",  label: "Digital Wallet",   sub: "Balance & transfers",     route: "/wallet",          color: "#0369a1", light: "#eff6ff", icon: "wallet"   },
-  { id: "status",  label: "My Applications",  sub: "Track submissions",       route: "/status",          color: "#b45309", light: "#fffbeb", icon: "status"   },
-  { id: "ai",      label: "AI Assistant",     sub: "Ask in any language",     route: "/ai-chat",         color: "#7c3aed", light: "#f5f3ff", icon: "ai"       },
-];
-
-const activity = [
-  { icon: "loan",    title: "Agricultural Microloan",  amount: "Rs. 150,000",  date: "Apr 10, 2026",  status: "Approved",     ok: true  },
-  { icon: "welfare", title: "Samurdhi Welfare Grant",  amount: "Rs. 4,500/mo", date: "May 5, 2026",   status: "Under Review", ok: false },
-];
-
 export default function Home() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const user = getCurrentUser();
   const [ledger, setLedger] = useState([]);
 
   useEffect(() => {
     fetchBlockchainLedger().then(d => setLedger(d.ledger || []));
   }, []);
+
+  const services = [
+    { id: "loan",    label: t("micro_loan"),       sub: t("apply_funding"),       route: "/loan-programs",   color: "#4338ca", light: "#eef2ff", icon: "loan"    },
+    { id: "welfare", label: t("welfare_program"),  sub: t("samurdhi_benefits"),   route: "/welfare-landing", color: "#047857", light: "#ecfdf5", icon: "welfare"  },
+    { id: "wallet",  label: t("digital_wallet"),   sub: t("balance_transfers"),   route: "/wallet",          color: "#0369a1", light: "#eff6ff", icon: "wallet"   },
+    { id: "status",  label: t("my_applications"),  sub: t("track_submissions"),   route: "/status",          color: "#b45309", light: "#fffbeb", icon: "status"   },
+    { id: "ai",      label: t("ai_assistant"),     sub: t("ai_assistant_sub"),    route: "/ai-chat",         color: "#7c3aed", light: "#f5f3ff", icon: "ai"       },
+  ];
+
+  const activity = [
+    { icon: "loan",    title: t("agricultural_microloan"),  amount: "Rs. 150,000",  date: "Apr 10, 2026",  status: t("approved"),     ok: true  },
+    { icon: "welfare", title: t("samurdhi_welfare_grant"),  amount: "Rs. 4,500/mo", date: "May 5, 2026",   status: t("under_review"), ok: false },
+  ];
 
   const name      = user?.name     || "Resident";
   const nic       = user?.nic      || "—";
@@ -141,21 +143,21 @@ export default function Home() {
               <div style={{ marginTop:22 }}>
                 {verified ? (
                   <div style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"8px 18px", borderRadius:50, background:"rgba(110,231,183,0.18)", border:"1.5px solid rgba(110,231,183,0.4)", color:"#6ee7b7", fontSize:13, fontWeight:700 }}>
-                    {Ico.check} Identity Verified &nbsp;&middot;&nbsp; SmartGrama DID Active
+                    {Ico.check} {t("identity_verified_did_active")}
                   </div>
                 ) : (
                   <button
                     onClick={() => navigate("/identity")}
                     style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"9px 20px", borderRadius:50, background:"#d97706", border:"none", color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"inherit", boxShadow:"0 4px 14px rgba(217,119,6,0.35)" }}
                   >
-                    Complete Identity Verification
+                    {t("complete_identity_verification")}
                   </button>
                 )}
               </div>
 
               {/* Watermark text */}
               <div style={{ position:"absolute", bottom:16, right:20, fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.15)", textTransform:"uppercase", letterSpacing:2 }}>
-                SmartGrama · Democratic Socialist Republic of Sri Lanka
+                {t("smartgrama_tagline")}
               </div>
             </div>
 
@@ -169,16 +171,16 @@ export default function Home() {
               justifyContent: "space-between",
             }}>
               <div>
-                <div style={{ fontSize:13, fontWeight:700, color:"#64748b", textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>Welfare Account Balance</div>
+                <div style={{ fontSize:13, fontWeight:700, color:"#64748b", textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>{t("welfare_account_balance")}</div>
                 <div style={{ fontSize:48, fontWeight:900, color:"#064e3b", letterSpacing:-2, lineHeight:1 }}>Rs. 12,500</div>
-                <div style={{ fontSize:13, color:"#64748b", marginTop:8 }}>SmartGrama Digital Wallet · Updated today</div>
+                <div style={{ fontSize:13, color:"#64748b", marginTop:8 }}>{t("smartgrama_wallet_updated")}</div>
               </div>
 
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12, marginTop:22 }}>
                 {[
-                  { label:"Savings",      val:"Rs. 8,000", color:"#059669" },
-                  { label:"Welfare",      val:"Rs. 4,500", color:"#0369a1" },
-                  { label:"Active Loans", val:"1",         color:"#7c3aed" },
+                  { label: t("savings"),      val:"Rs. 8,000", color:"#059669" },
+                  { label: t("welfare"),      val:"Rs. 4,500", color:"#0369a1" },
+                  { label: t("active_loans"), val:"1",         color:"#7c3aed" },
                 ].map(s => (
                   <div key={s.label} style={{ background:"#ffffff", borderRadius:16, padding:"16px", boxShadow:"0 4px 12px rgba(0,0,0,0.04)", border:"1px solid rgba(226,232,240,0.8)" }}>
                     <div style={{ fontSize:11, color:"#94a3b8", fontWeight:700, textTransform:"uppercase", letterSpacing:0.5, marginBottom:6 }}>{s.label}</div>
@@ -196,7 +198,7 @@ export default function Home() {
 
             {/* ── SERVICE PORTAL column ── */}
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-              <div style={{ fontSize:14, fontWeight:800, color:"#1e293b", textTransform:"uppercase", letterSpacing:0.8, marginBottom:4 }}>Services</div>
+              <div style={{ fontSize:14, fontWeight:800, color:"#1e293b", textTransform:"uppercase", letterSpacing:0.8, marginBottom:4 }}>{t("services_heading")}</div>
               {services.map(s => (
                 <div
                   key={s.id}
@@ -235,9 +237,9 @@ export default function Home() {
               boxShadow:"0 8px 24px rgba(0,0,0,0.04)",
             }}>
               <div style={{ padding:"22px 28px 16px", display:"flex", alignItems:"center", justifyContent:"space-between", borderBottom:"1px solid rgba(241, 245, 249, 0.8)" }}>
-                <div style={{ fontSize:17, fontWeight:800, color:"#0f172a" }}>Recent Activity</div>
+                <div style={{ fontSize:17, fontWeight:800, color:"#0f172a" }}>{t("recent_activity")}</div>
                 <button onClick={() => navigate("/status")} style={{ fontSize:13, fontWeight:700, color:"#059669", background:"none", border:"none", cursor:"pointer", display:"flex", alignItems:"center", gap:4 }}>
-                  View All {Ico.arrow}
+                  {t("view_all")} {Ico.arrow}
                 </button>
               </div>
 
@@ -273,16 +275,16 @@ export default function Home() {
                       TX
                     </div>
                     <div style={{ flex:1, overflow:"hidden" }}>
-                      <div style={{ fontSize:14, fontWeight:700, color:"#334155", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{tx.type || "Blockchain Transaction"}</div>
+                      <div style={{ fontSize:14, fontWeight:700, color:"#334155", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{tx.type || t("blockchain_transaction")}</div>
                       <div style={{ fontSize:11, color:"#64748b", marginTop:3 }}>{tx.timestamp || "—"}</div>
                     </div>
-                    <span style={{ fontSize:11, fontWeight:700, padding:"4px 12px", borderRadius:50, background:"#f5f3ff", color:"#7c3aed", border:"1px solid #ddd6fe" }}>Ledger</span>
+                    <span style={{ fontSize:11, fontWeight:700, padding:"4px 12px", borderRadius:50, background:"#f5f3ff", color:"#7c3aed", border:"1px solid #ddd6fe" }}>{t("ledger")}</span>
                   </div>
                 ))}
 
                 {ledger.length === 0 && activity.length > 0 && (
                   <div style={{ textAlign:"center", padding:"16px 0", fontSize:12, color:"#94a3b8" }}>
-                    No blockchain transactions yet
+                    {t("no_blockchain_tx")}
                   </div>
                 )}
               </div>
@@ -300,18 +302,18 @@ export default function Home() {
                 padding:"22px 24px",
                 boxShadow:"0 8px 24px rgba(6, 78, 59, 0.06)",
               }}>
-                <div style={{ fontSize:11, fontWeight:700, color:"#64748b", textTransform:"uppercase", letterSpacing:1, marginBottom:8 }}>GN Division</div>
+                <div style={{ fontSize:11, fontWeight:700, color:"#64748b", textTransform:"uppercase", letterSpacing:1, marginBottom:8 }}>{t("gn_division_heading")}</div>
                 <div style={{ fontSize:22, fontWeight:900, color:"#064e3b", marginBottom:4 }}>{division}</div>
-                <div style={{ fontSize:13, color:"#64748b", marginBottom:16 }}>{district} District &nbsp;&middot;&nbsp; Sri Lanka</div>
+                <div style={{ fontSize:13, color:"#64748b", marginBottom:16 }}>{t("district_sri_lanka", { district })}</div>
                 <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                   {[
-                    { label:"KYC Status",     val: verified ? "Verified" : "Pending" },
-                    { label:"Welfare Active", val: "Yes"        },
-                    { label:"Loan Eligible",  val: "Eligible"   },
+                    { label: t("kyc_status_label"),     val: verified ? t("status_verified") : t("status_pending") },
+                    { label: t("welfare_active_label"), val: t("yes") },
+                    { label: t("loan_eligible_label"),  val: t("eligible") },
                   ].map(r => (
                     <div key={r.label} style={{ display:"flex", justifyContent:"space-between", fontSize:13, paddingBottom: 4, borderBottom:"1px solid #f1f5f9" }}>
                       <span style={{ color:"#64748b", fontWeight:500 }}>{r.label}</span>
-                      <span style={{ fontWeight:700, color: r.val === "Pending" ? "#d97706" : "#059669" }}>{r.val}</span>
+                      <span style={{ fontWeight:700, color: (r.val === "Pending" || r.val === t("status_pending")) ? "#d97706" : "#059669" }}>{r.val}</span>
                     </div>
                   ))}
                 </div>

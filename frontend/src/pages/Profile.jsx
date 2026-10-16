@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import Header from "../components/Header";
 import { getCurrentUser, getInitials } from "../utils/user";
 import dashboardBg from "../assets/smartgrama_dashboard_bg.jpg";
@@ -19,6 +20,7 @@ const Ico = {
 
 export default function Profile() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const user = getCurrentUser();
 
   if (!user) {
@@ -117,7 +119,7 @@ export default function Profile() {
               {/* NIC + DID rows */}
               <div style={{ position:"relative", display:"flex", flexDirection:"column", gap:10 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:6, color:"rgba(255,255,255,0.55)", fontSize:12, minWidth:70 }}>{Ico.nic} NIC</div>
+                  <div style={{ display:"flex", alignItems:"center", gap:6, color:"rgba(255,255,255,0.55)", fontSize:12, minWidth:70 }}>{Ico.nic} {t("nic")}</div>
                   <div style={{ fontFamily:"monospace", fontSize:15, fontWeight:700, color:"#fff", letterSpacing:1 }}>{nic}</div>
                 </div>
                 {did && (
@@ -136,14 +138,14 @@ export default function Profile() {
               <div style={{ marginTop:28 }}>
                 {verified ? (
                   <div style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"8px 18px", borderRadius:50, background:"rgba(110,231,183,0.18)", border:"1.5px solid rgba(110,231,183,0.4)", color:"#6ee7b7", fontSize:13, fontWeight:700 }}>
-                    {Ico.check} Identity Verified &nbsp;&middot;&nbsp; SmartGrama DID Active
+                    {Ico.check} {t("identity_verified_did_active")}
                   </div>
                 ) : (
                   <button
                     onClick={() => navigate("/identity")}
                     style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"9px 20px", borderRadius:50, background:"#d97706", border:"none", color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"inherit", boxShadow:"0 4px 14px rgba(217,119,6,0.35)" }}
                   >
-                    Complete Identity Verification
+                    {t("complete_identity_verification")}
                   </button>
                 )}
               </div>
@@ -176,7 +178,7 @@ export default function Profile() {
                 onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.15)"}
                 onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.1)"}
               >
-                Sign Out
+                {t("sign_out")}
               </button>
 
               {/* Watermark text */}
@@ -200,14 +202,14 @@ export default function Profile() {
                 boxShadow:"0 8px 24px rgba(0,0,0,0.04)",
                 padding: "24px 28px",
               }}>
-                <div style={{ fontSize:15, fontWeight:800, color:"#0f172a", marginBottom:20 }}>Personal Details</div>
+                <div style={{ fontSize:15, fontWeight:800, color:"#0f172a", marginBottom:20 }}>{t("personal_details")}</div>
                 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                  <InfoItem icon={Ico.calendar} label="Date of Birth" value={dob} />
+                  <InfoItem icon={Ico.calendar} label={t("dob")} value={dob} />
                   <InfoItem icon={Ico.gender} label="Gender" value={gender} />
-                  <InfoItem icon={Ico.phone} label="Mobile Number" value={mobile} />
-                  <InfoItem icon={Ico.mail} label="Email Address" value={email} />
-                  <InfoItem icon={Ico.location} label="Address" value={address} full />
+                  <InfoItem icon={Ico.phone} label={t("mobile_phone")} value={mobile} />
+                  <InfoItem icon={Ico.mail} label={t("email_address")} value={email} />
+                  <InfoItem icon={Ico.location} label={t("home_address")} value={address} full />
                 </div>
               </div>
 
@@ -221,11 +223,11 @@ export default function Profile() {
                 boxShadow:"0 8px 24px rgba(0,0,0,0.04)",
                 padding: "24px 28px",
               }}>
-                <div style={{ fontSize:15, fontWeight:800, color:"#0f172a", marginBottom:20 }}>Employment & Socio-Economic</div>
+                <div style={{ fontSize:15, fontWeight:800, color:"#0f172a", marginBottom:20 }}>{t("economic_livelihood")}</div>
                 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                  <InfoItem icon={Ico.job} label="Primary Occupation" value={occupation} />
-                  <InfoItem icon={Ico.shield} label="Banking Status" value={"Active (Samurdhi/Samupakara)"} />
+                  <InfoItem icon={Ico.job} label={t("primary_occupation")} value={occupation} />
+                  <InfoItem icon={Ico.shield} label={t("banking_status")} value={t("active_bank_status")} />
                 </div>
               </div>
 

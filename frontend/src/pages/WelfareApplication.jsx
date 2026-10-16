@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import Header from "../components/Header";
 import { assessWelfare } from "../api/loanApi";
 import { getCurrentUser } from "../utils/user";
@@ -18,7 +19,21 @@ const Ico = {
 
 export default function WelfareApplication() {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const isSi = i18n.language === "si";
   const user = getCurrentUser();
+
+  useEffect(() => {
+    if (user && user.kycStatus && user.kycStatus !== "VERIFIED") {
+      alert(
+        isSi
+          ? "අස්වැසුම සුබසාධන අයදුම්පත ඉදිරිපත් කිරීමට පෙර ඔබගේ KYC සහ ඩිජිටල් අනන්‍යතාවය ග්‍රාම නිලධාරීවරයා විසින් අනුමත කළ යුතුය."
+          : "Officer KYC Approval Required: Your Digital Identity must be officially verified and approved by a Grama Niladhari Officer before applying for Aswesuma Welfare."
+      );
+      navigate("/identity");
+    }
+  }, [user, navigate, isSi]);
+
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -273,16 +288,16 @@ export default function WelfareApplication() {
   };
 
   const stepsList = [
-    { num: 1, title: "Applicant Bio" },
-    { num: 2, title: "Household" },
-    { num: 3, title: "Education" },
-    { num: 4, title: "Health" },
-    { num: 5, title: "Economic" },
-    { num: 6, title: "Assets" },
-    { num: 7, title: "Housing" },
-    { num: 8, title: "Demography" },
-    { num: 9, title: "Banking" },
-    { num: 10, title: "Review & Submit" },
+    { num: 1, title: isSi ? "පුද්ගලික තොරතුරු" : "Applicant Bio" },
+    { num: 2, title: isSi ? "පවුලේ ව්‍යුහය" : "Household" },
+    { num: 3, title: isSi ? "අධ්‍යාපනය" : "Education" },
+    { num: 4, title: isSi ? "සෞඛ්‍ය තොරතුරු" : "Health" },
+    { num: 5, title: isSi ? "ආර්ථික තත්ත්වය" : "Economic" },
+    { num: 6, title: isSi ? "දේපළ සහ ඉඩම්" : "Assets" },
+    { num: 7, title: isSi ? "නිවාස තත්ත්වය" : "Housing" },
+    { num: 8, title: isSi ? "ජනගහන විස්තර" : "Demography" },
+    { num: 9, title: isSi ? "බැංකු විස්තර" : "Banking" },
+    { num: 10, title: isSi ? "සමාලෝචනය" : "Review & Submit" },
   ];
 
   const handleSubmit = async () => {
@@ -384,7 +399,7 @@ export default function WelfareApplication() {
             onClick={() => navigate("/welfare-landing")}
           >
             {Ico.arrowLeft}
-            <span>Back to Welfare Portal</span>
+            <span>{t("back_to_welfare_portal")}</span>
           </div>
 
           {/* ═══════════════════════════════════════════════════
@@ -408,13 +423,13 @@ export default function WelfareApplication() {
 
             <div>
               <div style={{ fontSize: 11, fontWeight: 800, color: "#6ee7b7", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>
-                Democratic Socialist Republic of Sri Lanka &bull; SmartGrama
+                {isSi ? "ශ්‍රී ලංකා ප්‍රජාතාන්ත්‍රික සමාජවාදී ජනරජය • SmartGrama" : "Democratic Socialist Republic of Sri Lanka • SmartGrama"}
               </div>
               <h1 style={{ fontSize: 26, fontWeight: 900, letterSpacing: -0.5, margin: "0 0 6px" }}>
-                Aswesuma Welfare Benefit Application
+                {t("welfare_app_title")}
               </h1>
               <p style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", margin: 0, lineHeight: 1.5 }}>
-                Official Government Welfare &amp; Direct Support Scheme &bull; Complete the 10 steps below to apply
+                {t("welfare_app_subtitle")}
               </p>
             </div>
 
@@ -534,7 +549,7 @@ export default function WelfareApplication() {
               {/* STEP 1: APPLICANT BIO */}
               {currentStep === 1 && (
                 <div>
-                  <h3 style={stepTitleStyle}>Step 1: Applicant Information</h3>
+                  <h3 style={stepTitleStyle}>{t("step_applicant_info")}</h3>
                   <div style={grid2ColStyle}>
                     <div className="input-group">
                       <label style={labelStyle}>Full Legal Name *</label>
@@ -616,7 +631,7 @@ export default function WelfareApplication() {
               {/* STEP 2: HOUSEHOLD */}
               {currentStep === 2 && (
                 <div>
-                  <h3 style={stepTitleStyle}>Step 2: Household Structure</h3>
+                  <h3 style={stepTitleStyle}>{t("step_household_info")}</h3>
                   <div style={grid2ColStyle}>
                     <div className="input-group">
                       <label style={labelStyle}>Total Family Members *</label>
@@ -677,7 +692,7 @@ export default function WelfareApplication() {
               {/* STEP 3: EDUCATION */}
               {currentStep === 3 && (
                 <div>
-                  <h3 style={stepTitleStyle}>Step 3: Education Level</h3>
+                  <h3 style={stepTitleStyle}>{t("step_education_info")}</h3>
                   <div style={grid2ColStyle}>
                     <div className="input-group" style={{ gridColumn: "1 / -1" }}>
                       <label style={labelStyle}>Highest Education Level of Household Head</label>
@@ -731,7 +746,7 @@ export default function WelfareApplication() {
               {/* STEP 4: HEALTH */}
               {currentStep === 4 && (
                 <div>
-                  <h3 style={stepTitleStyle}>Step 4: Health &amp; Special Needs</h3>
+                  <h3 style={stepTitleStyle}>{t("step_health_info")}</h3>
                   <div style={grid2ColStyle}>
                     <div className="input-group">
                       <label style={labelStyle}>Permanent Disabilities in Household</label>
@@ -788,7 +803,7 @@ export default function WelfareApplication() {
               {/* STEP 5: ECONOMIC */}
               {currentStep === 5 && (
                 <div>
-                  <h3 style={stepTitleStyle}>Step 5: Economic &amp; Income Level</h3>
+                  <h3 style={stepTitleStyle}>{t("step_economic_info")}</h3>
                   <div style={grid2ColStyle}>
                     <div className="input-group">
                       <label style={labelStyle}>Primary Livelihood Source *</label>
@@ -851,7 +866,7 @@ export default function WelfareApplication() {
               {/* STEP 6: ASSETS */}
               {currentStep === 6 && (
                 <div>
-                  <h3 style={stepTitleStyle}>Step 6: Assets &amp; Land Ownership</h3>
+                  <h3 style={stepTitleStyle}>{t("step_assets_info")}</h3>
                   <div style={grid2ColStyle}>
                     <div className="input-group">
                       <label style={labelStyle}>Motor Vehicle Ownership</label>
@@ -917,7 +932,7 @@ export default function WelfareApplication() {
               {/* STEP 7: HOUSING */}
               {currentStep === 7 && (
                 <div>
-                  <h3 style={stepTitleStyle}>Step 7: Housing Conditions &amp; Sanitation</h3>
+                  <h3 style={stepTitleStyle}>{t("step_housing_info")}</h3>
                   <div style={grid2ColStyle}>
                     <div className="input-group">
                       <label style={labelStyle}>House Ownership Type</label>
@@ -1009,7 +1024,7 @@ export default function WelfareApplication() {
               {/* STEP 8: DEMOGRAPHY */}
               {currentStep === 8 && (
                 <div>
-                  <h3 style={stepTitleStyle}>Step 8: Family Demography</h3>
+                  <h3 style={stepTitleStyle}>{t("step_demography_info")}</h3>
                   <div style={grid2ColStyle}>
                     <div className="input-group">
                       <label style={labelStyle}>Children Below Age 15</label>
@@ -1067,7 +1082,7 @@ export default function WelfareApplication() {
               {/* STEP 9: BANKING */}
               {currentStep === 9 && (
                 <div>
-                  <h3 style={stepTitleStyle}>Step 9: Banking Information for Welfare Disbursement</h3>
+                  <h3 style={stepTitleStyle}>{t("step_banking_info")}</h3>
                   <div style={{ fontSize: "13px", color: "#64748b", marginBottom: "18px" }}>
                     Direct transfer destination for your monthly Aswesuma stipend.
                   </div>
@@ -1147,13 +1162,13 @@ export default function WelfareApplication() {
                 <div>
                   <div style={{ marginBottom: "24px" }}>
                     <div style={{ fontSize: "12px", fontWeight: "800", color: "#059669", textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: "6px" }}>
-                      Final Verification Step
+                      {isSi ? "අවසන් සත්‍යාපන පියවර" : "Final Verification Step"}
                     </div>
                     <h3 style={{ fontSize: "22px", fontWeight: "900", color: "#0f172a", margin: "0 0 6px" }}>
-                      Review Application &amp; Confirm Submission
+                      {t("step_review_info")}
                     </h3>
                     <p style={{ color: "#64748b", fontSize: "14px", margin: 0 }}>
-                      Please review all details before submitting your application for welfare benefit evaluation.
+                      {isSi ? "සුබසාධන ප්‍රතිලාභ ඇගයීම සඳහා ඉදිරිපත් කිරීමට පෙර කරුණාකර සියලු විස්තර සමාලෝචනය කරන්න." : "Please review all details before submitting your application for welfare benefit evaluation."}
                     </p>
                   </div>
 
@@ -1274,7 +1289,7 @@ export default function WelfareApplication() {
                         style={{ width: "20px", height: "20px", accentColor: "#059669", cursor: "pointer" }}
                       />
                       <label htmlFor="confirmData" style={{ fontSize: "14px", color: errors.confirmData ? "#991b1b" : "#166534", fontWeight: "700", cursor: "pointer" }}>
-                        I confirm that the information provided is accurate and authentic to the best of my knowledge under the SmartGrama Welfare Framework.
+                        {t("welfare_confirm_text")}
                       </label>
                     </div>
                     {renderError("confirmData")}
@@ -1314,7 +1329,7 @@ export default function WelfareApplication() {
                       transition: "all 0.15s ease",
                     }}
                   >
-                    {Ico.arrowLeft} Previous Step
+                    {Ico.arrowLeft} {t("previous_step")}
                   </button>
                 ) : <div />}
 
@@ -1341,7 +1356,7 @@ export default function WelfareApplication() {
                     onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"}
                     onMouseLeave={e => e.currentTarget.style.transform = ""}
                   >
-                    Next Step ({currentStep + 1}/10) {Ico.arrowRight}
+                    {isSi ? `ඊළඟ පියවර (${currentStep + 1}/10)` : `Next Step (${currentStep + 1}/10)`} {Ico.arrowRight}
                   </button>
                 ) : (
                   <button
@@ -1367,7 +1382,7 @@ export default function WelfareApplication() {
                     onMouseEnter={e => !isLoading && (e.currentTarget.style.transform = "translateY(-2px)")}
                     onMouseLeave={e => (e.currentTarget.style.transform = "")}
                   >
-                    {isLoading ? "Evaluating Eligibility & Submitting..." : "Submit Aswesuma Application"}
+                    {isLoading ? t("submitting_aswesuma") : t("submit_aswesuma_btn")}
                     {!isLoading && Ico.arrowRight}
                   </button>
                 )}
@@ -1387,32 +1402,27 @@ export default function WelfareApplication() {
                 boxShadow: "0 10px 30px rgba(6, 78, 59, 0.08)",
               }}>
                 <div style={{ fontSize: "11px", fontWeight: "800", color: "#059669", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "6px" }}>
-                  Aswesuma Benefit Brackets
+                  {t("aswesuma_brackets_title")}
                 </div>
                 <div style={{ fontSize: "32px", fontWeight: "900", color: "#064e3b", marginBottom: "2px", letterSpacing: "-1px" }}>
-                  Up to Rs. 15,000
+                  {t("up_to_15k")}
                 </div>
                 <div style={{ fontSize: "12px", color: "#64748b", marginBottom: "20px" }}>
-                  PMT score determines monthly stipend tier
+                  {t("pmt_score_determines")}
                 </div>
 
                 <div style={{ borderTop: "1px solid #e2e8f0", paddingTop: "16px", display: "flex", flexDirection: "column", gap: "10px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
-                    <span style={{ color: "#475569", fontWeight: "600" }}>Severely Impoverished</span>
-                    <strong style={{ color: "#064e3b" }}>Rs. 15,000 / mo</strong>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
-                    <span style={{ color: "#475569", fontWeight: "600" }}>Poor Bracket</span>
-                    <strong style={{ color: "#064e3b" }}>Rs. 8,500 / mo</strong>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
-                    <span style={{ color: "#475569", fontWeight: "600" }}>Vulnerable Bracket</span>
-                    <strong style={{ color: "#064e3b" }}>Rs. 4,500 / mo</strong>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
-                    <span style={{ color: "#475569", fontWeight: "600" }}>Transitional Bracket</span>
-                    <strong style={{ color: "#064e3b" }}>Rs. 2,500 / mo</strong>
-                  </div>
+                  {[
+                    { tierKey: "tier_severely_poor", amount: isSi ? "රු. 15,000 / මසකට" : "Rs. 15,000 / mo" },
+                    { tierKey: "tier_poor", amount: isSi ? "රු. 8,500 / මසකට" : "Rs. 8,500 / mo" },
+                    { tierKey: "tier_vulnerable", amount: isSi ? "රු. 4,500 / මසකට" : "Rs. 4,500 / mo" },
+                    { tierKey: "tier_transitional", amount: isSi ? "රු. 2,500 / මසකට" : "Rs. 2,500 / mo" },
+                  ].map((item, i) => (
+                    <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                      <span style={{ color: "#475569", fontWeight: "600" }}>{t(item.tierKey)}</span>
+                      <strong style={{ color: "#064e3b" }}>{item.amount}</strong>
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -1424,9 +1434,11 @@ export default function WelfareApplication() {
                 border: "1.5px solid #f1f5f9",
                 boxShadow: "0 4px 14px rgba(0,0,0,0.03)",
               }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", marginBottom: 4 }}>Need Help with Your Intake?</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", marginBottom: 4 }}>
+                  {isSi ? "අයදුම් කිරීම සඳහා සහාය අවශ්‍යද?" : "Need Help with Your Intake?"}
+                </div>
                 <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.5 }}>
-                  Ask SmartGrama AI for immediate assistance in Sinhala, Tamil, or English.
+                  {t("ai_welfare_help_desc")}
                 </div>
                 <button
                   type="button"
@@ -1445,7 +1457,7 @@ export default function WelfareApplication() {
                     fontFamily: "inherit",
                   }}
                 >
-                  Ask AI Assistant &rarr;
+                  {t("ask_ai_assistant")} &rarr;
                 </button>
               </div>
             </div>

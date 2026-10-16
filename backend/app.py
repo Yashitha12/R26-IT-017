@@ -11,6 +11,9 @@ if hasattr(sys.stdout, 'reconfigure'):
     except Exception:
         pass
 
+# Prevent TensorFlow import conflict with sentence-transformers
+os.environ["USE_TF"] = "0"
+
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import io
@@ -23,6 +26,7 @@ import re
 # Translation
 # -----------------------------------
 from mtranslate import translate as m_translate
+from deep_translator import MyMemoryTranslator
 
 # -----------------------------------
 # RAG Imports
@@ -34,7 +38,7 @@ import pickle
 
 
 # =========================================================
-# GLOSSARY PRESERVATION
+# GLOSSARY PRESERVATION & RESILIENT TRANSLATION
 # =========================================================
 
 SINHALA_TERMS = {
@@ -52,40 +56,71 @@ ENGLISH_TERMS = {
     "ස්මාර්ට්ග්‍රාම": "SmartGrama"
 }
 
+def safe_translate(text, target_lang="en", source_lang="auto"):
+    if not text or not str(text).strip():
+        return text
+    # 1. Primary: Google Translate via mtranslate
+    try:
+        return m_translate(text, target_lang, source_lang)
+    except Exception as e:
+        print(f"[Translation] Primary Google API returned {e}. Activating MyMemory fallback...")
+
+    # 2. Resilient Fallback: MyMemoryTranslator
+    try:
+        s_lang = "si-LK" if (source_lang in ["si", "si-LK"] or target_lang == "en") else "en-GB"
+        t_lang = "en-GB" if target_lang == "en" else "si-LK"
+
+        # Chunk longer replies so MyMemory limit is not exceeded
+        if len(text) > 350:
+            parts = re.split(r'(\n+|(?<=[.!?])\s+)', text)
+            translated_chunks = []
+            for part in parts:
+                if not part.strip():
+                    translated_chunks.append(part)
+                else:
+                    try:
+                        translated_chunks.append(MyMemoryTranslator(source=s_lang, target=t_lang).translate(part[:350]))
+                    except Exception:
+                        translated_chunks.append(part)
+            return "".join(translated_chunks)
+        else:
+            return MyMemoryTranslator(source=s_lang, target=t_lang).translate(text)
+    except Exception as e2:
+        print(f"[Translation] Fallback translation error: {e2}")
+
+    return text
+
 def translate_to_sinhala_with_glossary(text):
     if not text:
         return text
-    placeholders = {}
-    for i, (en_term, si_term) in enumerate(SINHALA_TERMS.items()):
-        placeholder = f" XX{i}XX "
-        pattern = re.compile(r'\b' + re.escape(en_term) + r'\b', re.IGNORECASE)
-        if pattern.search(text):
-            placeholders[placeholder.strip()] = si_term
-            text = pattern.sub(placeholder, text)
-            
-    translated = m_translate(text, "si", "en")
+    # 1. Translate sentence to Sinhala
+    translated = safe_translate(text, "si", "en")
     
-    for placeholder, si_term in placeholders.items():
-        translated = translated.replace(placeholder, si_term)
+    # 2. Map English terms back to Sinhala
+    for en_term, si_term in sorted(SINHALA_TERMS.items(), key=lambda x: -len(x[0])):
+        translated = re.sub(r'\b' + re.escape(en_term) + r'\b', si_term, translated, flags=re.IGNORECASE)
         
-    return translated
+    # 3. Scrub any stray corrupted placeholder patterns
+    translated = re.sub(r'\b[XY]{2,}\d+[XY]*\b', '', translated)
+    translated = re.sub(r'\bYY\w*\b', '', translated)
+    translated = re.sub(r'\bXX\w*\b', '', translated)
+    return re.sub(r'[ \t]+', ' ', translated).strip()
 
 def translate_to_english_with_glossary(text):
     if not text:
         return text
-    placeholders = {}
-    for i, (si_term, en_term) in enumerate(ENGLISH_TERMS.items()):
-        placeholder = f" YY{i}YY "
-        if si_term in text:
-            placeholders[placeholder.strip()] = en_term
-            text = text.replace(si_term, placeholder)
-            
-    translated = m_translate(text, "en", "auto")
-    
-    for placeholder, en_term in placeholders.items():
-        translated = translated.replace(placeholder, en_term)
+    # 1. Substitute Sinhala glossary terms directly with English terms before translation
+    for si_term, en_term in sorted(ENGLISH_TERMS.items(), key=lambda x: -len(x[0])):
+        text = text.replace(si_term, en_term)
         
-    return translated
+    # 2. Translate sentence to English
+    translated = safe_translate(text, "en", "auto")
+    
+    # 3. Strip any stray placeholder patterns if present
+    translated = re.sub(r'\b[XY]{2,}\d+[XY]*\b', '', translated)
+    translated = re.sub(r'\bYY\w*\b', '', translated)
+    translated = re.sub(r'\bXX\w*\b', '', translated)
+    return re.sub(r'[ \t]+', ' ', translated).strip()
 
 # =========================================================
 # FLASK SETUP
@@ -234,6 +269,14 @@ def clean_response(reply):
     # Normalize horizontal whitespace but preserve newlines
     reply = re.sub(r'[ \t]+', ' ', reply).strip()
 
+    # Discard incomplete dangling last line if it was cut off mid-sentence without terminal punctuation
+    lines = reply.split('\n')
+    if len(lines) > 1:
+        last_line = lines[-1].strip()
+        if last_line and not last_line.endswith(('.', '!', '?', ':')) and len(last_line.split()) < 6:
+            lines = lines[:-1]
+            reply = '\n'.join(lines).strip()
+
     # Capitalize first letter
     if reply:
         reply = reply[0].upper() + reply[1:]
@@ -254,7 +297,7 @@ def generate_human_response(context, question, use_rag=True):
         messages = [
             {
                 'role': 'system',
-                'content': f"You are the SmartGrama AI Assistant for Sri Lanka. You MUST use ONLY the provided background information to answer. DO NOT invent or guess any numbers, limits, or minimums if they are not explicitly written in the background information. The currency is ALWAYS Sri Lankan Rupees (LKR). NEVER mention Taka, USD, or any other foreign currency. If the exact answer is not in the text, simply explain the factors involved instead of guessing. Summarize the answer into short bullet points.\n\nBackground Information:\n{context}"
+                'content': f"You are the SmartGrama AI Assistant for Sri Lanka. You MUST use ONLY the provided background information to answer. DO NOT invent or guess any numbers, limits, or minimums if they are not explicitly written in the background information. The currency is ALWAYS Sri Lankan Rupees (LKR). NEVER mention Taka, USD, or any other foreign currency. If the exact answer is not in the text, simply explain the factors involved instead of guessing. Provide a clear, complete answer in 3 to 4 concise bullet points. Always complete your sentences and never cut off mid-sentence.\n\nBackground Information:\n{context}"
             },
             {
                 'role': 'user',
@@ -265,7 +308,7 @@ def generate_human_response(context, question, use_rag=True):
         messages = [
             {
                 'role': 'system',
-                'content': "You are the SmartGrama AI Assistant. Please answer the user's question concisely using short bullet points."
+                'content': "You are the SmartGrama AI Assistant. Please answer the user's question concisely in 3 to 4 short bullet points. Always complete your sentences."
             },
             {
                 'role': 'user',
@@ -280,7 +323,7 @@ def generate_human_response(context, question, use_rag=True):
             messages=messages,
             options={
                 "temperature": 0.2,
-                "num_predict": 300
+                "num_predict": 500
             }
         )
     except Exception as e:
@@ -290,7 +333,7 @@ def generate_human_response(context, question, use_rag=True):
             messages=messages,
             options={
                 "temperature": 0.2,
-                "num_predict": 300
+                "num_predict": 500
             }
         )
 

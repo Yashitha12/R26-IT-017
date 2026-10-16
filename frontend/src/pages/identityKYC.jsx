@@ -184,7 +184,16 @@ const ViewportPlaceholder = ({ icon, label }) => (
 
 export const IdentityKYC = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isSi = i18n.language === "si";
+  const changeLanguage = (lng) => { i18n.changeLanguage(lng); };
+
+  const STEPS = [
+    isSi ? "පැතිකඩ සහ අයදුම්පත" : "Profile & Application",
+    isSi ? "ජෛවමිතික සාක්ෂි" : "Biometric Evidence",
+    isSi ? "සත්‍යාපන තත්ත්වය" : "Verification Status",
+  ];
+
   const { regData, activeUserId, activeVerificationId, setActiveVerificationId,
           verificationStatus, fetchStatus, issuedDidData,
           selfiePreviewUrl, setSelfiePreviewUrl, nicPreviewUrl, setNicPreviewUrl,
@@ -353,12 +362,31 @@ export const IdentityKYC = () => {
   return (
     <div style={S.page}>
       <div style={S.overlay} />
+
+      {/* Floating Language Switcher */}
+      <div style={{ position: "absolute", top: 24, right: 28, zIndex: 10, display: "flex", background: "white", borderRadius: "10px", padding: 4, border: "1px solid #cbd5e1", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}>
+        <button
+          type="button"
+          onClick={() => changeLanguage("en")}
+          style={{ padding: "6px 14px", border: "none", borderRadius: "7px", fontSize: "13px", fontWeight: i18n.language === "en" ? "bold" : "normal", background: i18n.language === "en" ? "#059669" : "transparent", color: i18n.language === "en" ? "white" : "#64748b", cursor: "pointer" }}
+        >
+          EN
+        </button>
+        <button
+          type="button"
+          onClick={() => changeLanguage("si")}
+          style={{ padding: "6px 14px", border: "none", borderRadius: "7px", fontSize: "13px", fontWeight: i18n.language === "si" ? "bold" : "normal", background: i18n.language === "si" ? "#059669" : "transparent", color: i18n.language === "si" ? "white" : "#64748b", cursor: "pointer" }}
+        >
+          සිං
+        </button>
+      </div>
+
       <div style={S.inner}>
 
         {/* Wordmark */}
         <div style={S.brand}>
           <p style={S.brandName}>SmartGrama</p>
-          <p style={S.brandTagline}>Biometric Identity Verification &nbsp;&middot;&nbsp; Sri Lanka</p>
+          <p style={S.brandTagline}>{t("kyc_sub")}</p>
         </div>
 
         {/* Form card */}
@@ -366,8 +394,8 @@ export const IdentityKYC = () => {
 
           {/* Green top bar */}
           <div style={S.cardTop}>
-            <h1 style={S.cardTopTitle}>Identity Verification</h1>
-            <p style={S.cardTopSub}>Step {step} of 3 — {STEPS[step - 1]}</p>
+            <h1 style={S.cardTopTitle}>{t("kyc_title")}</h1>
+            <p style={S.cardTopSub}>{isSi ? `පියවර 3 න් ${step} — ${STEPS[step - 1]}` : `Step ${step} of 3 — ${STEPS[step - 1]}`}</p>
             <div style={S.progressWrap}>
               <div style={{ height: "100%", width: `${progressPct}%`, background: "linear-gradient(90deg, #6ee7b7, #34d399)", borderRadius: 10, transition: "width 0.5s ease" }} />
             </div>
@@ -390,28 +418,26 @@ export const IdentityKYC = () => {
             ))}
           </div>
 
-          {/* ══════════════════════════════════════════
-              STEP 1 — Profile & Application
-          ══════════════════════════════════════════ */}
+          {/* STEP 1 — Profile & Application */}
           {step === 1 && (
             <div style={S.body}>
-              <div style={S.sectionHeading}>Your Registered Profile</div>
+              <div style={S.sectionHeading}>{t("reg_profile")}</div>
 
               {/* Read-only profile data */}
               <div style={S.dataGrid}>
-                <div style={S.dataItem}><span style={S.dataLabel}>Full Name</span><span style={S.dataVal}>{regData.fullName || "—"}</span></div>
-                <div style={S.dataItem}><span style={S.dataLabel}>NIC Number</span><span style={S.dataVal}>{regData.nicNumber || "—"}</span></div>
-                <div style={S.dataItem}><span style={S.dataLabel}>Mobile</span><span style={S.dataVal}>{regData.mobile || "—"}</span></div>
-                <div style={S.dataItem}><span style={S.dataLabel}>Email</span><span style={S.dataVal}>{regData.email || "—"}</span></div>
-                <div style={S.dataItemFull}><span style={S.dataLabel}>Address / GN Division</span><span style={S.dataVal}>{regData.homeAddress || "—"}, {regData.gnDivision} ({regData.district})</span></div>
+                <div style={S.dataItem}><span style={S.dataLabel}>{t("full_name")}</span><span style={S.dataVal}>{regData.fullName || "—"}</span></div>
+                <div style={S.dataItem}><span style={S.dataLabel}>{t("nic")}</span><span style={S.dataVal}>{regData.nicNumber || "—"}</span></div>
+                <div style={S.dataItem}><span style={S.dataLabel}>{t("mobile_phone")}</span><span style={S.dataVal}>{regData.mobile || "—"}</span></div>
+                <div style={S.dataItem}><span style={S.dataLabel}>{t("email")}</span><span style={S.dataVal}>{regData.email || "—"}</span></div>
+                <div style={S.dataItemFull}><span style={S.dataLabel}>{isSi ? "ලිපිනය / ග්‍රාම නිලධාරී වසම" : "Address / GN Division"}</span><span style={S.dataVal}>{regData.homeAddress || "—"}, {regData.gnDivision} ({regData.district})</span></div>
               </div>
 
               <div style={{ height: 1, background: "#f1f5f9", margin: "4px 0 20px" }} />
-              <div style={S.sectionHeading}>Application Preferences</div>
+              <div style={S.sectionHeading}>{t("app_prefs")}</div>
 
               <div style={S.formRow}>
                 <div style={S.fieldGroup}>
-                  <label style={S.fieldLabel}>Preferred Language</label>
+                  <label style={S.fieldLabel}>{t("preferred_lang")}</label>
                   <select style={S.inputBase} value={preferredLang} onChange={e => setPreferredLang(e.target.value)}>
                     <option value="en">English</option>
                     <option value="si">Sinhala</option>
@@ -419,44 +445,42 @@ export const IdentityKYC = () => {
                   </select>
                 </div>
                 <div style={S.fieldGroup}>
-                  <label style={S.fieldLabel}>Emergency Contact</label>
+                  <label style={S.fieldLabel}>{t("emergency_contact")}</label>
                   <input type="text" style={S.inputBase} placeholder="071-XXXXXXX" value={emergencyContact} onChange={e => setEmergencyContact(e.target.value)} />
                 </div>
               </div>
 
               <button style={S.btnLarge} onClick={() => setShowModal(true)}>
-                Submit Identity Application
+                {t("submit_identity_app")}
               </button>
 
               {appRegistered && (
                 <div style={S.appBanner}>
-                  <div style={{ fontWeight: 700, marginBottom: 8, color: "#15803d" }}>Application Registered — Pending KYC</div>
+                  <div style={{ fontWeight: 700, marginBottom: 8, color: "#15803d" }}>{isSi ? "අයදුම්පත ලියාපදිංචි කරන ලදී — KYC අපේක්ෂාවෙන්" : "Application Registered — Pending KYC"}</div>
                   <div style={S.appBannerRow}><span style={{ fontWeight: 600, color: "#374151" }}>Application ID</span><code style={{ fontFamily: "monospace", fontSize: 11 }}>{appId}</code></div>
                   <div style={S.appBannerRow}><span style={{ fontWeight: 600, color: "#374151" }}>Verification ID</span><code style={{ fontFamily: "monospace", fontSize: 11 }}>{activeVerificationId}</code></div>
-                  <div style={S.appBannerRow}><span style={{ fontWeight: 600, color: "#374151" }}>DID Status</span><span style={{ color: "#d97706", fontWeight: 700, fontSize: 11 }}>Pending Officer Approval</span></div>
+                  <div style={S.appBannerRow}><span style={{ fontWeight: 600, color: "#374151" }}>DID Status</span><span style={{ color: "#d97706", fontWeight: 700, fontSize: 11 }}>{t("officer_review_pending")}</span></div>
                 </div>
               )}
 
               <div style={S.btnRow}>
-                <button style={S.btnContinue} onClick={() => setStep(2)}>Continue to Evidence</button>
+                <button style={S.btnContinue} onClick={() => setStep(2)}>{t("continue_to_evidence")}</button>
               </div>
             </div>
           )}
 
-          {/* ══════════════════════════════════════════
-              STEP 2 — Biometric Evidence
-          ══════════════════════════════════════════ */}
+          {/* STEP 2 — Biometric Evidence */}
           {step === 2 && (
             <div style={S.body}>
               {/* Instruction note */}
               <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 10, padding: "12px 16px", marginBottom: 20, fontSize: 13, color: "#1e40af" }}>
-                <strong>How it works:</strong> First capture or upload your face photo, then upload a clear photo of your Sri Lanka National Identity Card. Both are required for officer review.
+                <strong>{isSi ? "ක්‍රියා පටිපාටිය:" : "How it works:"}</strong> {isSi ? "පළමුව ඔබගේ මුහුණු ඡායාරූපය ලබාගන්න හෝ උඩුගත කරන්න, පසුව ජාතික හැඳුනුම්පතේ පැහැදිලි ඡායාරූපයක් උඩුගත කරන්න. නිලධාරී සමාලෝචනය සඳහා මේ දෙකම අත්‍යවශ්‍ය වේ." : "First capture or upload your face photo, then upload a clear photo of your Sri Lanka National Identity Card. Both are required for officer review."}
               </div>
 
               {/* Step A — Face ID */}
               <div style={{ ...S.sectionHeading, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span>Step A — Face ID Selfie</span>
-                <span style={statusPill(vs?.facialVerificationStatus)}>{vs?.facialVerificationStatus || "Not Submitted"}</span>
+                <span>{isSi ? "පියවර A — මුහුණු ඡායාරූපය (Face ID Selfie)" : "Step A — Face ID Selfie"}</span>
+                <span style={statusPill(vs?.facialVerificationStatus)}>{vs?.facialVerificationStatus || (isSi ? "ඉදිරිපත් කර නැත" : "Not Submitted")}</span>
               </div>
 
               <div style={S.evCard}>
@@ -474,14 +498,14 @@ export const IdentityKYC = () => {
                         style={{ marginTop: 4, padding: "7px 18px", borderRadius: 8, border: "none", background: "linear-gradient(135deg, #059669, #064e3b)", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}
                         onClick={() => { setCameraError(null); selfieFileRef.current?.click(); }}
                       >
-                        Upload Photo Instead
+                        {isSi ? "ඡායාරූපය උඩුගත කරන්න" : "Upload Photo Instead"}
                       </button>
                     </div>
                   )}
                   {!isCameraActive && !selfiePreviewUrl && !cameraError && (
                     <ViewportPlaceholder
                       icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>}
-                      label="No photo captured yet"
+                      label={isSi ? "ඡායාරූපයක් ගෙන නැත" : "No photo captured yet"}
                     />
                   )}
                 </div>
@@ -489,20 +513,20 @@ export const IdentityKYC = () => {
                 <input type="file" ref={selfieFileRef} accept="image/*" style={{ display: "none" }} onChange={handleSelfieFileUpload} />
                 <div style={S.evActions}>
                   <div style={S.evBtnRow}>
-                    <button style={S.btnPrimary} onClick={toggleCamera}>{isCameraActive ? "Stop Camera" : "Open Camera"}</button>
-                    {isCameraActive && <button style={S.btnCyan} onClick={snapPhoto}>Capture Photo</button>}
+                    <button style={S.btnPrimary} onClick={toggleCamera}>{isCameraActive ? t("stop_camera") : t("open_camera")}</button>
+                    {isCameraActive && <button style={S.btnCyan} onClick={snapPhoto}>{t("capture_photo")}</button>}
                   </div>
                   <div style={S.evBtnRow}>
-                    <button style={S.btnSecondary} onClick={() => selfieFileRef.current?.click()}>Upload from Device</button>
-                    <button style={S.btnGhost} onClick={handleQuickSampleSelfie}>Use Sample</button>
+                    <button style={S.btnSecondary} onClick={() => selfieFileRef.current?.click()}>{t("upload_from_device")}</button>
+                    <button style={S.btnGhost} onClick={handleQuickSampleSelfie}>{t("use_sample")}</button>
                   </div>
                 </div>
               </div>
 
               {/* Step B — NIC Document */}
               <div style={{ ...S.sectionHeading, display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
-                <span>Step B — NIC Document</span>
-                <span style={statusPill(vs?.documentVerificationStatus)}>{vs?.documentVerificationStatus || "Not Submitted"}</span>
+                <span>{isSi ? "පියවර B — ජාතික හැඳුනුම්පත (NIC Document)" : "Step B — NIC Document"}</span>
+                <span style={statusPill(vs?.documentVerificationStatus)}>{vs?.documentVerificationStatus || (isSi ? "ඉදිරිපත් කර නැත" : "Not Submitted")}</span>
               </div>
 
               <div style={S.evCard}>
@@ -517,14 +541,14 @@ export const IdentityKYC = () => {
                 </div>
                 <input type="file" ref={nicFileRef} accept="image/*" style={{ display: "none" }} onChange={handleNicFileUpload} />
                 <div style={S.evActions}>
-                  <button style={S.btnPrimary} onClick={() => nicFileRef.current?.click()}>Upload NIC Photo</button>
-                  <button style={S.btnGhost} onClick={handleQuickSampleNic}>Use Sample NIC</button>
+                  <button style={S.btnPrimary} onClick={() => nicFileRef.current?.click()}>{t("upload_nic_photo")}</button>
+                  <button style={S.btnGhost} onClick={handleQuickSampleNic}>{isSi ? "ආදර්ශ හැඳුනුම්පත" : "Use Sample NIC"}</button>
                 </div>
               </div>
 
               {/* Evidence submission summary */}
               <div style={{ background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "16px 18px", marginTop: 8 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 12 }}>Submission Checklist</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 12 }}>{isSi ? "සාක්ෂි පිරික්සුම් ලැයිස්තුව" : "Submission Checklist"}</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <div style={{ width: 22, height: 22, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: selfiePreviewUrl ? "#d1fae5" : "#f1f5f9", border: `1.5px solid ${selfiePreviewUrl ? "#6ee7b7" : "#e2e8f0"}` }}>
@@ -534,7 +558,7 @@ export const IdentityKYC = () => {
                       }
                     </div>
                     <span style={{ fontSize: 13, color: selfiePreviewUrl ? "#059669" : "#94a3b8", fontWeight: selfiePreviewUrl ? 600 : 400 }}>
-                      {selfiePreviewUrl ? "Face ID selfie — ready to submit" : "Face ID selfie — not yet captured"}
+                      {selfiePreviewUrl ? (isSi ? "මුහුණු ඡායාරූපය — සූදානම්" : "Face ID selfie — ready to submit") : (isSi ? "මුහුණු ඡායාරූපය — තවමත් ගෙන නැත" : "Face ID selfie — not yet captured")}
                     </span>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -545,7 +569,7 @@ export const IdentityKYC = () => {
                       }
                     </div>
                     <span style={{ fontSize: 13, color: nicPreviewUrl ? "#059669" : "#94a3b8", fontWeight: nicPreviewUrl ? 600 : 400 }}>
-                      {nicPreviewUrl ? "NIC document — ready to submit" : "NIC document — not yet uploaded"}
+                      {nicPreviewUrl ? (isSi ? "හැඳුනුම්පත් ඡායාරූපය — සූදානම්" : "NIC document — ready to submit") : (isSi ? "හැඳුනුම්පත් ඡායාරූපය — තවමත් උඩුගත කර නැත" : "NIC document — not yet uploaded")}
                     </span>
                   </div>
                 </div>
@@ -563,24 +587,44 @@ export const IdentityKYC = () => {
                     transition: "all 0.2s",
                   }}
                   disabled={!selfiePreviewUrl && !nicPreviewUrl}
-                  onClick={() => { fetchStatus(); fetchQueue(); setStep(3); }}
+                  onClick={async () => {
+                    try {
+                      await api.applyForIdentity(activeUserId, {
+                        preferredLanguage: preferredLang,
+                        emergencyContact,
+                        gnDivision: regData.gnDivision || "Minuwangoda North",
+                      });
+                      if (selfiePreviewUrl) {
+                        await api.submitFaceEvidence(activeVerificationId, selfiePreviewUrl, "LiveWebcamCapture-v1.0");
+                      }
+                      if (nicPreviewUrl) {
+                        await api.submitNicEvidence(activeVerificationId, nicPreviewUrl, "NATIONAL_IDENTITY_CARD_UPLOAD", maskedNic);
+                      }
+                      showToast(isSi ? "සාක්ෂි සාර්ථකව නිලධාරී පරීක්ෂාවට යොමු කරන ලදී!" : "KYC Evidence submitted to Officer Review Queue!");
+                      await fetchStatus();
+                      await fetchQueue();
+                    } catch (err) {
+                      console.warn("Evidence queue notice:", err);
+                    }
+                    setStep(3);
+                  }}
                 >
                   {(selfiePreviewUrl && nicPreviewUrl)
-                    ? "Submit Evidence & View Status"
+                    ? (isSi ? "සාක්ෂි ඉදිරිපත් කර තත්ත්වය පරීක්ෂා කරන්න" : "Submit Evidence & View Status")
                     : (selfiePreviewUrl || nicPreviewUrl)
-                    ? "Submit Partial Evidence & View Status"
-                    : "Upload Evidence Above to Submit"}
+                    ? (isSi ? "සාක්ෂි ඉදිරිපත් කර තත්ත්වය පරීක්ෂා කරන්න" : "Submit Partial Evidence & View Status")
+                    : (isSi ? "ඉදිරිපත් කිරීමට ඉහත සාක්ෂි උඩුගත කරන්න" : "Upload Evidence Above to Submit")}
                 </button>
 
                 {!selfiePreviewUrl && !nicPreviewUrl && (
                   <p style={{ textAlign: "center", fontSize: 11, color: "#94a3b8", margin: "10px 0 0" }}>
-                    Upload at least one piece of evidence to enable submission.
+                    {isSi ? "ඉදිරිපත් කිරීම සක්‍රීය කිරීමට අවම වශයෙන් එක් සාක්ෂියක් උඩුගත කරන්න." : "Upload at least one piece of evidence to enable submission."}
                   </p>
                 )}
               </div>
 
               <div style={{ marginTop: 12 }}>
-                <button style={S.btnBack} onClick={() => setStep(1)}>Back to Application</button>
+                <button style={S.btnBack} onClick={() => setStep(1)}>{isSi ? "← ආපසු අයදුම්පතට" : "Back to Application"}</button>
               </div>
             </div>
           )}
@@ -739,7 +783,7 @@ export const IdentityKYC = () => {
 
               {/* Action buttons */}
               <div style={S.btnRow}>
-                <button style={S.btnBack} onClick={() => setStep(2)}>Back</button>
+                <button style={S.btnBack} onClick={() => setStep(2)}>{isSi ? "← ආපසු" : "Back"}</button>
                 <button
                   style={{ flex: 1, padding: "12px 20px", borderRadius: 10, border: "none",
                     background: isApproved
@@ -749,7 +793,7 @@ export const IdentityKYC = () => {
                     boxShadow: "0 4px 14px rgba(29,78,216,0.28)", fontFamily: "inherit" }}
                   onClick={handleProceedToDashboard}
                 >
-                  {isApproved ? "Go to Dashboard" : "Continue to Dashboard"}
+                  {isApproved ? (isSi ? "ප්‍රධාන පාලක පුවරුවට" : "Go to Dashboard") : (isSi ? "පාලක පුවරුව වෙත ඉදිරියට යන්න" : "Continue to Dashboard")}
                 </button>
               </div>
 
@@ -767,47 +811,57 @@ export const IdentityKYC = () => {
           <div style={S.modalBox} onClick={e => e.stopPropagation()}>
 
             <div style={S.modalHeader}>
-              <p style={S.modalTitle}>Submit Identity Application?</p>
+              <p style={S.modalTitle}>{isSi ? "අනන්‍යතා අයදුම්පත ඉදිරිපත් කරනවාද?" : "Submit Identity Application?"}</p>
               <p style={S.modalSub}>SmartGrama Welfare &amp; Microfinance Platform</p>
             </div>
 
             <div style={S.modalBody}>
               <p style={{ fontSize: 13, color: "#475569", margin: "0 0 20px", lineHeight: 1.6 }}>
-                You are about to submit your identity application to the SmartGrama system. Here is what happens next:
+                {isSi
+                  ? "ඔබ SmartGrama පද්ධතියට අනන්‍යතා අයදුම්පත ඉදිරිපත් කිරීමට සූදානම් වේ. මීළඟට සිදුවන පියවර මෙසේය:"
+                  : "You are about to submit your identity application to the SmartGrama system. Here is what happens next:"}
               </p>
 
               <div style={S.modalStep}>
                 <div style={S.modalStepNum}>1</div>
                 <div style={S.modalStepText}>
-                  <span style={S.modalStepLabel}>Application Registered</span>
-                  Your profile data is sent securely to the SmartGrama system and an Application ID is assigned to you.
+                  <span style={S.modalStepLabel}>{isSi ? "අයදුම්පත ලියාපදිංචි කිරීම" : "Application Registered"}</span>
+                  {isSi
+                    ? "ඔබගේ පැතිකඩ තොරතුරු SmartGrama පද්ධතියට ආරක්ෂිතව යොමු කර අයදුම්පත් අංකයක් නිකුත් කෙරේ."
+                    : "Your profile data is sent securely to the SmartGrama system and an Application ID is assigned to you."}
                 </div>
               </div>
 
               <div style={S.modalStep}>
                 <div style={S.modalStepNum}>2</div>
                 <div style={S.modalStepText}>
-                  <span style={S.modalStepLabel}>Biometric Evidence Required</span>
-                  You will be asked to submit a live face photo and a clear photo of your National Identity Card (NIC).
+                  <span style={S.modalStepLabel}>{isSi ? "ජෛවමිතික සාක්ෂි සැපයීම" : "Biometric Evidence Required"}</span>
+                  {isSi
+                    ? "සජීවී මුහුණු ඡායාරූපයක් (Selfie) සහ ජාතික හැඳුනුම්පතේ (NIC) පැහැදිලි ඡායාරූපයක් ලබාදීමට අවශ්‍ය වේ."
+                    : "You will be asked to submit a live face photo and a clear photo of your National Identity Card (NIC)."}
                 </div>
               </div>
 
               <div style={S.modalStep}>
                 <div style={S.modalStepNum}>3</div>
                 <div style={S.modalStepText}>
-                  <span style={S.modalStepLabel}>Grama Niladhari Officer Review</span>
-                  A qualified officer will verify your identity. Once approved, your Digital Identity (DID) is issued.
+                  <span style={S.modalStepLabel}>{isSi ? "ග්‍රාම නිලධාරී සමාලෝචනය" : "Grama Niladhari Officer Review"}</span>
+                  {isSi
+                    ? "සුදුසුකම්ලත් නිලධාරියෙකු විසින් ඔබගේ තොරතුරු සත්‍යාපනය කරනු ඇත. අනුමත වූ පසු ඩිජිටල් හැඳුනුම්පත (DID) නිකුත් වේ."
+                    : "A qualified officer will verify your identity. Once approved, your Digital Identity (DID) is issued."}
                 </div>
               </div>
 
               <div style={S.modalNote}>
-                Your data is submitted only for identity verification. The SmartGrama system uses blockchain-anchored records to keep your information secure and private.
+                {isSi
+                  ? "ඔබගේ දත්ත ඉදිරිපත් කරනු ලබන්නේ අනන්‍යතා සත්‍යාපනය සඳහා පමණි. SmartGrama පද්ධතිය ඔබගේ තොරතුරු ආරක්ෂිතව තබා ගැනීමට බ්ලොක්චේන් තාක්ෂණය භාවිතා කරයි."
+                  : "Your data is submitted only for identity verification. The SmartGrama system uses blockchain-anchored records to keep your information secure and private."}
               </div>
             </div>
 
             <div style={S.modalFooter}>
-              <button style={S.btnModalCancel} onClick={() => setShowModal(false)}>Cancel</button>
-              <button style={S.btnModalConfirm} onClick={handleConfirmAndSubmit}>Confirm &amp; Submit</button>
+              <button style={S.btnModalCancel} onClick={() => setShowModal(false)}>{isSi ? "අවලංගු කරන්න" : "Cancel"}</button>
+              <button style={S.btnModalConfirm} onClick={handleConfirmAndSubmit}>{isSi ? "තහවුරු කර ඉදිරිපත් කරන්න" : "Confirm & Submit"}</button>
             </div>
 
           </div>

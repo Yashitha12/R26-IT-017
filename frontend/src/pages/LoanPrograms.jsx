@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import Header from "../components/Header";
 import dashboardBg from "../assets/smartgrama_dashboard_bg.jpg";
 
@@ -18,6 +19,7 @@ const Ico = {
 
 export default function LoanPrograms() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   
   const [banks, setBanks] = useState([]);
   const [allPrograms, setAllPrograms] = useState([]);
@@ -113,13 +115,13 @@ export default function LoanPrograms() {
             
             <div style={{ position: "relative" }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: "#6ee7b7", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>
-                SmartGrama Decentralized Rural Credit Portal
+                {t("portal_title")}
               </div>
               <h1 style={{ fontSize: 28, fontWeight: 900, letterSpacing: -0.5, margin: "0 0 6px" }}>
-                Microfinance &amp; Community Loan Programs
+                {t("microfinance_programs_heading")}
               </h1>
               <p style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", margin: 0, maxWidth: 600, lineHeight: 1.5 }}>
-                Subsidized micro-credit designed for Sri Lankan agriculturalists, self-employed women, and village small businesses with decentralized consensus approval.
+                {t("microfinance_programs_desc")}
               </p>
             </div>
 
@@ -132,7 +134,7 @@ export default function LoanPrograms() {
                 border: "1px solid rgba(255, 255, 255, 0.16)",
                 textAlign: "center",
               }}>
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", fontWeight: 700, textTransform: "uppercase" }}>Interest from</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", fontWeight: 700, textTransform: "uppercase" }}>{t("interest_from")}</div>
                 <div style={{ fontSize: 24, fontWeight: 900, color: "#6ee7b7", marginTop: 2 }}>8.0% APR</div>
               </div>
               <div style={{
@@ -143,8 +145,8 @@ export default function LoanPrograms() {
                 border: "1px solid rgba(255, 255, 255, 0.16)",
                 textAlign: "center",
               }}>
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", fontWeight: 700, textTransform: "uppercase" }}>Approval Time</div>
-                <div style={{ fontSize: 24, fontWeight: 900, color: "#fff", marginTop: 2 }}>&lt; 24 Hours</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", fontWeight: 700, textTransform: "uppercase" }}>{t("approval_time")}</div>
+                <div style={{ fontSize: 24, fontWeight: 900, color: "#fff", marginTop: 2 }}>{t("under_24_hours")}</div>
               </div>
             </div>
           </div>
@@ -169,7 +171,7 @@ export default function LoanPrograms() {
               ═══════════════════════════════════════════════════ */}
               <div>
                 <div style={{ fontSize: 13, fontWeight: 800, color: "#1e293b", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 12 }}>
-                  1. Select Financial Institution
+                  {t("select_financial_institution")}
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
@@ -216,7 +218,7 @@ export default function LoanPrograms() {
                             {bank.name}
                           </div>
                           <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>
-                            {count} Subsidized Credit Programs
+                            {count} {t("subsidized_credit_programs")}
                           </div>
                         </div>
                         {isSelected && (
@@ -238,7 +240,7 @@ export default function LoanPrograms() {
                 {/* Left Column: Programs Grid */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                   <div style={{ fontSize: 13, fontWeight: 800, color: "#1e293b", textTransform: "uppercase", letterSpacing: 0.8 }}>
-                    2. Select Loan Type ({filteredProducts.length} Available)
+                    {t("select_loan_type")} ({filteredProducts.length})
                   </div>
 
                   {filteredProducts.map((product) => {
@@ -300,7 +302,7 @@ export default function LoanPrograms() {
                                 {product.apr} APR
                               </span>
                               <span style={{ fontSize: 11, fontWeight: 600, color: "#334151", background: "#f1f5f9", padding: "3px 10px", borderRadius: 50 }}>
-                                Up to {product.limit}
+                                {t("up_to")} {product.limit}
                               </span>
                             </div>
                           </div>
@@ -326,7 +328,7 @@ export default function LoanPrograms() {
 
                   {filteredProducts.length === 0 && (
                     <div style={{ padding: "40px", textAlign: "center", background: "#fff", borderRadius: 18, color: "#64748b" }}>
-                      No loan programs available for this institution.
+                      {t("no_loan_programs_available")}
                     </div>
                   )}
                 </div>
@@ -353,7 +355,7 @@ export default function LoanPrograms() {
                           {selectedProductData.tag}
                         </span>
                         <span style={{ fontSize: 12, fontWeight: 700, color: "#4338ca", background: "#eef2ff", padding: "3px 10px", borderRadius: 50 }}>
-                          {Ico.shield} Fast Consensus
+                          {Ico.shield} {t("fast_consensus")}
                         </span>
                       </div>
                       <h2 style={{ fontSize: 20, fontWeight: 900, color: "#0f172a", margin: "0 0 4px", letterSpacing: -0.4 }}>
@@ -375,17 +377,17 @@ export default function LoanPrograms() {
                       border: "1px solid #e2e8f0",
                     }}>
                       <div>
-                        <div style={{ fontSize: 10, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>Interest Rate</div>
+                        <div style={{ fontSize: 10, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>{t("interest_rate")}</div>
                         <div style={{ fontSize: 18, fontWeight: 900, color: "#059669", marginTop: 2 }}>{selectedProductData.apr}</div>
-                        <div style={{ fontSize: 10, color: "#64748b" }}>Subsidized APR</div>
+                        <div style={{ fontSize: 10, color: "#64748b" }}>{t("subsidized_apr")}</div>
                       </div>
                       <div>
-                        <div style={{ fontSize: 10, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>Max Term</div>
+                        <div style={{ fontSize: 10, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>{t("max_term")}</div>
                         <div style={{ fontSize: 18, fontWeight: 900, color: "#0f172a", marginTop: 2 }}>{selectedProductData.months}</div>
-                        <div style={{ fontSize: 10, color: "#64748b" }}>Flexible Repayment</div>
+                        <div style={{ fontSize: 10, color: "#64748b" }}>{t("flexible_repayment")}</div>
                       </div>
                       <div style={{ gridColumn: "1 / -1", borderTop: "1px solid #e2e8f0", paddingTop: 10 }}>
-                        <div style={{ fontSize: 10, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>Loan Limit Bracket</div>
+                        <div style={{ fontSize: 10, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>{t("loan_limit_bracket")}</div>
                         <div style={{ fontSize: 15, fontWeight: 800, color: "#0f172a", marginTop: 2 }}>{selectedProductData.limit}</div>
                       </div>
                     </div>
@@ -398,7 +400,7 @@ export default function LoanPrograms() {
                       padding: "16px 18px",
                     }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                        <span style={{ fontSize: 12, fontWeight: 800, color: "#064e3b" }}>Quick EMI Estimator</span>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: "#064e3b" }}>{t("quick_emi_estimator")}</span>
                         <span style={{ fontSize: 14, fontWeight: 900, color: "#047857" }}>
                           Rs. {estimatedEmi.toLocaleString()} / mo
                         </span>
@@ -406,7 +408,7 @@ export default function LoanPrograms() {
 
                       <div style={{ marginBottom: 10 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#166534", marginBottom: 4 }}>
-                          <span>Sample Amount: Rs. {estAmount.toLocaleString()}</span>
+                          <span>{t("sample_amount")}: Rs. {estAmount.toLocaleString()}</span>
                         </div>
                         <input
                           type="range"
@@ -447,7 +449,7 @@ export default function LoanPrograms() {
                     {/* Features List */}
                     <div>
                       <div style={{ fontSize: 11, fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 10 }}>
-                        SmartGrama Benefits
+                        {t("smartgrama_benefits")}
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                         {(selectedProductData.features || ["No traditional collateral required", "Instant DID blockchain verification"]).map((f, i) => (
@@ -485,7 +487,7 @@ export default function LoanPrograms() {
                       onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"}
                       onMouseLeave={e => e.currentTarget.style.transform = ""}
                     >
-                      Apply for {selectedProductData.title.split("(")[0].trim()}
+                      {t("apply_for_loan_btn", { title: selectedProductData.title.split("(")[0].trim() })}
                       {Ico.arrowRight}
                     </button>
                   </div>

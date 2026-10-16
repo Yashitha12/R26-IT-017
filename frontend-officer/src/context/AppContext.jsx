@@ -103,7 +103,7 @@ export const AppProvider = ({ children }) => {
     const interval = setInterval(() => {
       checkBackend();
       fetchQueue();
-    }, 10000);
+    }, 3000);
     return () => clearInterval(interval);
   }, [checkBackend, fetchStatus, fetchQueue]);
 

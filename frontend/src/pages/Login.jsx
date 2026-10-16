@@ -1,11 +1,17 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const [formData, setFormData] = useState({ identifier: "user-prototype-001" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng);
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -87,15 +93,34 @@ export default function Login() {
   };
 
   return (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", backgroundColor: "#f3f4f6", padding: "40px 20px" }}>
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", backgroundColor: "#f3f4f6", padding: "40px 20px", position: "relative" }}>
+      
+      {/* Floating Language Switcher */}
+      <div style={{ position: "absolute", top: 24, right: 28, display: "flex", background: "white", borderRadius: "10px", padding: 4, border: "1px solid #cbd5e1", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+        <button
+          type="button"
+          onClick={() => changeLanguage("en")}
+          style={{ padding: "6px 14px", border: "none", borderRadius: "7px", fontSize: "13px", fontWeight: i18n.language === "en" ? "bold" : "normal", background: i18n.language === "en" ? "#2563eb" : "transparent", color: i18n.language === "en" ? "white" : "#64748b", cursor: "pointer" }}
+        >
+          EN
+        </button>
+        <button
+          type="button"
+          onClick={() => changeLanguage("si")}
+          style={{ padding: "6px 14px", border: "none", borderRadius: "7px", fontSize: "13px", fontWeight: i18n.language === "si" ? "bold" : "normal", background: i18n.language === "si" ? "#2563eb" : "transparent", color: i18n.language === "si" ? "white" : "#64748b", cursor: "pointer" }}
+        >
+          සිං
+        </button>
+      </div>
+
       <div style={{ backgroundColor: "white", padding: "40px", borderRadius: "16px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)", width: "100%", maxWidth: "440px" }}>
         
         <div style={{ textAlign: "center", marginBottom: "32px" }}>
           <div style={{ backgroundColor: "#2563eb", color: "white", width: "64px", height: "64px", borderRadius: "16px", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", fontSize: "28px" }}>
             <i className="fa-solid fa-fingerprint"></i>
           </div>
-          <h1 style={{ fontSize: "24px", fontWeight: "bold", color: "#1f2937" }}>SmartGrama Citizen Portal</h1>
-          <p style={{ color: "#6b7280", fontSize: "14px", marginTop: "8px" }}>Decentralized Digital Identity & Citizen Sign-In</p>
+          <h1 style={{ fontSize: "24px", fontWeight: "bold", color: "#1f2937" }}>{t("citizen_portal")}</h1>
+          <p style={{ color: "#6b7280", fontSize: "14px", marginTop: "8px" }}>{t("did_sign_in_sub")}</p>
         </div>
 
         {error && <div style={{ backgroundColor: "#fee2e2", color: "#dc2626", padding: "12px", borderRadius: "8px", marginBottom: "24px", fontSize: "14px", textAlign: "center" }}>{error}</div>}
@@ -104,7 +129,7 @@ export default function Login() {
           
           <div>
             <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "#374151", marginBottom: "6px" }}>
-              Citizen User ID, NIC, or Verified DID *
+              {t("citizen_id_label")}
             </label>
             <input
               type="text"
@@ -137,12 +162,15 @@ export default function Login() {
                 opacity: loading ? 0.7 : 1,
               }}
             >
-              {loading ? "Verifying Digital Identity..." : "Sign In with Digital Identity →"}
+              {loading ? t("verifying_did") : t("sign_in_did_btn")}
             </button>
           </div>
 
           <div style={{ textAlign: "center", marginTop: "16px", fontSize: "14px", color: "#4b5563" }}>
-            New citizen? <Link to="/register" style={{ color: "#2563eb", fontWeight: "bold", textDecoration: "none" }}>Register & Biometric KYC</Link>
+            {t("new_citizen")}{" "}
+            <Link to="/register" style={{ color: "#2563eb", fontWeight: "bold", textDecoration: "none" }}>
+              {t("register_biometric_kyc")}
+            </Link>
           </div>
 
         </form>

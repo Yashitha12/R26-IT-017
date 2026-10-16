@@ -247,11 +247,11 @@ export const OfficerKYC = () => {
                       <span className="score-badge">Score: 95.8%</span>
                     </div>
                     <div className="evidence-viewport">
-                      {caseDetails.facialVerification?.evidenceReference &&
-                      (caseDetails.facialVerification.evidenceReference.startsWith('data:') ||
-                        caseDetails.facialVerification.evidenceReference.startsWith('http')) ? (
+                      {(caseDetails.facialVerification?.image || caseDetails.facialVerification?.evidenceReference) &&
+                      ((caseDetails.facialVerification.image || caseDetails.facialVerification.evidenceReference).startsWith('data:') ||
+                        (caseDetails.facialVerification.image || caseDetails.facialVerification.evidenceReference).startsWith('http')) ? (
                         <img
-                          src={caseDetails.facialVerification.evidenceReference}
+                          src={caseDetails.facialVerification.image || caseDetails.facialVerification.evidenceReference}
                           alt="Face Selfie"
                           style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }}
                         />
@@ -276,11 +276,11 @@ export const OfficerKYC = () => {
                       <span className="badge-nic-type">SYNTHETIC_NATIONAL_IDENTITY_CARD</span>
                     </div>
                     <div className="evidence-viewport doc-theme">
-                      {caseDetails.documentVerification?.evidenceReference &&
-                      (caseDetails.documentVerification.evidenceReference.startsWith('data:') ||
-                        caseDetails.documentVerification.evidenceReference.startsWith('http')) ? (
+                      {(caseDetails.documentVerification?.image || caseDetails.documentVerification?.evidenceReference) &&
+                      ((caseDetails.documentVerification.image || caseDetails.documentVerification.evidenceReference).startsWith('data:') ||
+                        (caseDetails.documentVerification.image || caseDetails.documentVerification.evidenceReference).startsWith('http')) ? (
                         <img
-                          src={caseDetails.documentVerification.evidenceReference}
+                          src={caseDetails.documentVerification.image || caseDetails.documentVerification.evidenceReference}
                           alt="NIC Doc"
                           style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '12px', background: '#000' }}
                         />

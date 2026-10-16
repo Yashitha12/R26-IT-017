@@ -24,20 +24,42 @@ const DEFAULT_REG_DATA = {
 };
 
 export const AppProvider = ({ children }) => {
+  const storedUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('user') || 'null');
+    } catch {
+      return null;
+    }
+  })();
+
+  const initialUserId = storedUser?.memberId || storedUser?.userId || 'user-prototype-001';
+  const initialVerId = storedUser?.nic
+    ? `ver-prototype-${storedUser.nic.replace(/[^0-9]/g, '')}`
+    : `ver-prototype-${initialUserId.replace('user-prototype-', '').replace('user-', '')}`;
+
   const [activeTab, setActiveTab] = useState('registration');
   const [currentRegStep, setCurrentRegStep] = useState(1);
-  const [regData, setRegData] = useState(DEFAULT_REG_DATA);
-  const [activePreset, setActivePreset] = useState('user-prototype-001');
-  const [activeUserId, setActiveUserId] = useState('user-prototype-001');
-  const [activeVerificationId, setActiveVerificationId] = useState('ver-prototype-001');
-  const [activeVerifiedDid, setActiveVerifiedDid] = useState('did:smartgrama:prototype:001');
+  const [regData, setRegData] = useState({
+    ...DEFAULT_REG_DATA,
+    fullName: storedUser?.name || '',
+    nicNumber: storedUser?.nic || '',
+    homeAddress: storedUser?.address || '',
+    district: storedUser?.district || '',
+    gnDivision: storedUser?.gnDivision || '',
+    mobile: storedUser?.phone || '+94',
+    email: storedUser?.email || '',
+  });
+  const [activePreset, setActivePreset] = useState(initialUserId);
+  const [activeUserId, setActiveUserId] = useState(initialUserId);
+  const [activeVerificationId, setActiveVerificationId] = useState(initialVerId);
+  const [activeVerifiedDid, setActiveVerifiedDid] = useState(storedUser?.did || 'did:smartgrama:prototype:001');
   
   // Verification & Status State
   const [verificationStatus, setVerificationStatus] = useState({
-    finalStatus: 'PENDING',
+    finalStatus: storedUser?.kycStatus || 'PENDING',
     facialVerificationStatus: 'NOT_SUBMITTED',
     documentVerificationStatus: 'NOT_SUBMITTED',
-    officerReviewStatus: 'PENDING',
+    officerReviewStatus: storedUser?.kycStatus === 'VERIFIED' ? 'APPROVED' : 'PENDING',
     remarks: '',
   });
   const [issuedDidData, setIssuedDidData] = useState(null);
@@ -77,12 +99,20 @@ export const AppProvider = ({ children }) => {
     if (res.ok && res.data?.data) {
       const st = res.data.data;
       setVerificationStatus(st);
-      if (st.finalStatus === 'VERIFIED' && st.did) {
-        setActiveVerifiedDid(st.did);
-        const idRes = await api.getIdentity(st.did);
+      if (st.finalStatus === 'VERIFIED') {
+        const did = st.did || 'did:smartgrama:prototype:001';
+        setActiveVerifiedDid(did);
+        const idRes = await api.getIdentity(did);
         if (idRes.ok && idRes.data?.data) {
           setIssuedDidData(idRes.data.data);
         }
+        // Sync localStorage user record so other components know it is verified
+        try {
+          const u = JSON.parse(localStorage.getItem('user') || '{}');
+          u.kycStatus = 'VERIFIED';
+          u.did = did;
+          localStorage.setItem('user', JSON.stringify(u));
+        } catch (_) {}
       }
     }
   }, [activeVerificationId]);
@@ -95,15 +125,16 @@ export const AppProvider = ({ children }) => {
     }
   }, []);
 
-  // Initial Data Sync
+  // Initial Data Sync & Frequent Polling
   useEffect(() => {
     checkBackend();
     fetchStatus();
     fetchQueue();
     const interval = setInterval(() => {
       checkBackend();
+      fetchStatus();
       fetchQueue();
-    }, 10000);
+    }, 3000);
     return () => clearInterval(interval);
   }, [checkBackend, fetchStatus, fetchQueue]);
 

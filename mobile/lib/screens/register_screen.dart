@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
+import '../theme/app_strings.dart';
 import '../api_service.dart';
 import 'identity_kyc_screen.dart';
-import 'package:intl/intl.dart';
 
 class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
+
   @override
-  _RegisterScreenState createState() => _RegisterScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
@@ -14,65 +17,76 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool isLoading = false;
 
   // Step 1: Personal
-  String fullName = '';
-  String nic = '';
-  String dob = '';
-  String mobile = '';
-  String email = '';
+  String fullName = 'Aravinda Kumara';
+  String nic = '200223003053';
+  String dob = '1998-04-12';
+  String mobile = '781453248';
+  String email = 'aravinda.k@gmail.com';
 
   // Step 2: Address
-  String address = '';
-  String city = '';
+  String address = '45/A, Jayawickrama Road';
+  String city = 'Minuwangoda';
   String district = 'Gampaha';
-  String gnDivision = '';
+  String gnDivision = 'Minuwangoda North';
 
   // Step 3: Income
-  String familySize = '';
-  String dependents = '';
-  String monthlyIncome = '';
-  String monthlyExpenses = '';
-  String employmentType = '';
+  String familySize = '4';
+  String dependents = '2';
+  String monthlyIncome = '45000';
+  String monthlyExpenses = '25000';
+  String employmentType = 'Self Employed';
 
   // Step 4: Bank
   String bankName = 'Samurdhi Bank';
-  String accountNumber = '';
-  String branch = '';
+  String accountNumber = '100456789012';
+  String branch = 'Minuwangoda';
 
-  final List<String> districts = [
+  final List<String> districts = const [
     'Ampara', 'Anuradhapura', 'Badulla', 'Batticaloa', 'Colombo', 'Galle', 'Gampaha', 'Hambantota',
     'Jaffna', 'Kalutara', 'Kandy', 'Kegalle', 'Kilinochchi', 'Kurunegala', 'Mannar', 'Matale',
     'Matara', 'Moneragala', 'Mullaitivu', 'Nuwara Eliya', 'Polonnaruwa', 'Puttalam', 'Ratnapura',
     'Trincomalee', 'Vavuniya'
   ];
-  final List<String> bankNames = ['Samurdhi Bank', 'Samupakara Bank', 'Sanasa Bank'];
+
+  final List<String> bankNames = const [
+    'Samurdhi Bank', 'Samupakara Bank', 'Sanasa Bank', 'People\'s Bank', 'Bank of Ceylon'
+  ];
+
+  final List<String> employmentTypes = const [
+    'Self Employed', 'Farmer / Agriculture', 'Private Sector', 'Public Sector', 'Daily Wage', 'Unemployed'
+  ];
 
   void _nextStep() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      setState(() {
-        currentStep++;
-      });
+      if (currentStep < 4) {
+        setState(() => currentStep++);
+      } else {
+        _register();
+      }
     }
   }
 
   void _prevStep() {
-    setState(() {
-      currentStep--;
-    });
+    if (currentStep > 1) {
+      setState(() => currentStep--);
+    } else {
+      Navigator.pop(context);
+    }
   }
 
   void _register() async {
     if (!_formKey.currentState!.validate()) return;
     _formKey.currentState!.save();
-    
+
     setState(() => isLoading = true);
-    
+
     try {
       final payload = {
         "name": fullName,
         "nic": nic,
         "dob": dob,
-        "phone": "+94" + mobile,
+        "phone": "+94$mobile",
         "email": email,
         "address": address,
         "city": city,
@@ -87,469 +101,473 @@ class _RegisterScreenState extends State<RegisterScreen> {
         "accountNumber": accountNumber,
         "branch": branch,
       };
-      
+
       final res = await ApiService.registerUser(payload);
       final String identifier = res['user']?['_id'] ?? res['_id'] ?? res['id'] ?? nic;
-      
+
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Registration Successful!')),
+        const SnackBar(
+          content: Text('Registration Successful! Proceeding to Biometric Identity Verification.'),
+          backgroundColor: AppColors.welfare,
+        ),
       );
-      
+
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => IdentityKYCScreen(identifier: identifier, userData: res['user'] ?? payload)),
+        MaterialPageRoute(
+          builder: (context) => IdentityKYCScreen(
+            identifier: identifier,
+            userData: res['user'] ?? payload,
+          ),
+        ),
       );
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+        SnackBar(content: Text('Registration error: $e'), backgroundColor: AppColors.danger),
       );
     } finally {
-      setState(() => isLoading = false);
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
-  }
-
-  Widget _buildTextField(String label, {String? hintText, Function(String?)? onSaved, int flex = 1, String? Function(String?)? validator, TextInputType keyboardType = TextInputType.text, String? prefixText, String? suffixText, int? maxLength}) {
-    return Expanded(
-      flex: flex,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label.toUpperCase(), style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF475569))),
-            SizedBox(height: 8),
-            TextFormField(
-              keyboardType: keyboardType,
-              maxLength: maxLength,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.white,
-                hintText: hintText,
-                prefixText: prefixText,
-                suffixText: suffixText,
-                counterText: "",
-                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Color(0xFF0F766E))),
-              ),
-              validator: validator ?? (v) => v == null || v.isEmpty ? 'Required' : null,
-              onSaved: onSaved,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDateField(String label, {required String value, required Function(String) onChanged, int flex = 1}) {
-    return Expanded(
-      flex: flex,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label.toUpperCase(), style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF475569))),
-            SizedBox(height: 8),
-            InkWell(
-              onTap: () async {
-                DateTime? picked = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime(2000),
-                  firstDate: DateTime(1900),
-                  lastDate: DateTime.now(),
-                );
-                if (picked != null) {
-                  onChanged(DateFormat('yyyy-MM-dd').format(picked));
-                }
-              },
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
-                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(value.isEmpty ? 'Select Date' : value, style: TextStyle(color: value.isEmpty ? Colors.black54 : Colors.black87)),
-                    Icon(Icons.calendar_today, size: 16, color: Colors.grey.shade600),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDropdownField(String label, {required String value, required List<String> items, required Function(String?) onChanged, int flex = 1}) {
-    return Expanded(
-      flex: flex,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label.toUpperCase(), style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF475569))),
-            SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              value: value,
-              items: items.map((i) => DropdownMenuItem(value: i, child: Text(i))).toList(),
-              onChanged: onChanged,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStepIndicator() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: List.generate(4, (index) {
-          int stepNum = index + 1;
-          bool isActive = stepNum <= currentStep;
-          return Row(
-            children: [
-              Column(
-                children: [
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isActive ? Color(0xFF0F766E) : Colors.white,
-                      border: Border.all(color: isActive ? Color(0xFF0F766E) : Colors.grey.shade300, width: 2),
-                    ),
-                    child: Center(
-                      child: isActive && stepNum < currentStep
-                          ? Icon(Icons.check, color: Colors.white, size: 16)
-                          : Text('$stepNum', style: TextStyle(color: isActive ? Colors.white : Colors.grey.shade500, fontWeight: FontWeight.bold)),
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    ['Personal', 'Address', 'Income', 'Bank'][index],
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-                      color: isActive ? Color(0xFF0F766E) : Colors.grey.shade500,
-                    ),
-                  )
-                ],
-              ),
-              if (index < 3)
-                Container(
-                  width: 40,
-                  height: 2,
-                  margin: const EdgeInsets.only(bottom: 20),
-                  color: stepNum < currentStep ? Color(0xFF0F766E) : Colors.grey.shade300,
-                )
-            ],
-          );
-        }),
-      ),
-    );
-  }
-
-  Widget _buildFormStep1() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('PERSONAL INFORMATION', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF64748B), letterSpacing: 1.2)),
-        SizedBox(height: 24),
-        Row(children: [_buildTextField('Full Name', hintText: 'e.g. Aravinda Kumara', onSaved: (v) => fullName = v!)]),
-        Row(children: [
-          _buildTextField('NIC Number', hintText: 'e.g. 200223003053 or 983223053v', 
-            validator: (v) {
-              if (v == null || v.isEmpty) return 'Required';
-              if (!RegExp(r'^([0-9]{9}[vVxX]|[0-9]{12})$').hasMatch(v)) return 'Invalid NIC format';
-              return null;
-            },
-            onSaved: (v) => nic = v!)
-        ]),
-        Row(children: [_buildDateField('Date of Birth', value: dob, onChanged: (v) => setState(() => dob = v))]),
-        Row(
-          children: [
-            _buildTextField('Mobile', hintText: '781453248', prefixText: '+94 ', maxLength: 9, keyboardType: TextInputType.phone,
-              validator: (v) {
-                if (v == null || v.isEmpty) return 'Required';
-                if (!RegExp(r'^\d{9}$').hasMatch(v)) return 'Enter exactly 9 digits';
-                return null;
-              },
-              onSaved: (v) => mobile = v!),
-            SizedBox(width: 16),
-            _buildTextField('Email Address', hintText: 'citizen@gmail.com', 
-              validator: (v) {
-                if (v == null || v.isEmpty) return 'Required';
-                if (!v.contains('@gmail.com')) return 'Must be a @gmail.com address';
-                return null;
-              },
-              onSaved: (v) => email = v!),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFormStep2() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('ADDRESS & GN DIVISION', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF64748B), letterSpacing: 1.2)),
-        SizedBox(height: 24),
-        Row(children: [_buildTextField('Home Address', hintText: 'e.g. 45/A, Jayawickrama Road', onSaved: (v) => address = v!)]),
-        Row(
-          children: [
-            _buildTextField('City', hintText: 'e.g. Minuwangoda', 
-              validator: (v) {
-                if (v == null || v.isEmpty) return 'Required';
-                if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(v)) return 'Text only';
-                return null;
-              },
-              onSaved: (v) => city = v!),
-            SizedBox(width: 16),
-            _buildDropdownField('District', value: district, items: districts, onChanged: (v) => setState(() => district = v!)),
-          ],
-        ),
-        Row(children: [_buildTextField('GN Division', hintText: 'e.g. Minuwangoda North', onSaved: (v) => gnDivision = v!)]),
-      ],
-    );
-  }
-
-  Widget _buildFormStep3() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('FAMILY & INCOME DETAILS', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF64748B), letterSpacing: 1.2)),
-        SizedBox(height: 24),
-        Row(
-          children: [
-            _buildTextField('Family Size', hintText: 'e.g. 4', keyboardType: TextInputType.number, 
-              validator: (v) {
-                if (v == null || v.isEmpty) return 'Required';
-                if (!RegExp(r'^\d+$').hasMatch(v)) return 'Whole number only';
-                return null;
-              },
-              onSaved: (v) => familySize = v!),
-            SizedBox(width: 16),
-            _buildTextField('No. of Dependents', hintText: 'e.g. 2', keyboardType: TextInputType.number,
-              validator: (v) {
-                if (v == null || v.isEmpty) return 'Required';
-                if (!RegExp(r'^\d+$').hasMatch(v)) return 'Whole number only';
-                return null;
-              },
-              onSaved: (v) => dependents = v!),
-          ],
-        ),
-        Row(
-          children: [
-            _buildTextField('Monthly Income', hintText: '45000', suffixText: ' LKR', keyboardType: TextInputType.number,
-              validator: (v) {
-                if (v == null || v.isEmpty) return 'Required';
-                if (!RegExp(r'^\d+$').hasMatch(v)) return 'Number only';
-                return null;
-              },
-              onSaved: (v) => monthlyIncome = v!),
-            SizedBox(width: 16),
-            _buildTextField('Monthly Expenses', hintText: '25000', suffixText: ' LKR', keyboardType: TextInputType.number,
-              validator: (v) {
-                if (v == null || v.isEmpty) return 'Required';
-                if (!RegExp(r'^\d+$').hasMatch(v)) return 'Number only';
-                return null;
-              },
-              onSaved: (v) => monthlyExpenses = v!),
-          ],
-        ),
-        Row(children: [_buildTextField('Employment Type', hintText: 'e.g. Daily Wage', 
-          validator: (v) {
-            if (v == null || v.isEmpty) return 'Required';
-            if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(v)) return 'Text only';
-            return null;
-          },
-          onSaved: (v) => employmentType = v!)]),
-      ],
-    );
-  }
-
-  Widget _buildFormStep4() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('BANK & WALLET DETAILS', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF64748B), letterSpacing: 1.2)),
-        SizedBox(height: 24),
-        Row(children: [_buildDropdownField('Bank Name', value: bankName, items: bankNames, onChanged: (v) => setState(() => bankName = v!))]),
-        Row(
-          children: [
-            _buildTextField('Account Number', hintText: '16 digit number', maxLength: 16, keyboardType: TextInputType.number,
-              validator: (v) {
-                if (v == null || v.isEmpty) return 'Required';
-                if (!RegExp(r'^\d{16}$').hasMatch(v)) return 'Must be exactly 16 numbers';
-                return null;
-              },
-              onSaved: (v) => accountNumber = v!),
-            SizedBox(width: 16),
-            _buildTextField('Branch', hintText: 'e.g. Gampaha', 
-              validator: (v) {
-                if (v == null || v.isEmpty) return 'Required';
-                if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(v)) return 'Text only';
-                return null;
-              },
-              onSaved: (v) => branch = v!),
-          ],
-        ),
-        Container(
-          margin: const EdgeInsets.only(top: 8, bottom: 16),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Color(0xFFD1FAE5),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Color(0xFFA7F3D0)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Digital Wallet Auto-Created', style: TextStyle(color: Color(0xFF065F46), fontWeight: FontWeight.bold, fontSize: 14)),
-              SizedBox(height: 6),
-              Text(
-                'A SmartGrama Digital Wallet linked to your bank account will be set up automatically after identity verification for seamless welfare disbursements.',
-                style: TextStyle(color: Color(0xFF065F46), fontSize: 12),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    String stepTitle = ['Personal', 'Address', 'Income', 'Bank'][currentStep - 1];
+    final s = AppStrings.of(context);
 
     return Scaffold(
-      backgroundColor: Color(0xFF1E293B),
+      backgroundColor: AppColors.background,
+      appBar: AppComponents.headerAppBar(
+        context,
+        title: s.registerNow,
+        subtitle: 'Step $currentStep of 4',
+        showBack: true,
+        onBack: _prevStep,
+        showLangPill: true,
+      ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-          child: Column(
-            children: [
-              Text('SmartGrama', style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold)),
-              SizedBox(height: 4),
-              Text('WELFARE & MICROFINANCE PLATFORM • SRI LANKA', style: TextStyle(color: Colors.grey.shade400, fontSize: 10, letterSpacing: 1.5, fontWeight: FontWeight.bold)),
-              SizedBox(height: 32),
+        child: Column(
+          children: [
+            // Stepper indicator header
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              color: AppColors.surface,
+              child: Row(
+                children: [
+                  _stepIndicator(1, s.regStep1.split('. ').last),
+                  _stepDivider(1),
+                  _stepIndicator(2, s.regStep2.split('. ').last),
+                  _stepDivider(2),
+                  _stepIndicator(3, s.regStep3.split('. ').last),
+                  _stepDivider(3),
+                  _stepIndicator(4, s.regStep4.split('. ').last),
+                ],
+              ),
+            ),
+            const Divider(height: 1, color: AppColors.border),
 
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 20, offset: Offset(0, 10))],
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: Color(0xFF0F766E),
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                      ),
+            // Step Content Form
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 600),
+                    child: Form(
+                      key: _formKey,
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Text('Create Your Account', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                          SizedBox(height: 8),
-                          Text('Step $currentStep of 4 – $stepTitle', style: TextStyle(color: Colors.white70, fontSize: 14)),
-                          SizedBox(height: 16),
-                          Stack(
-                            children: [
-                              Container(height: 4, width: double.infinity, color: Colors.white24),
-                              AnimatedContainer(
-                                duration: Duration(milliseconds: 300),
-                                height: 4,
-                                width: (MediaQuery.of(context).size.width - 88) * (currentStep / 4),
-                                color: Color(0xFF34D399),
-                              )
-                            ],
-                          )
+                          if (currentStep == 1) _buildStep1(s),
+                          if (currentStep == 2) _buildStep2(s),
+                          if (currentStep == 3) _buildStep3(s),
+                          if (currentStep == 4) _buildStep4(s),
                         ],
                       ),
                     ),
+                  ),
+                ),
+              ),
+            ),
 
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          children: [
-                            _buildStepIndicator(),
-                            
-                            if (currentStep == 1) _buildFormStep1(),
-                            if (currentStep == 2) _buildFormStep2(),
-                            if (currentStep == 3) _buildFormStep3(),
-                            if (currentStep == 4) _buildFormStep4(),
-
-                            SizedBox(height: 24),
-                            
-                            Row(
-                              children: [
-                                if (currentStep > 1)
-                                  Expanded(
-                                    child: OutlinedButton(
-                                      style: OutlinedButton.styleFrom(
-                                        padding: EdgeInsets.symmetric(vertical: 16),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                        side: BorderSide(color: Colors.grey.shade300),
-                                      ),
-                                      onPressed: _prevStep,
-                                      child: Text('Back', style: TextStyle(color: Colors.grey.shade700, fontSize: 16, fontWeight: FontWeight.bold)),
-                                    ),
-                                  ),
-                                if (currentStep > 1) SizedBox(width: 16),
-                                Expanded(
-                                  flex: 2,
-                                  child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: currentStep == 4 ? Color(0xFF1D4ED8) : Color(0xFF0F766E),
-                                      padding: EdgeInsets.symmetric(vertical: 16),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                      elevation: 0,
-                                    ),
-                                    onPressed: isLoading ? null : (currentStep < 4 ? _nextStep : _register),
-                                    child: isLoading
-                                        ? SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                        : Text(currentStep < 4 ? 'Continue' : 'Complete Registration', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 24),
-                          ],
-                        ),
+            // Bottom Action Footer
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                color: AppColors.surface,
+                border: Border(top: BorderSide(color: AppColors.border, width: 1)),
+              ),
+              child: Row(
+                children: [
+                  if (currentStep > 1) ...[
+                    Expanded(
+                      flex: 1,
+                      child: AppComponents.secondaryButton(
+                        label: s.back,
+                        icon: Icons.arrow_back,
+                        onPressed: _prevStep,
                       ),
+                    ),
+                    const SizedBox(width: 12),
+                  ],
+                  Expanded(
+                    flex: 2,
+                    child: AppComponents.primaryButton(
+                      label: currentStep == 4 ? s.completeRegistration : s.next,
+                      icon: currentStep == 4 ? Icons.check_circle : Icons.arrow_forward,
+                      isLoading: isLoading,
+                      onPressed: _nextStep,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _stepIndicator(int step, String label) {
+    final isDone = currentStep > step;
+    final isActive = currentStep == step;
+
+    return Expanded(
+      child: Column(
+        children: [
+          Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isDone
+                  ? AppColors.welfare
+                  : (isActive ? AppColors.primary : AppColors.surfaceSubtle),
+              border: Border.all(
+                color: isActive ? AppColors.primary : (isDone ? AppColors.welfare : AppColors.borderSubtle),
+                width: 1.5,
+              ),
+            ),
+            child: Center(
+              child: isDone
+                  ? const Icon(Icons.check, size: 16, color: Colors.white)
+                  : Text(
+                      '$step',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: isActive ? Colors.white : AppColors.textSecondary,
+                      ),
+                    ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+              color: isActive ? AppColors.primary : AppColors.textMuted,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _stepDivider(int step) {
+    final isDone = currentStep > step;
+    return Container(
+      width: 16,
+      height: 2,
+      margin: const EdgeInsets.only(bottom: 14),
+      color: isDone ? AppColors.welfare : AppColors.border,
+    );
+  }
+
+  // STEP 1: Personal Details
+  Widget _buildStep1(AppStrings s) {
+    return AppComponents.card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(s.regStep1, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+          const SizedBox(height: 4),
+          const Text('Enter your legal identification data as per the National Identity Card.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+          const SizedBox(height: 20),
+
+          _buildField(
+            label: s.fullName,
+            initialValue: fullName,
+            icon: Icons.person_outline,
+            onSaved: (v) => fullName = v!,
+          ),
+          const SizedBox(height: 16),
+
+          _buildField(
+            label: s.nicNumber,
+            initialValue: nic,
+            icon: Icons.badge_outlined,
+            onSaved: (v) => nic = v!,
+          ),
+          const SizedBox(height: 16),
+
+          Row(
+            children: [
+              Expanded(
+                child: _buildField(
+                  label: s.dob,
+                  initialValue: dob,
+                  icon: Icons.calendar_today_outlined,
+                  onSaved: (v) => dob = v!,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildField(
+                  label: s.phone,
+                  initialValue: mobile,
+                  prefixText: '+94 ',
+                  icon: Icons.phone_outlined,
+                  keyboardType: TextInputType.phone,
+                  onSaved: (v) => mobile = v!,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          _buildField(
+            label: s.emailAddress,
+            initialValue: email,
+            icon: Icons.email_outlined,
+            keyboardType: TextInputType.emailAddress,
+            onSaved: (v) => email = v!,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // STEP 2: Address & GN Division
+  Widget _buildStep2(AppStrings s) {
+    return AppComponents.card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(s.regStep2, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+          const SizedBox(height: 4),
+          const Text('Provide your residential address and Grama Niladhari administrative division.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+          const SizedBox(height: 20),
+
+          _buildField(
+            label: s.addressField,
+            initialValue: address,
+            icon: Icons.home_outlined,
+            onSaved: (v) => address = v!,
+          ),
+          const SizedBox(height: 16),
+
+          Row(
+            children: [
+              Expanded(
+                child: _buildField(
+                  label: s.cityField,
+                  initialValue: city,
+                  icon: Icons.location_city,
+                  onSaved: (v) => city = v!,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(s.districtField, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<String>(
+                      value: district,
+                      decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12)),
+                      items: districts.map((d) => DropdownMenuItem(value: d, child: Text(d, style: const TextStyle(fontSize: 14)))).toList(),
+                      onChanged: (v) => setState(() => district = v!),
                     ),
                   ],
                 ),
               ),
             ],
           ),
-        ),
+          const SizedBox(height: 16),
+
+          _buildField(
+            label: s.gnField,
+            initialValue: gnDivision,
+            icon: Icons.map_outlined,
+            onSaved: (v) => gnDivision = v!,
+          ),
+        ],
       ),
     );
   }
-}
 
+  // STEP 3: Socio-Economic Profile
+  Widget _buildStep3(AppStrings s) {
+    return AppComponents.card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(s.regStep3, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+          const SizedBox(height: 4),
+          const Text('Financial data used for automated Aswesuma PMT scoring and microfinance affordability.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+          const SizedBox(height: 20),
+
+          Row(
+            children: [
+              Expanded(
+                child: _buildField(
+                  label: s.familySizeField,
+                  initialValue: familySize,
+                  icon: Icons.people_outline,
+                  keyboardType: TextInputType.number,
+                  onSaved: (v) => familySize = v!,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildField(
+                  label: s.dependentsField,
+                  initialValue: dependents,
+                  icon: Icons.child_care_outlined,
+                  keyboardType: TextInputType.number,
+                  onSaved: (v) => dependents = v!,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          Row(
+            children: [
+              Expanded(
+                child: _buildField(
+                  label: s.monthlyIncomeField,
+                  initialValue: monthlyIncome,
+                  prefixText: 'Rs. ',
+                  icon: Icons.attach_money,
+                  keyboardType: TextInputType.number,
+                  onSaved: (v) => monthlyIncome = v!,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildField(
+                  label: s.monthlyExpensesField,
+                  initialValue: monthlyExpenses,
+                  prefixText: 'Rs. ',
+                  icon: Icons.shopping_bag_outlined,
+                  keyboardType: TextInputType.number,
+                  onSaved: (v) => monthlyExpenses = v!,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(s.employmentField, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                value: employmentType,
+                decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12)),
+                items: employmentTypes.map((e) => DropdownMenuItem(value: e, child: Text(e, style: const TextStyle(fontSize: 14)))).toList(),
+                onChanged: (v) => setState(() => employmentType = v!),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // STEP 4: Bank Account
+  Widget _buildStep4(AppStrings s) {
+    return AppComponents.card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(s.regStep4, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+          const SizedBox(height: 4),
+          const Text('Designated account for direct welfare allowances and loan disbursements.', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+          const SizedBox(height: 20),
+
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(s.bankNameField, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                value: bankName,
+                decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12)),
+                items: bankNames.map((b) => DropdownMenuItem(value: b, child: Text(b, style: const TextStyle(fontSize: 14)))).toList(),
+                onChanged: (v) => setState(() => bankName = v!),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          _buildField(
+            label: s.accountNumberField,
+            initialValue: accountNumber,
+            icon: Icons.account_balance_wallet_outlined,
+            keyboardType: TextInputType.number,
+            onSaved: (v) => accountNumber = v!,
+          ),
+          const SizedBox(height: 16),
+
+          _buildField(
+            label: s.branchField,
+            initialValue: branch,
+            icon: Icons.location_on_outlined,
+            onSaved: (v) => branch = v!,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildField({
+    required String label,
+    required String initialValue,
+    required FormFieldSetter<String> onSaved,
+    IconData? icon,
+    String? prefixText,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+        const SizedBox(height: 8),
+        TextFormField(
+          initialValue: initialValue,
+          keyboardType: keyboardType,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          decoration: InputDecoration(
+            prefixText: prefixText,
+            prefixIcon: icon != null ? Icon(icon, size: 18, color: AppColors.textSecondary) : null,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          ),
+          validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+          onSaved: onSaved,
+        ),
+      ],
+    );
+  }
+}

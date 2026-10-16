@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import Header from "../components/Header";
 import { predictLoan } from "../api/loanApi";
 import { loanProducts } from "../data/loanProducts";
@@ -8,6 +9,7 @@ import { getCurrentUser } from "../utils/user";
 export default function LoanApplication() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
   const user = getCurrentUser();
 
   // Read the selected product from URL params or location state
@@ -105,14 +107,14 @@ export default function LoanApplication() {
       <Header />
       <div style={{ paddingLeft: '40px', paddingTop: '16px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '13px', cursor: 'pointer' }} onClick={() => navigate(-1)}>
         <i className="fa-solid fa-arrow-left"></i>
-        <span>Back to Programs</span>
+        <span>{t("back_to_programs")}</span>
       </div>
       
       <main className="content-container flex flex-col gap-8">
         
         <div style={{ padding: '0 40px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--text-primary)' }}>Apply for {selectedProduct.title}</h2>
-          <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: '4px' }}>Fill in your financial details below. Our AI evaluates affordability instantly.</p>
+          <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--text-primary)' }}>{t("apply_for_title", { title: selectedProduct.title })}</h2>
+          <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: '4px' }}>{t("loan_form_desc")}</p>
         </div>
 
         <div className="dashboard-grid" style={{ gridTemplateColumns: '1fr 350px', gap: '32px' }}>
@@ -122,10 +124,10 @@ export default function LoanApplication() {
             
             {/* Step 1: Loan Requirements */}
             <div>
-              <h3 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid var(--border)', paddingBottom: '8px', marginBottom: '16px' }}>1. Loan Requirements</h3>
+              <h3 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid var(--border)', paddingBottom: '8px', marginBottom: '16px' }}>{t("step1_loan_req")}</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div className="input-group" style={{ marginBottom: 0 }}>
-                  <label>Loan Amount (Rs.)</label>
+                  <label>{t("loan_amount_lkr")}</label>
                   <input
                     type="number"
                     name="loan_amount"
@@ -133,10 +135,10 @@ export default function LoanApplication() {
                     value={form.loan_amount}
                     onChange={handleChange}
                   />
-                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>Limit: Rs. {selectedProduct.min} - Rs. {selectedProduct.max}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>{t("limit_range", { min: selectedProduct.min, max: selectedProduct.max })}</div>
                 </div>
                 <div className="input-group" style={{ marginBottom: 0 }}>
-                  <label>Duration (Months)</label>
+                  <label>{t("duration_months")}</label>
                   <input
                     type="number"
                     name="repayment_months"
@@ -144,17 +146,17 @@ export default function LoanApplication() {
                     value={form.repayment_months}
                     onChange={handleChange}
                   />
-                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>Max: {selectedProduct.maxMonths} months</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>{t("max_months", { max: selectedProduct.maxMonths })}</div>
                 </div>
               </div>
             </div>
 
             {/* Step 2: Financial Profile */}
             <div>
-              <h3 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid var(--border)', paddingBottom: '8px', marginBottom: '16px' }}>2. Financial Profile</h3>
+              <h3 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid var(--border)', paddingBottom: '8px', marginBottom: '16px' }}>{t("step2_financial_profile")}</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div className="input-group" style={{ marginBottom: 0 }}>
-                  <label>Monthly Income (Rs.) *</label>
+                  <label>{t("monthly_income_req")}</label>
                   <input
                     type="number"
                     name="monthly_income"
@@ -165,7 +167,7 @@ export default function LoanApplication() {
                   />
                 </div>
                 <div className="input-group" style={{ marginBottom: 0 }}>
-                  <label>Other Income (Rs.)</label>
+                  <label>{t("other_income_label")}</label>
                   <input
                     type="number"
                     name="other_income"
@@ -175,7 +177,7 @@ export default function LoanApplication() {
                   />
                 </div>
                 <div className="input-group" style={{ marginBottom: 0 }}>
-                  <label>Monthly Expenses (Rs.) *</label>
+                  <label>{t("monthly_expenses_req")}</label>
                   <input
                     type="number"
                     name="expenses"
@@ -186,7 +188,7 @@ export default function LoanApplication() {
                   />
                 </div>
                 <div className="input-group" style={{ marginBottom: 0 }}>
-                  <label>Savings Balance (Rs.) *</label>
+                  <label>{t("savings_balance_req")}</label>
                   <input
                     type="number"
                     name="savings_balance"
@@ -197,11 +199,11 @@ export default function LoanApplication() {
                   />
                 </div>
                 <div className="input-group" style={{ marginBottom: 0 }}>
-                  <label>Existing Active Loans</label>
+                  <label>{t("existing_active_loans")}</label>
                   <select name="existing_loans" className="form-input" value={form.existing_loans} onChange={handleChange}>
-                    <option value="0">0 (No active loans)</option>
+                    <option value="0">{t("no_active_loans")}</option>
                     <option value="1">1</option>
-                    <option value="2">2 or more</option>
+                    <option value="2">2+</option>
                   </select>
                 </div>
               </div>
@@ -209,21 +211,21 @@ export default function LoanApplication() {
 
             {/* Step 3: Guarantor & Credit */}
             <div>
-              <h3 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid var(--border)', paddingBottom: '8px', marginBottom: '16px' }}>3. Guarantor & Credit</h3>
+              <h3 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid var(--border)', paddingBottom: '8px', marginBottom: '16px' }}>{t("step3_guarantor_credit")}</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div className="input-group" style={{ marginBottom: 0 }}>
-                  <label>Guarantor Support Count</label>
+                  <label>{t("guarantor_support_count")}</label>
                   <select name="guarantor_support_count" className="form-input" value={form.guarantor_support_count} onChange={handleChange}>
-                    <option value="0">None</option>
-                    <option value="1">1 Guarantor</option>
-                    <option value="2">2+ Guarantors</option>
+                    <option value="0">{t("no_guarantors")}</option>
+                    <option value="1">{t("one_guarantor")}</option>
+                    <option value="2">{t("multiple_guarantors")}</option>
                   </select>
                 </div>
                 <div className="input-group" style={{ marginBottom: 0, gridColumn: 'span 2' }}>
-                  <label>Prior Loan Repayment History</label>
+                  <label>{t("prior_repayment_history")}</label>
                   <select name="repayment_history" className="form-input" value={form.repayment_history} onChange={handleChange}>
-                    <option value="1">Good (No defaults)</option>
-                    <option value="0">Poor (Past defaults / delays)</option>
+                    <option value="1">{t("repayment_good")}</option>
+                    <option value="0">{t("repayment_poor")}</option>
                   </select>
                 </div>
               </div>
@@ -235,7 +237,7 @@ export default function LoanApplication() {
               disabled={isLoading}
               style={{ padding: '16px', borderRadius: '8px', fontSize: '15px', marginTop: '16px' }}
             >
-              {isLoading ? "Running AI Evaluation..." : "Submit Application"}
+              {isLoading ? t("running_ai_eval") : t("submit_loan_app")}
             </button>
             
           </div>
@@ -243,17 +245,17 @@ export default function LoanApplication() {
           {/* Right EMI Card (Sticky) */}
           <div style={{ height: 'fit-content', position: 'sticky', top: '100px' }}>
             <div style={{ background: 'var(--primary-light)', borderRadius: 'var(--radius-lg)', padding: '40px 32px', border: '1px solid #d8b4fe' }}>
-              <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', letterSpacing: '0.5px', marginBottom: '8px' }}>ESTIMATED MONTHLY EMI</div>
+              <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-secondary)', letterSpacing: '0.5px', marginBottom: '8px' }}>{t("estimated_monthly_emi")}</div>
               <div style={{ fontSize: '40px', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '8px' }}>Rs. {emi.toLocaleString()}</div>
-              <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '40px' }}>Interest Rate: {selectedProduct.interestRate}% APR</div>
+              <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '40px' }}>{t("interest_rate")}: {selectedProduct.interestRate}% APR</div>
               
               <div style={{ borderTop: '1px solid #d8b4fe', paddingTop: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-secondary)' }}>
-                  <span>Principal</span>
+                  <span>{t("principal")}</span>
                   <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>Rs. {Number(form.loan_amount).toLocaleString()}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-secondary)' }}>
-                  <span>Total Repayment</span>
+                  <span>{t("total_repayment")}</span>
                   <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>Rs. {(emi * Number(form.repayment_months)).toLocaleString()}</span>
                 </div>
               </div>
@@ -262,7 +264,7 @@ export default function LoanApplication() {
             <div style={{ background: '#dcfce7', borderRadius: 'var(--radius-lg)', padding: '24px', marginTop: '16px', border: '1px solid #bbf7d0', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                <i className="fa-solid fa-shield-halved text-green-600 mt-1"></i>
                <div style={{ fontSize: '12px', color: 'var(--success)' }}>
-                 <strong>Blockchain Protected:</strong> Your application data and results are securely evaluated and recorded on the SmartGrama distributed ledger.
+                 <strong>{t("blockchain_protected")}:</strong> {t("blockchain_protected_desc")}
                </div>
             </div>
           </div>

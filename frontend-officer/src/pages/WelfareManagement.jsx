@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useApp } from "../context/AppContext";
 
 export default function WelfareManagement() {
   const navigate = useNavigate();
+  const { pendingQueue } = useApp();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -84,6 +86,14 @@ export default function WelfareManagement() {
             </span>
             <span style={{ backgroundColor: '#dbeafe', color: '#1e40af', padding: '6px 16px', borderRadius: '9999px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>
               Welfare ({pendingApps.length})
+            </span>
+            <span 
+              onClick={() => navigate("/kyc")} 
+              style={{ backgroundColor: 'white', border: '1px solid #d1d5db', color: '#4b5563', padding: '6px 16px', borderRadius: '9999px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}
+              onMouseOver={(e) => e.target.style.backgroundColor = '#f3f4f6'}
+              onMouseOut={(e) => e.target.style.backgroundColor = 'white'}
+            >
+              KYC Verifications {pendingQueue?.length > 0 && <span style={{ background: '#e11d48', color: 'white', borderRadius: '9999px', padding: '2px 8px', fontSize: '12px' }}>{pendingQueue.length}</span>}
             </span>
           </div>
         </div>

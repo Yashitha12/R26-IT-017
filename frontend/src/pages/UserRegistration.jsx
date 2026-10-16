@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useApp } from "../context/AppContext";
@@ -148,11 +148,17 @@ const SelectField = ({ id, label, value, onChange, options }) => (
 
 export const UserRegistration = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { currentRegStep, setCurrentRegStep, regData, updateRegField,
           activeUserId, setActiveUserId, setActiveVerificationId,
           showToast, fetchStatus, fetchQueue } = useApp();
   const [submitting, setSubmitting] = useState(false);
+
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng);
+  };
+
+  const STEPS = [t("personal_details"), t("address_gn"), t("family_income"), t("bank_wallet")];
 
   const handleNext = (from) => { if (from < 4) setCurrentRegStep(from + 1); };
   const handlePrev = (from) => { if (from > 1) setCurrentRegStep(from - 1); };
@@ -237,15 +243,33 @@ export const UserRegistration = () => {
     <div style={S.page}>
       <div style={S.overlay} />
 
+      {/* Floating Language Switcher */}
+      <div style={{ position: "absolute", top: 24, right: 28, zIndex: 10, display: "flex", background: "white", borderRadius: "10px", padding: 4, border: "1px solid #cbd5e1", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}>
+        <button
+          type="button"
+          onClick={() => changeLanguage("en")}
+          style={{ padding: "6px 14px", border: "none", borderRadius: "7px", fontSize: "13px", fontWeight: i18n.language === "en" ? "bold" : "normal", background: i18n.language === "en" ? "#059669" : "transparent", color: i18n.language === "en" ? "white" : "#64748b", cursor: "pointer" }}
+        >
+          EN
+        </button>
+        <button
+          type="button"
+          onClick={() => changeLanguage("si")}
+          style={{ padding: "6px 14px", border: "none", borderRadius: "7px", fontSize: "13px", fontWeight: i18n.language === "si" ? "bold" : "normal", background: i18n.language === "si" ? "#059669" : "transparent", color: i18n.language === "si" ? "white" : "#64748b", cursor: "pointer" }}
+        >
+          සිං
+        </button>
+      </div>
+
       <div style={S.brand}>
-        <p style={S.brandName}>SmartGrama</p>
-        <p style={S.brandTagline}>Welfare &amp; Microfinance Platform &nbsp;&middot;&nbsp; Sri Lanka</p>
+        <p style={S.brandName}>{t("smartgrama")}</p>
+        <p style={S.brandTagline}>{t("smartgrama_tagline")}</p>
       </div>
 
       <div style={S.formCard}>
         <div style={S.cardTop}>
-          <h1 style={S.cardTopTitle}>Create Your Account</h1>
-          <p style={S.cardTopSub}>Step {currentRegStep} of 4 — {STEPS[currentRegStep - 1]}</p>
+          <h1 style={S.cardTopTitle}>{t("create_account")}</h1>
+          <p style={S.cardTopSub}>{t("step_of", { current: currentRegStep, total: 4 })} — {STEPS[currentRegStep - 1]}</p>
           <div style={S.progressWrap}>
             <div style={{ height: "100%", width: `${progressPct}%`, background: "linear-gradient(90deg, #6ee7b7, #34d399)", borderRadius: 10, transition: "width 0.5s ease" }} />
           </div>
@@ -255,7 +279,7 @@ export const UserRegistration = () => {
           {STEPS.map((_, idx) => (
             <React.Fragment key={idx}>
               <div style={dotStyle(idx)} onClick={() => setCurrentRegStep(idx + 1)}>
-                {idx + 1 < currentRegStep ? "v" : idx + 1}
+                {idx + 1 < currentRegStep ? "✓" : idx + 1}
               </div>
               {idx < 3 && (
                 <div style={{ flex: 1, height: 2, maxWidth: 56, background: idx + 1 < currentRegStep ? "#059669" : "#e2e8f0", transition: "background 0.4s" }} />
@@ -265,7 +289,7 @@ export const UserRegistration = () => {
         </div>
         <div style={S.stepLabelsRow}>
           {STEPS.map((label, idx) => (
-            <div key={label} style={labelStyle(idx)}>{label}</div>
+            <div key={idx} style={labelStyle(idx)}>{label}</div>
           ))}
         </div>
 
@@ -274,69 +298,69 @@ export const UserRegistration = () => {
 
           {currentRegStep === 1 && (
             <div>
-              <div style={S.sectionHeading}>Personal Information</div>
-              <Field id="inpFullName"  label="Full Name"     placeholder="e.g. Kasun Dananjaya"        value={regData.fullName}  onChange={e => updateRegField("fullName", e.target.value)} />
-              <Field id="inpNicNumber" label="NIC Number"    placeholder="199512345678 or 951234567V"   value={regData.nicNumber} onChange={e => updateRegField("nicNumber", e.target.value)} pattern="^([0-9]{9}[vVxX]|[0-9]{12})$" title="12 digits or 9 digits followed by v" />
-              <Field id="inpDob"       label="Date of Birth" type="date" placeholder="" value={regData.dob} onChange={e => updateRegField("dob", e.target.value)} />
+              <div style={S.sectionHeading}>{t("personal_details")}</div>
+              <Field id="inpFullName"  label={t("full_name")}     placeholder="e.g. Kasun Dananjaya"        value={regData.fullName}  onChange={e => updateRegField("fullName", e.target.value)} />
+              <Field id="inpNicNumber" label={t("nic_number")}    placeholder="199512345678 or 951234567V"   value={regData.nicNumber} onChange={e => updateRegField("nicNumber", e.target.value)} pattern="^([0-9]{9}[vVxX]|[0-9]{12})$" title="12 digits or 9 digits followed by v" />
+              <Field id="inpDob"       label={t("dob")} type="date" placeholder="" value={regData.dob} onChange={e => updateRegField("dob", e.target.value)} />
               <div style={S.inputRow}>
-                <Field id="inpMobile" label="Mobile" type="tel" placeholder="+94781453248" value={regData.mobile} onChange={e => updateRegField("mobile", e.target.value)} pattern="^\+94\d{9}$" maxLength={12} title="+94 followed by 9 digits" />
-                <Field id="inpEmail"  label="Email Address" type="email" placeholder="citizen@gmail.com" value={regData.email} onChange={e => updateRegField("email", e.target.value)} pattern=".*@gmail\.com$" title="Must be a @gmail.com address" />
+                <Field id="inpMobile" label={t("mobile_phone")} type="tel" placeholder="+94781453248" value={regData.mobile} onChange={e => updateRegField("mobile", e.target.value)} pattern="^\+94\d{9}$" maxLength={12} title="+94 followed by 9 digits" />
+                <Field id="inpEmail"  label={t("email_address")} type="email" placeholder="citizen@gmail.com" value={regData.email} onChange={e => updateRegField("email", e.target.value)} pattern=".*@gmail\.com$" title="Must be a @gmail.com address" />
               </div>
               <div style={S.btnRow}>
-                <button style={S.btnContinue} type="submit" onClick={() => { if(document.querySelector("form").checkValidity()) handleNext(1); }}>Continue</button>
+                <button style={S.btnContinue} type="submit" onClick={() => { if(document.querySelector("form").checkValidity()) handleNext(1); }}>{t("continue")}</button>
               </div>
             </div>
           )}
 
           {currentRegStep === 2 && (
             <div>
-              <div style={S.sectionHeading}>Address &amp; GN Division</div>
-              <Field id="inpHomeAddress" label="Home Address" placeholder="House No, Street Name" value={regData.homeAddress} onChange={e => updateRegField("homeAddress", e.target.value)} />
+              <div style={S.sectionHeading}>{t("address_gn")}</div>
+              <Field id="inpHomeAddress" label={t("home_address")} placeholder="House No, Street Name" value={regData.homeAddress} onChange={e => updateRegField("homeAddress", e.target.value)} />
               <div style={S.inputRow}>
-                <Field id="inpCity"     label="City"     placeholder="e.g. Gampaha"  value={regData.city}     onChange={e => updateRegField("city", e.target.value)} pattern="^[a-zA-Z\s]+$" title="Text only" />
-                <SelectField id="inpDistrict" label="District" value={regData.district} onChange={e => updateRegField("district", e.target.value)} options={['Ampara', 'Anuradhapura', 'Badulla', 'Batticaloa', 'Colombo', 'Galle', 'Gampaha', 'Hambantota', 'Jaffna', 'Kalutara', 'Kandy', 'Kegalle', 'Kilinochchi', 'Kurunegala', 'Mannar', 'Matale', 'Matara', 'Moneragala', 'Mullaitivu', 'Nuwara Eliya', 'Polonnaruwa', 'Puttalam', 'Ratnapura', 'Trincomalee', 'Vavuniya']} />
+                <Field id="inpCity"     label={t("city")}     placeholder="e.g. Gampaha"  value={regData.city}     onChange={e => updateRegField("city", e.target.value)} pattern="^[a-zA-Z\s]+$" title="Text only" />
+                <SelectField id="inpDistrict" label={t("district")} value={regData.district} onChange={e => updateRegField("district", e.target.value)} options={['Ampara', 'Anuradhapura', 'Badulla', 'Batticaloa', 'Colombo', 'Galle', 'Gampaha', 'Hambantota', 'Jaffna', 'Kalutara', 'Kandy', 'Kegalle', 'Kilinochchi', 'Kurunegala', 'Mannar', 'Matale', 'Matara', 'Moneragala', 'Mullaitivu', 'Nuwara Eliya', 'Polonnaruwa', 'Puttalam', 'Ratnapura', 'Trincomalee', 'Vavuniya']} />
               </div>
-              <Field id="inpGnDivision" label="GN Division" placeholder="e.g. Minuwangoda North" value={regData.gnDivision} onChange={e => updateRegField("gnDivision", e.target.value)} />
+              <Field id="inpGnDivision" label={t("gn_division")} placeholder="e.g. Minuwangoda North" value={regData.gnDivision} onChange={e => updateRegField("gnDivision", e.target.value)} />
               <div style={S.btnRow}>
-                <button style={S.btnBack} onClick={() => handlePrev(2)}>Back</button>
-                <button style={S.btnContinue} type="submit" onClick={() => { if(document.querySelector("form").checkValidity()) handleNext(2); }}>Continue</button>
+                <button style={S.btnBack} onClick={() => handlePrev(2)}>{t("back")}</button>
+                <button style={S.btnContinue} type="submit" onClick={() => { if(document.querySelector("form").checkValidity()) handleNext(2); }}>{t("continue")}</button>
               </div>
             </div>
           )}
 
           {currentRegStep === 3 && (
             <div>
-              <div style={S.sectionHeading}>Family &amp; Income Details</div>
+              <div style={S.sectionHeading}>{t("family_income")}</div>
               <div style={S.inputRow}>
-                <Field id="inpFamilySize"     label="Family Size"       type="number" min="1" placeholder="4" value={regData.familySize}     onChange={e => updateRegField("familySize", e.target.value)} />
-                <Field id="inpNoOfDependents" label="No. of Dependents"  type="number" min="0" placeholder="2" value={regData.noOfDependents} onChange={e => updateRegField("noOfDependents", e.target.value)} />
+                <Field id="inpFamilySize"     label={t("family_size")}       type="number" min="1" placeholder="4" value={regData.familySize}     onChange={e => updateRegField("familySize", e.target.value)} />
+                <Field id="inpNoOfDependents" label={t("dependents")}  type="number" min="0" placeholder="2" value={regData.noOfDependents} onChange={e => updateRegField("noOfDependents", e.target.value)} />
               </div>
               <div style={S.inputRow}>
-                <Field id="inpMonthlyIncome"   label="Monthly Income (LKR)"   type="number" min="0" placeholder="35000" value={regData.monthlyIncome}   onChange={e => updateRegField("monthlyIncome", e.target.value)} />
-                <Field id="inpMonthlyExpenses" label="Monthly Expenses (LKR)"  type="number" min="0" placeholder="30000" value={regData.monthlyExpenses} onChange={e => updateRegField("monthlyExpenses", e.target.value)} />
+                <Field id="inpMonthlyIncome"   label={t("monthly_income")}   type="number" min="0" placeholder="35000" value={regData.monthlyIncome}   onChange={e => updateRegField("monthlyIncome", e.target.value)} />
+                <Field id="inpMonthlyExpenses" label={t("monthly_expenses")}  type="number" min="0" placeholder="30000" value={regData.monthlyExpenses} onChange={e => updateRegField("monthlyExpenses", e.target.value)} />
               </div>
-              <Field id="inpEmploymentType" label="Employment Type" placeholder="e.g. Farmer" value={regData.employmentType} onChange={e => updateRegField("employmentType", e.target.value)} pattern="^[a-zA-Z\s]+$" title="Text only" />
+              <Field id="inpEmploymentType" label={t("employment_type")} placeholder="e.g. Farmer" value={regData.employmentType} onChange={e => updateRegField("employmentType", e.target.value)} pattern="^[a-zA-Z\s]+$" title="Text only" />
               <div style={S.btnRow}>
-                <button style={S.btnBack} onClick={() => handlePrev(3)}>Back</button>
-                <button style={S.btnContinue} type="submit" onClick={() => { if(document.querySelector("form").checkValidity()) handleNext(3); }}>Continue</button>
+                <button style={S.btnBack} onClick={() => handlePrev(3)}>{t("back")}</button>
+                <button style={S.btnContinue} type="submit" onClick={() => { if(document.querySelector("form").checkValidity()) handleNext(3); }}>{t("continue")}</button>
               </div>
             </div>
           )}
 
           {currentRegStep === 4 && (
             <div>
-              <div style={S.sectionHeading}>Bank &amp; Wallet Details</div>
-              <SelectField id="inpBankName" label="Bank Name" value={regData.bankName} onChange={e => updateRegField("bankName", e.target.value)} options={['Samurdhi Bank', 'Samupakara Bank', 'Sanasa Bank']} />
+              <div style={S.sectionHeading}>{t("bank_wallet")}</div>
+              <SelectField id="inpBankName" label={t("bank_name")} value={regData.bankName} onChange={e => updateRegField("bankName", e.target.value)} options={['Samurdhi Bank', 'Samupakara Bank', 'Sanasa Bank']} />
               <div style={S.inputRow}>
-                <Field id="inpAccountNumber" label="Account Number" type="text" placeholder="16 digit number" value={regData.accountNumber} onChange={e => updateRegField("accountNumber", e.target.value)} pattern="^\d{16}$" maxLength={16} title="Must be exactly 16 numbers" />
-                <Field id="inpBranch"        label="Branch"         placeholder="e.g. Gampaha"   value={regData.branch}        onChange={e => updateRegField("branch", e.target.value)} pattern="^[a-zA-Z\s]+$" title="Text only" />
+                <Field id="inpAccountNumber" label={t("account_number")} type="text" placeholder="16 digit number" value={regData.accountNumber} onChange={e => updateRegField("accountNumber", e.target.value)} pattern="^\d{16}$" maxLength={16} title="Must be exactly 16 numbers" />
+                <Field id="inpBranch"        label={t("branch")}         placeholder="e.g. Gampaha"   value={regData.branch}        onChange={e => updateRegField("branch", e.target.value)} pattern="^[a-zA-Z\s]+$" title="Text only" />
               </div>
               <div style={S.walletAlert}>
-                <strong>Digital Wallet Auto-Created</strong><br />
-                A SmartGrama Digital Wallet linked to your bank account will be set up automatically after identity verification for seamless welfare disbursements.
+                <strong>{t("digital_wallet")}</strong><br />
+                {t("wallet_alert")}
               </div>
               <div style={S.btnRow}>
-                <button style={S.btnBack} onClick={() => handlePrev(4)}>Back</button>
+                <button style={S.btnBack} onClick={() => handlePrev(4)}>{t("back")}</button>
                 <button
                   style={{
                     flex: 1, padding: "12px 20px", borderRadius: 10, border: "none",
@@ -348,7 +372,7 @@ export const UserRegistration = () => {
                   onClick={handleCompleteRegistration}
                   disabled={submitting}
                 >
-                  {submitting ? "Saving..." : "Complete Registration"}
+                  {submitting ? "Saving..." : t("complete_registration")}
                 </button>
               </div>
             </div>

@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import Header from "../components/Header";
 import { getCurrentUser } from "../utils/user";
 import dashboardBg from "../assets/smartgrama_dashboard_bg.jpg";
@@ -19,6 +20,8 @@ const Ico = {
 export default function WelfareResult() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t, i18n } = useTranslation();
+  const isSi = i18n.language === "si";
   const user = getCurrentUser();
 
   const result = location.state?.result || {
@@ -38,48 +41,48 @@ export default function WelfareResult() {
       case "SEVERELY_POOR":
       case "SEVERELY IMPOVERISHED":
         return {
-          title: "Severely Impoverished",
+          title: isSi ? "අතිශය දුප්පත් කාණ්ඩය" : "Severely Impoverished",
           titleSi: "අතිශය දුප්පත් කාණ්ඩය",
           color: "#991b1b",
           bg: "#fee2e2",
           border: "#fca5a5",
-          stipend: "Rs. 15,000 / month",
+          stipend: isSi ? "රු. 15,000 / මසකට" : "Rs. 15,000 / month",
         };
       case "POOR":
         return {
-          title: "Poor Household Tier",
+          title: isSi ? "දුප්පත් පවුල් කාණ්ඩය" : "Poor Household Tier",
           titleSi: "දුප්පත් පවුල් කාණ්ඩය",
           color: "#92400e",
           bg: "#fef3c7",
           border: "#fde68a",
-          stipend: "Rs. 8,500 / month",
+          stipend: isSi ? "රු. 8,500 / මසකට" : "Rs. 8,500 / month",
         };
       case "VULNERABLE":
         return {
-          title: "Vulnerable Household Tier",
+          title: isSi ? "අවදානමට ලක්විය හැකි කාණ්ඩය" : "Vulnerable Household Tier",
           titleSi: "අවදානමට ලක්විය හැකි කාණ්ඩය",
           color: "#3730a3",
           bg: "#e0e7ff",
           border: "#c7d2fe",
-          stipend: "Rs. 4,500 / month",
+          stipend: isSi ? "රු. 4,500 / මසකට" : "Rs. 4,500 / month",
         };
       case "TRANSITIONAL":
         return {
-          title: "Transitional Welfare Tier",
+          title: isSi ? "සංක්‍රාන්තික කාණ්ඩය" : "Transitional Welfare Tier",
           titleSi: "සංක්‍රාන්තික කාණ්ඩය",
           color: "#6b21a8",
           bg: "#f3e8ff",
           border: "#e9d5ff",
-          stipend: "Rs. 2,500 / month",
+          stipend: isSi ? "රු. 2,500 / මසකට" : "Rs. 2,500 / month",
         };
       default:
         return {
-          title: "Aswesuma Eligible Tier",
+          title: isSi ? "සුදුසුකම් ලත් කාණ්ඩය" : "Aswesuma Eligible Tier",
           titleSi: "සුදුසුකම් ලත් කාණ්ඩය",
           color: "#166534",
           bg: "#dcfce7",
           border: "#86efac",
-          stipend: `Rs. ${Number(result.monthly_stipend || 8500).toLocaleString()} / month`,
+          stipend: isSi ? `රු. ${Number(result.monthly_stipend || 8500).toLocaleString()} / මසකට` : `Rs. ${Number(result.monthly_stipend || 8500).toLocaleString()} / month`,
         };
     }
   };
@@ -126,7 +129,7 @@ export default function WelfareResult() {
             onClick={() => navigate("/welfare-landing")}
           >
             {Ico.arrowLeft}
-            <span>Back to Welfare Portal / සුභසාධන පුවරුවට</span>
+            <span>{t("back_to_welfare_portal")}</span>
           </div>
 
           {/* ═══════════════════════════════════════════════════
@@ -150,13 +153,13 @@ export default function WelfareResult() {
 
             <div>
               <div style={{ fontSize: 11, fontWeight: 800, color: "#6ee7b7", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>
-                Welfare Benefit Board &bull; Democratic Socialist Republic of Sri Lanka
+                {t("welfare_board_gov_title")}
               </div>
               <h1 style={{ fontSize: 28, fontWeight: 900, letterSpacing: -0.5, margin: "0 0 6px" }}>
-                Aswesuma Assessment Certified / අයදුම්පත සාර්ථකව තහවුරු විය
+                {t("aswesuma_certified")}
               </h1>
               <p style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", margin: 0, maxWidth: 640, lineHeight: 1.5 }}>
-                Your household eligibility has been calculated via the Proxy Means Testing (PMT) algorithm and securely registered on the SmartGrama Welfare Ledger.
+                {t("welfare_certified_sub")}
               </p>
             </div>
 
@@ -173,7 +176,7 @@ export default function WelfareResult() {
               fontWeight: "700",
             }}>
               {Ico.shieldCheck}
-              <span>DID Verified &bull; {result.did}</span>
+              <span>{isSi ? `DID සත්‍යාපිතයි • ${result.did}` : `DID Verified • ${result.did}`}</span>
             </div>
           </div>
 
@@ -213,10 +216,10 @@ export default function WelfareResult() {
                   </div>
                   <div>
                     <div style={{ fontSize: 12, fontWeight: 800, color: "#059669", textTransform: "uppercase", letterSpacing: 1 }}>
-                      Eligibility Status: Eligible / සුදුසුකම් සපුරා ඇත
+                      {t("welfare_eligibility_status_certified")}
                     </div>
                     <div style={{ fontSize: 24, fontWeight: 900, color: "#0f172a", marginTop: 2 }}>
-                      Aswesuma Beneficiary Certified
+                      {t("welfare_certified_title")}
                     </div>
                   </div>
                 </div>
@@ -236,25 +239,27 @@ export default function WelfareResult() {
                 }}>
                   <div>
                     <div style={{ fontSize: 12, fontWeight: 700, color: "#064e3b", textTransform: "uppercase", letterSpacing: 0.8 }}>
-                      Assigned Welfare Category
+                      {t("assigned_welfare_cat")}
                     </div>
                     <div style={{ fontSize: 22, fontWeight: 900, color: "#064e3b", marginTop: 3 }}>
                       {tier.title}
                     </div>
-                    <div style={{ fontSize: 13, color: "#166534", fontWeight: 700, marginTop: 2 }}>
-                      {tier.titleSi}
-                    </div>
+                    {!isSi && (
+                      <div style={{ fontSize: 13, color: "#166534", fontWeight: 700, marginTop: 2 }}>
+                        {tier.titleSi}
+                      </div>
+                    )}
                   </div>
 
                   <div style={{ textAlign: "right" }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: "#064e3b", textTransform: "uppercase" }}>
-                      Approved Monthly Grant
+                      {t("approved_monthly_grant")}
                     </div>
                     <div style={{ fontSize: 32, fontWeight: 900, color: "#047857", letterSpacing: -1, marginTop: 2 }}>
-                      Rs. {monthlyAmount}
+                      {isSi ? `රු. ${monthlyAmount}` : `Rs. ${monthlyAmount}`}
                     </div>
                     <div style={{ fontSize: 11, color: "#166534", fontWeight: 600 }}>
-                      Credited 1st of every month
+                      {t("credited_first_month")}
                     </div>
                   </div>
                 </div>
@@ -271,31 +276,31 @@ export default function WelfareResult() {
                   marginBottom: 24,
                 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13 }}>
-                    <span style={{ color: "#64748b", fontWeight: 600 }}>Application Reference ID:</span>
+                    <span style={{ color: "#64748b", fontWeight: 600 }}>{t("app_ref_id")}</span>
                     <span style={{ fontFamily: "monospace", fontWeight: 800, color: "#0f172a", fontSize: 14 }}>
                       {result.applicationId || result.assessment_id || "ASW-2026-000001"}
                     </span>
                   </div>
 
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13 }}>
-                    <span style={{ color: "#64748b", fontWeight: 600 }}>Beneficiary Legal Name:</span>
+                    <span style={{ color: "#64748b", fontWeight: 600 }}>{t("beneficiary_legal_name")}</span>
                     <strong style={{ color: "#0f172a" }}>{result.applicant_name || user?.name || "Aravinda Kumara"}</strong>
                   </div>
 
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13 }}>
-                    <span style={{ color: "#64748b", fontWeight: 600 }}>Grama Niladhari Division:</span>
+                    <span style={{ color: "#64748b", fontWeight: 600 }}>{t("gn_division")}:</span>
                     <strong style={{ color: "#0f172a" }}>{result.gn_division || user?.gnDivision || "Minuwangoda North"}</strong>
                   </div>
 
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13 }}>
-                    <span style={{ color: "#64748b", fontWeight: 600 }}>PMT Calculated Score:</span>
+                    <span style={{ color: "#64748b", fontWeight: 600 }}>{t("pmt_calculated_score")}</span>
                     <span style={{ fontSize: 15, fontWeight: 900, color: "#ea580c" }}>
-                      {result.welfare_score || 565.0} pts
+                      {result.welfare_score || 565.0} {isSi ? "ලකුණු" : "pts"}
                     </span>
                   </div>
 
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13 }}>
-                    <span style={{ color: "#64748b", fontWeight: 600 }}>Decentralized ID Anchor:</span>
+                    <span style={{ color: "#64748b", fontWeight: 600 }}>{t("did_anchor_label")}</span>
                     <span style={{ fontFamily: "monospace", fontSize: 11, color: "#059669", background: "#ecfdf5", padding: "3px 8px", borderRadius: 6, border: "1px solid #a7f3d0" }}>
                       {result.did}
                     </span>
@@ -317,10 +322,62 @@ export default function WelfareResult() {
                 }}>
                   <div style={{ flexShrink: 0 }}>{Ico.shieldCheck}</div>
                   <div>
-                    <strong>Decentralized Ledger Record:</strong> Zero-PII cryptographic proof has been anchored onto the permissioned SmartGrama blockchain ledger for automated officer review.
+                    <strong>{t("ledger_record_title")}</strong> {t("zero_pii_ledger_notice")}
                   </div>
                 </div>
 
+              </div>
+
+              {/* ── 6-DIMENSION PMT MULTI-DIMENSIONAL BREAKDOWN CARD ── */}
+              <div style={{
+                background: "rgba(255, 255, 255, 0.95)",
+                backdropFilter: "blur(16px)",
+                borderRadius: 22,
+                padding: "28px 32px",
+                border: "1.5px solid rgba(255, 255, 255, 0.9)",
+                boxShadow: "0 10px 30px rgba(0, 0, 0, 0.04)",
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18, flexWrap: "wrap", gap: 8 }}>
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: "#059669", textTransform: "uppercase", letterSpacing: 1 }}>
+                      {t("pmt_6_dimensions_title")}
+                    </div>
+                    <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>
+                      {t("pmt_6_dimensions_sub")}
+                    </div>
+                  </div>
+                  <div style={{ background: "#ecfdf5", border: "1px solid #a7f3d0", padding: "4px 10px", borderRadius: 8, fontSize: 11, fontWeight: 700, color: "#047857" }}>
+                    PMT v1.0 • {result.welfare_score || 565.0} {t("pmt_pts")}
+                  </div>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                  {(result.dimension_breakdown || [
+                    { key: "EDUCATION", name_en: "Education Level", name_si: "අධ්‍යාපන මට්ටම", score: 18.0, max_score: 30.0 },
+                    { key: "HEALTH_AND_SPECIAL_NEEDS", name_en: "Health & Special Needs", name_si: "සෞඛ්‍ය සහ විශේෂ අවශ්‍යතා", score: 20.0, max_score: 30.0 },
+                    { key: "ECONOMIC_LEVEL_AND_INCOME", name_en: "Economic Level & Income", name_si: "ආර්ථික මට්ටම සහ ආදායම", score: 45.0, max_score: 50.0 },
+                    { key: "ASSETS_AND_OWNERSHIP", name_en: "Assets & Land Holdings", name_si: "වත්කම් සහ ඉඩම් හිමිකාරිත්වය", score: 12.0, max_score: 20.0 },
+                    { key: "HOUSING_CONDITIONS", name_en: "Housing Conditions", name_si: "නිවාස සහ ජීවන තත්ත්වය", score: 22.0, max_score: 30.0 },
+                    { key: "FAMILY_DEMOGRAPHY", name_en: "Family Demography", name_si: "පවුල් ජනගහන විස්තර", score: 28.0, max_score: 35.0 },
+                  ]).map((dim, idx) => {
+                    const pct = Math.min(100, Math.round(((dim.score || 0) / (dim.max_score || 30)) * 100));
+                    return (
+                      <div key={idx} style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 12, padding: "12px 14px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: "#1e293b" }}>
+                            {isSi ? dim.name_si : dim.name_en}
+                          </span>
+                          <span style={{ fontSize: 11, fontWeight: 800, color: "#059669" }}>
+                            {dim.score} / {dim.max_score} {t("pmt_pts")}
+                          </span>
+                        </div>
+                        <div style={{ width: "100%", height: 6, background: "#e2e8f0", borderRadius: 10, overflow: "hidden" }}>
+                          <div style={{ width: `${pct}%`, height: "100%", background: "linear-gradient(90deg, #10b981 0%, #059669 100%)", borderRadius: 10 }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* 3-Stage Disbursement Pipeline */}
@@ -333,26 +390,26 @@ export default function WelfareResult() {
                 boxShadow: "0 10px 30px rgba(0, 0, 0, 0.04)",
               }}>
                 <div style={{ fontSize: 11, fontWeight: 800, color: "#059669", textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 }}>
-                  Next Stages in Your Disbursement
+                  {t("disbursement_stages")}
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
                   <div style={{ background: "#f0fdf4", border: "1.5px solid #86efac", borderRadius: 14, padding: "16px 14px" }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: "#059669" }}>STAGE 1 &bull; DONE</div>
-                    <div style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", marginTop: 4 }}>PMT Intake Verified</div>
-                    <div style={{ fontSize: 11, color: "#166534", marginTop: 3 }}>Score &amp; tier issued</div>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: "#059669" }}>{t("stage_1_done")}</div>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", marginTop: 4 }}>{t("stage_1_label")}</div>
+                    <div style={{ fontSize: 11, color: "#166534", marginTop: 3 }}>{t("stage_1_desc")}</div>
                   </div>
 
                   <div style={{ background: "#fffbeb", border: "1.5px solid #fde68a", borderRadius: 14, padding: "16px 14px" }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: "#d97706" }}>STAGE 2 &bull; ACTIVE</div>
-                    <div style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", marginTop: 4 }}>GN Officer Review</div>
-                    <div style={{ fontSize: 11, color: "#92400e", marginTop: 3 }}>Attestation in progress</div>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: "#d97706" }}>{t("stage_2_active")}</div>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", marginTop: 4 }}>{t("stage_2_label")}</div>
+                    <div style={{ fontSize: 11, color: "#92400e", marginTop: 3 }}>{t("stage_2_desc")}</div>
                   </div>
 
                   <div style={{ background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 14, padding: "16px 14px" }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: "#64748b" }}>STAGE 3 &bull; SCHEDULED</div>
-                    <div style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", marginTop: 4 }}>Monthly DBT Transfer</div>
-                    <div style={{ fontSize: 11, color: "#64748b", marginTop: 3 }}>Direct to bank passbook</div>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: "#64748b" }}>{t("stage_3_scheduled")}</div>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", marginTop: 4 }}>{t("stage_3_label")}</div>
+                    <div style={{ fontSize: 11, color: "#64748b", marginTop: 3 }}>{t("stage_3_desc")}</div>
                   </div>
                 </div>
               </div>
@@ -375,13 +432,13 @@ export default function WelfareResult() {
               }}>
                 <div>
                   <div style={{ fontSize: 11, fontWeight: 800, color: "#6ee7b7", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
-                    Disbursement Channel
+                    {t("disbursement_channel_title")}
                   </div>
                   <h3 style={{ fontSize: 22, fontWeight: 900, margin: "0 0 6px", letterSpacing: -0.4 }}>
-                    SmartGrama Passbook
+                    {t("smartgrama_passbook_title")}
                   </h3>
                   <div style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", lineHeight: 1.5 }}>
-                    Your approved Rs. {monthlyAmount} monthly welfare benefit will be disbursed directly into your Digital Passbook &amp; linked bank account.
+                    {t("passbook_disburse_desc", { amount: isSi ? `රු. ${monthlyAmount}` : `Rs. ${monthlyAmount}` })}
                   </div>
                 </div>
 
@@ -408,7 +465,7 @@ export default function WelfareResult() {
                   onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.background = "#047857"; }}
                   onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.background = "#059669"; }}
                 >
-                  <span style={{ display: "flex", alignItems: "center", gap: 8 }}>{Ico.wallet} View Digital Wallet</span>
+                  <span style={{ display: "flex", alignItems: "center", gap: 8 }}>{Ico.wallet} {t("view_digital_wallet")}</span>
                   {Ico.arrowRight}
                 </button>
 
@@ -434,7 +491,7 @@ export default function WelfareResult() {
                   onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.2)"}
                   onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.12)"}
                 >
-                  {Ico.clock} Track Application Status
+                  {Ico.clock} {t("track_app_status")}
                 </button>
               </div>
 
@@ -456,12 +513,12 @@ export default function WelfareResult() {
                   </div>
                   <div>
                     <div style={{ fontWeight: 800, fontSize: 15 }}>SmartGrama AI</div>
-                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>Welfare Inquiry Assistant</div>
+                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{t("ai_welfare_assistant_title")}</div>
                   </div>
                 </div>
 
                 <div style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", lineHeight: 1.5 }}>
-                  Have questions about your approved tier, payment schedule, or GN officer attestation? Ask AI in Sinhala, Tamil, or English.
+                  {t("ai_welfare_help_desc")}
                 </div>
 
                 <button
@@ -483,7 +540,7 @@ export default function WelfareResult() {
                     gap: 8,
                   }}
                 >
-                  <span>Ask AI Assistant</span>
+                  <span>{t("ask_ai_assistant")}</span>
                   {Ico.arrowRight}
                 </button>
               </div>

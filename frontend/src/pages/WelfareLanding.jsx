@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import Header from "../components/Header";
 import { getCurrentUser } from "../utils/user";
 import dashboardBg from "../assets/smartgrama_dashboard_bg.jpg";
@@ -25,68 +26,79 @@ const prepItems = [
     icon: Ico.nic,
     color: "#2563eb",
     bg: "#eff6ff",
-    title: "1. National Identity Cards",
-    titleSi: "ජාතික හැඳුනුම්පත් තොරතුරු",
-    desc: "Valid NIC numbers of yourself and all adult family members residing in the household.",
+    titleEn: "1. National Identity Cards",
+    titleSi: "1. ජාතික හැඳුනුම්පත් තොරතුරු",
+    descEn: "Valid NIC numbers of yourself and all adult family members residing in the household.",
+    descSi: "ඔබගේ සහ නිවසේ පදිංචි සියලුම වැඩිහිටි පවුලේ සාමාජිකයන්ගේ වලංගු ජාතික හැඳුනුම්පත් අංක.",
   },
   {
     icon: Ico.users,
     color: "#d97706",
     bg: "#fffbeb",
-    title: "2. Household Structure",
-    titleSi: "පවුලේ සාමාජිකයන්ගේ විස්තර",
-    desc: "Count of family members, dependent school-going children, and elderly dependents.",
+    titleEn: "2. Household Structure",
+    titleSi: "2. පවුලේ සාමාජිකයන්ගේ විස්තර",
+    descEn: "Count of family members, dependent school-going children, and elderly dependents.",
+    descSi: "පවුලේ සාමාජිකයින් ගණන, පාසල් යන දරුවන් සහ යැපෙන වැඩිහිටියන් පිළිබඳ තොරතුරු.",
   },
   {
     icon: Ico.income,
     color: "#059669",
     bg: "#f0fdf4",
-    title: "3. Income & Electricity",
-    titleSi: "ආදායම් සහ විදුලි බිල්පත්",
-    desc: "Monthly household earnings, regular living expenses, and average electricity units (kWh).",
+    titleEn: "3. Income & Electricity",
+    titleSi: "3. ආදායම් සහ විදුලි බිල්පත්",
+    descEn: "Monthly household earnings, regular living expenses, and average electricity units (kWh).",
+    descSi: "මාසික ගෘහස්ථ ආදායම, සාමාන්‍ය ජීවන වියදම් සහ සාමාන්‍ය විදුලි ඒකක (kWh) භාවිතය.",
   },
   {
     icon: Ico.house,
     color: "#7c3aed",
     bg: "#f5f3ff",
-    title: "4. Housing & Land Assets",
-    titleSi: "නිවාස සහ දේපළ තොරතුරු",
-    desc: "House construction materials (roof, wall, floor), land ownership, and vehicles owned.",
+    titleEn: "4. Housing & Land Assets",
+    titleSi: "4. නිවාස සහ දේපළ තොරතුරු",
+    descEn: "House construction materials (roof, wall, floor), land ownership, and vehicles owned.",
+    descSi: "නිවාස ඉදිකිරීම් ද්‍රව්‍ය (වහලය, බිත්ති, බිම), ඉඩම් අයිතිය සහ වාහන පිළිබඳ තොරතුරු.",
   },
   {
     icon: Ico.bank,
     color: "#0284c7",
     bg: "#f0f9ff",
-    title: "5. Bank Passbook Details",
-    titleSi: "බැංකු ගිණුම් විස්තර",
-    desc: "Active bank account number and branch matching your registered NIC name.",
+    titleEn: "5. Bank Passbook Details",
+    titleSi: "5. බැංකු ගිණුම් විස්තර",
+    descEn: "Active bank account number and branch matching your registered NIC name.",
+    descSi: "ඔබගේ ලියාපදිංචි ජාතික හැඳුනුම්පත් නමට ගැලපෙන සක්‍රීය බැංකු ගිණුම් අංකය සහ ශාඛාව.",
   },
 ];
 
 const flowSteps = [
   {
     num: "01",
-    title: "10-Step Intake",
+    titleEn: "10-Step Intake",
     titleSi: "තොරතුරු ඇතුළත් කිරීම",
-    desc: "Fill in bio, household structure, education, income, and banking details.",
+    descEn: "Fill in bio, household structure, education, income, and banking details.",
+    descSi: "පුද්ගලික, පවුලේ ව්‍යුහය, අධ්‍යාපනය, ආදායම් සහ බැංකු විස්තර සම්පූර්ණ කරන්න.",
   },
   {
     num: "02",
-    title: "PMT Welfare Scoring",
+    titleEn: "PMT Welfare Scoring",
     titleSi: "සුදුසුකම් ඇගයීම",
-    desc: "Automated poverty & vulnerability scoring under the Welfare Benefits Board.",
+    descEn: "Automated poverty & vulnerability scoring under the Welfare Benefits Board.",
+    descSi: "සුබසාධන ප්‍රතිලාභ මණ්ඩලය යටතේ ස්වයංක්‍රීය දිළිඳුකම සහ අවදානම් ඇගයීම.",
   },
   {
     num: "03",
-    title: "Direct Benefit Transfer",
+    titleEn: "Direct Benefit Transfer",
     titleSi: "මුදල් ප්‍රතිලාභ ලබා ගැනීම",
-    desc: "Monthly grant credited directly to your bank account & SmartGrama passbook.",
+    descEn: "Monthly grant credited directly to your bank account & SmartGrama passbook.",
+    descSi: "මාසික දීමනාව ඔබේ බැංකු ගිණුමට සහ SmartGrama ගිණුම් පොතට සෘජුවම බැර වේ.",
   },
 ];
 
 export default function WelfareLanding() {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const user = getCurrentUser();
+
+  const isSi = i18n.language === "si";
 
   return (
     <div style={{
@@ -127,7 +139,7 @@ export default function WelfareLanding() {
             onClick={() => navigate("/dashboard")}
           >
             {Ico.arrowLeft}
-            <span>Back to Dashboard / ප්‍රධාන පාලක පුවරුවට</span>
+            <span>{t("back_to_dashboard")}</span>
           </div>
 
           {/* ═══════════════════════════════════════════════════
@@ -151,13 +163,13 @@ export default function WelfareLanding() {
 
             <div>
               <div style={{ fontSize: 11, fontWeight: 800, color: "#6ee7b7", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4 }}>
-                Democratic Socialist Republic of Sri Lanka &bull; SmartGrama
+                {t("smartgrama_tagline")}
               </div>
               <h1 style={{ fontSize: 28, fontWeight: 900, letterSpacing: -0.5, margin: "0 0 6px" }}>
-                Aswesuma National Welfare Scheme / අස්වැසුම සුභසාධන වැඩසටහන
+                {t("aswesuma_scheme_title")}
               </h1>
               <p style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", margin: 0, maxWidth: 640, lineHeight: 1.5 }}>
-                Official government financial support initiative for low-income and vulnerable households. Evaluated securely using Decentralized Identity (DID) and Proxy Means Testing (PMT).
+                {t("aswesuma_scheme_desc")}
               </p>
             </div>
 
@@ -170,8 +182,8 @@ export default function WelfareLanding() {
                 border: "1px solid rgba(255, 255, 255, 0.16)",
                 textAlign: "center",
               }}>
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", fontWeight: 700, textTransform: "uppercase" }}>Monthly Grant</div>
-                <div style={{ fontSize: 24, fontWeight: 900, color: "#6ee7b7", marginTop: 2 }}>Up to Rs. 15k</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", fontWeight: 700, textTransform: "uppercase" }}>{t("monthly_grant_badge")}</div>
+                <div style={{ fontSize: 24, fontWeight: 900, color: "#6ee7b7", marginTop: 2 }}>{t("up_to_15k")}</div>
               </div>
               <div style={{
                 background: "rgba(255, 255, 255, 0.10)",
@@ -181,8 +193,8 @@ export default function WelfareLanding() {
                 border: "1px solid rgba(255, 255, 255, 0.16)",
                 textAlign: "center",
               }}>
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", fontWeight: 700, textTransform: "uppercase" }}>Intake Steps</div>
-                <div style={{ fontSize: 24, fontWeight: 900, color: "#fff", marginTop: 2 }}>10 Simple Steps</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", fontWeight: 700, textTransform: "uppercase" }}>{t("intake_steps_badge")}</div>
+                <div style={{ fontSize: 24, fontWeight: 900, color: "#fff", marginTop: 2 }}>{t("ten_simple_steps")}</div>
               </div>
             </div>
           </div>
@@ -206,14 +218,14 @@ export default function WelfareLanding() {
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
                   <span style={{ fontSize: 11, fontWeight: 800, color: "#059669", textTransform: "uppercase", letterSpacing: 1 }}>
-                    Preparation Checklist
+                    {t("preparation_checklist")}
                   </span>
                 </div>
                 <h2 style={{ fontSize: 20, fontWeight: 900, color: "#0f172a", margin: "0 0 6px", letterSpacing: -0.3 }}>
-                  What You Need Ready Before You Begin (අවශ්‍ය ලියකියවිලි 5)
+                  {t("ready_checklist_title")}
                 </h2>
                 <p style={{ fontSize: 13, color: "#64748b", margin: "0 0 22px", lineHeight: 1.5 }}>
-                  Having these 5 items on hand ensures you can complete the 10-step intake smoothly in under 8 minutes:
+                  {t("checklist_lead_desc")}
                 </p>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -249,11 +261,15 @@ export default function WelfareLanding() {
                       </div>
                       <div style={{ flex: 1 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                          <span style={{ fontSize: "14px", fontWeight: "800", color: "#0f172a" }}>{item.title}</span>
-                          <span style={{ fontSize: "12px", fontWeight: "700", color: "#059669" }}>&bull; {item.titleSi}</span>
+                          <span style={{ fontSize: "14px", fontWeight: "800", color: "#0f172a" }}>
+                            {isSi ? item.titleSi : item.titleEn}
+                          </span>
+                          {!isSi && (
+                            <span style={{ fontSize: "12px", fontWeight: "700", color: "#059669" }}>&bull; {item.titleSi}</span>
+                          )}
                         </div>
                         <div style={{ fontSize: "12px", color: "#64748b", lineHeight: 1.4, marginTop: 4 }}>
-                          {item.desc}
+                          {isSi ? item.descSi : item.descEn}
                         </div>
                       </div>
                     </div>
@@ -271,21 +287,27 @@ export default function WelfareLanding() {
                 boxShadow: "0 10px 30px rgba(0,0,0,0.04)",
               }}>
                 <div style={{ fontSize: 11, fontWeight: 800, color: "#4338ca", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>
-                  Evaluation Process
+                  {t("evaluation_process")}
                 </div>
                 <h3 style={{ fontSize: 18, fontWeight: 900, color: "#0f172a", margin: "0 0 18px" }}>
-                  How Your Aswesuma Application is Processed
+                  {t("how_app_processed")}
                 </h3>
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
                   {flowSteps.map((s, idx) => (
                     <div key={idx} style={{ background: "#f8fafc", padding: "18px 16px", borderRadius: 16, border: "1.5px solid #e2e8f0" }}>
                       <div style={{ fontSize: 12, fontWeight: 900, color: "#059669", marginBottom: 6 }}>
-                        STEP {s.num}
+                        {isSi ? `පියවර ${s.num}` : `STEP ${s.num}`}
                       </div>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: "#0f172a" }}>{s.title}</div>
-                      <div style={{ fontSize: 11, color: "#059669", fontWeight: 700, margin: "2px 0 6px" }}>{s.titleSi}</div>
-                      <div style={{ fontSize: 11, color: "#64748b", lineHeight: 1.4 }}>{s.desc}</div>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: "#0f172a" }}>
+                        {isSi ? s.titleSi : s.titleEn}
+                      </div>
+                      {!isSi && (
+                        <div style={{ fontSize: 11, color: "#059669", fontWeight: 700, margin: "2px 0 6px" }}>{s.titleSi}</div>
+                      )}
+                      <div style={{ fontSize: 11, color: "#64748b", lineHeight: 1.4, marginTop: isSi ? 4 : 0 }}>
+                        {isSi ? s.descSi : s.descEn}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -306,10 +328,10 @@ export default function WelfareLanding() {
                 </div>
                 <div>
                   <div style={{ fontSize: "14px", color: "#92400e", fontWeight: "800", marginBottom: "4px" }}>
-                    Declaration of Accuracy &bull; නිරවද්‍යතාවය පිළිබඳ සහතිකය:
+                    {t("declaration_accuracy_title")}
                   </div>
                   <div style={{ fontSize: "12px", color: "#92400e", lineHeight: 1.5 }}>
-                    Please ensure all submitted details accurately reflect your household living conditions. The SmartGrama system verifies inputs against the Decentralized Identity (DID) and Grama Niladhari records.
+                    {t("declaration_accuracy_desc")}
                   </div>
                 </div>
               </div>
@@ -332,22 +354,33 @@ export default function WelfareLanding() {
               }}>
                 <div>
                   <div style={{ fontSize: 11, fontWeight: 800, color: "#6ee7b7", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
-                    Ready to Apply?
+                    {t("ready_to_apply")}
                   </div>
                   <h3 style={{ fontSize: 22, fontWeight: 900, margin: "0 0 6px", letterSpacing: -0.4 }}>
-                    Start Your Application
+                    {t("start_your_application")}
                   </h3>
                   <div style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", lineHeight: 1.5 }}>
-                    Complete the 10-step intake form now. Your progress is saved automatically to your Decentralized Identity (DID).
+                    {t("start_app_sub")}
                   </div>
                 </div>
 
                 <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#6ee7b7", fontWeight: 700 }}>
-                  {Ico.clock} <span>Estimated time: 5 - 8 minutes</span>
+                  {Ico.clock} <span>{t("estimated_time_badge")}</span>
                 </div>
 
                 <button
-                  onClick={() => navigate("/welfare-apply")}
+                  onClick={() => {
+                    if (user && user.kycStatus && user.kycStatus !== "VERIFIED") {
+                      alert(
+                        isSi
+                          ? "අස්වැසුම සුබසාධන අයදුම්පත ඉදිරිපත් කිරීමට පෙර ඔබගේ KYC සහ ඩිජිටල් අනන්‍යතාවය ග්‍රාම නිලධාරීවරයා විසින් අනුමත කළ යුතුය."
+                          : "Officer KYC Approval Required: Your Digital Identity must be officially verified and approved by a Grama Niladhari Officer before applying for Aswesuma Welfare."
+                      );
+                      navigate("/identity");
+                      return;
+                    }
+                    navigate("/welfare-apply");
+                  }}
                   style={{
                     width: "100%",
                     padding: "16px 20px",
@@ -369,7 +402,7 @@ export default function WelfareLanding() {
                   onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.background = "#047857"; }}
                   onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.background = "#059669"; }}
                 >
-                  <span>Start 10-Step Application</span>
+                  <span>{t("start_10_step_btn")}</span>
                   {Ico.arrowRight}
                 </button>
               </div>
@@ -384,24 +417,24 @@ export default function WelfareLanding() {
                 boxShadow: "0 10px 30px rgba(6, 78, 59, 0.06)",
               }}>
                 <div style={{ fontSize: "11px", fontWeight: "800", color: "#059669", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "4px" }}>
-                  Aswesuma Benefit Brackets
+                  {t("aswesuma_brackets_title")}
                 </div>
                 <div style={{ fontSize: "30px", fontWeight: "900", color: "#064e3b", marginBottom: "2px", letterSpacing: "-1px" }}>
-                  Up to Rs. 15,000
+                  {t("up_to_15k")}
                 </div>
                 <div style={{ fontSize: "12px", color: "#64748b", marginBottom: "18px" }}>
-                  PMT score determines monthly stipend tier
+                  {t("pmt_score_determines")}
                 </div>
 
                 <div style={{ borderTop: "1px solid #e2e8f0", paddingTop: "14px", display: "flex", flexDirection: "column", gap: "10px" }}>
                   {[
-                    { tier: "Severely Impoverished", amount: "Rs. 15,000 / mo", color: "#064e3b" },
-                    { tier: "Poor Bracket", amount: "Rs. 8,500 / mo", color: "#064e3b" },
-                    { tier: "Vulnerable Bracket", amount: "Rs. 4,500 / mo", color: "#064e3b" },
-                    { tier: "Transitional Bracket", amount: "Rs. 2,500 / mo", color: "#064e3b" },
+                    { tierKey: "tier_severely_poor", amount: isSi ? "රු. 15,000 / මසකට" : "Rs. 15,000 / mo", color: "#064e3b" },
+                    { tierKey: "tier_poor", amount: isSi ? "රු. 8,500 / මසකට" : "Rs. 8,500 / mo", color: "#064e3b" },
+                    { tierKey: "tier_vulnerable", amount: isSi ? "රු. 4,500 / මසකට" : "Rs. 4,500 / mo", color: "#064e3b" },
+                    { tierKey: "tier_transitional", amount: isSi ? "රු. 2,500 / මසකට" : "Rs. 2,500 / mo", color: "#064e3b" },
                   ].map((item, i) => (
                     <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "13px" }}>
-                      <span style={{ color: "#475569", fontWeight: "600" }}>{item.tier}</span>
+                      <span style={{ color: "#475569", fontWeight: "600" }}>{t(item.tierKey)}</span>
                       <strong style={{ color: item.color, fontWeight: "800" }}>{item.amount}</strong>
                     </div>
                   ))}
@@ -425,12 +458,12 @@ export default function WelfareLanding() {
                   </div>
                   <div>
                     <div style={{ fontWeight: 800, fontSize: 15 }}>SmartGrama AI</div>
-                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>Multilingual Welfare Assistant</div>
+                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>{isSi ? "බහුභාෂා සුබසාධන සහායක" : "Multilingual Welfare Assistant"}</div>
                   </div>
                 </div>
 
                 <div style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", lineHeight: 1.5 }}>
-                  Need help understanding your eligibility or required documents? Ask AI in Sinhala, Tamil, or English.
+                  {t("ai_welfare_help_desc")}
                 </div>
 
                 <button
@@ -452,7 +485,7 @@ export default function WelfareLanding() {
                     gap: 8,
                   }}
                 >
-                  <span>Ask AI Assistant</span>
+                  <span>{t("ask_ai_assistant")}</span>
                   {Ico.arrowRight}
                 </button>
               </div>

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
+import '../theme/app_theme.dart';
+import '../theme/app_strings.dart';
 import '../api_service.dart';
 
 class AIChatScreen extends StatefulWidget {
-  const AIChatScreen({super.key});
+  final bool isEmbedded;
+  const AIChatScreen({super.key, this.isEmbedded = false});
 
   @override
   State<AIChatScreen> createState() => _AIChatScreenState();
@@ -11,15 +14,18 @@ class AIChatScreen extends StatefulWidget {
 
 class _AIChatScreenState extends State<AIChatScreen> {
   final TextEditingController _controller = TextEditingController();
-  final List<Map<String, String>> _messages = [];
+  final ScrollController _scrollController = ScrollController();
+  final List<Map<String, String>> _messages = [
+    {
+      'role': 'assistant',
+      'content': 'Hello! I am your SmartGrama AI Assistant. You can ask me questions about Aswesuma welfare PMT eligibility, microfinance loan options, or your digital identity verification in either English or Sinhala.'
+    }
+  ];
   bool _isLoading = false;
-  String _language = 'en';
-  bool _useRag = true;
+  final bool _useRag = true;
 
-  // Speech to Text variables
   late stt.SpeechToText _speech;
   bool _isListening = false;
-  String _currentWords = '';
 
   @override
   void initState() {
@@ -27,7 +33,14 @@ class _AIChatScreenState extends State<AIChatScreen> {
     _speech = stt.SpeechToText();
   }
 
-  void _listen() async {
+  @override
+  void dispose() {
+    _controller.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _listen(String langCode) async {
     if (!_isListening) {
       bool available = await _speech.initialize(
         onStatus: (status) {
@@ -35,9 +48,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
             setState(() => _isListening = false);
           }
         },
-        onError: (errorNotification) {
-          setState(() => _isListening = false);
-        },
+        onError: (_) => setState(() => _isListening = false),
       );
 
       if (available) {
@@ -45,11 +56,10 @@ class _AIChatScreenState extends State<AIChatScreen> {
         _speech.listen(
           onResult: (result) {
             setState(() {
-              _currentWords = result.recognizedWords;
-              _controller.text = _currentWords;
+              _controller.text = result.recognizedWords;
             });
           },
-          localeId: _getSpeechLocale(),
+          localeId: langCode == 'si' ? 'si_LK' : 'en_US',
         );
       }
     } else {
@@ -58,17 +68,11 @@ class _AIChatScreenState extends State<AIChatScreen> {
     }
   }
 
-  String _getSpeechLocale() {
-    switch (_language) {
-      case 'si': return 'si_LK';
-      case 'ta': return 'ta_LK';
-      default: return 'en_US';
-    }
-  }
-
-  void _sendMessage() async {
-    final text = _controller.text.trim();
+  void _sendMessage([String? prefilledText]) async {
+    final text = (prefilledText ?? _controller.text).trim();
     if (text.isEmpty) return;
+
+    final langCode = Localizations.localeOf(context).languageCode;
 
     if (_isListening) {
       _speech.stop();
@@ -80,135 +84,234 @@ class _AIChatScreenState extends State<AIChatScreen> {
       _isLoading = true;
     });
     _controller.clear();
-    _currentWords = '';
+    _scrollToBottom();
 
     try {
-      final response = await ApiService.sendChatMessage(text, _language, _useRag);
+      final response = await ApiService.sendChatMessage(text, langCode, _useRag);
       if (!mounted) return;
       setState(() {
-        _messages.add({'role': 'assistant', 'content': response['reply'] ?? 'No response'});
+        _messages.add({'role': 'assistant', 'content': response['reply'] ?? 'No response received from AI.'});
       });
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _messages.add({'role': 'assistant', 'content': 'Error connecting to AI Assistant.'});
+        _messages.add({
+          'role': 'assistant',
+          'content': 'I am currently unable to reach the knowledge assistant. You can check your application status on the resident dashboard.'
+        });
       });
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
+        _scrollToBottom();
       }
     }
   }
 
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('SmartGrama AI Assistant', style: TextStyle(fontSize: 18, color: Colors.black87)),
-        backgroundColor: Colors.white,
-        elevation: 1,
-        actions: [
-          Row(
+    final s = AppStrings.of(context);
+    final currentLang = Localizations.localeOf(context).languageCode;
+
+    final content = Column(
+      children: [
+        // Quick Question Chips Row
+        Container(
+          color: AppColors.surface,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _quickPromptChip(s.promptAswesuma),
+                const SizedBox(width: 8),
+                _quickPromptChip(s.promptMicroloan),
+                const SizedBox(width: 8),
+                _quickPromptChip(s.promptKyc),
+              ],
+            ),
+          ),
+        ),
+        const Divider(height: 1, color: AppColors.border),
+
+        // Message Bubbles List
+        Expanded(
+          child: ListView.builder(
+            controller: _scrollController,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            itemCount: _messages.length,
+            itemBuilder: (context, index) {
+              final msg = _messages[index];
+              final isUser = msg['role'] == 'user';
+              return _chatBubble(msg['content'] ?? '', isUser);
+            },
+          ),
+        ),
+
+        if (_isLoading)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            alignment: Alignment.centerLeft,
+            child: Row(
+              children: const [
+                SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                ),
+                SizedBox(width: 10),
+                Text('SmartGrama AI is thinking...', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              ],
+            ),
+          ),
+
+        // Bottom Input Bar
+        Container(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+          decoration: const BoxDecoration(
+            color: AppColors.surface,
+            border: Border(top: BorderSide(color: AppColors.border, width: 1)),
+          ),
+          child: Row(
             children: [
-              const Text('RAG', style: TextStyle(color: Colors.black87, fontSize: 12)),
-              Switch(
-                value: _useRag,
-                activeColor: const Color(0xFF1D4ED8),
-                onChanged: (val) => setState(() => _useRag = val),
+              // Voice Dictation Button
+              Container(
+                decoration: BoxDecoration(
+                  color: _isListening ? AppColors.dangerBg : AppColors.surfaceSubtle,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: _isListening ? AppColors.danger : AppColors.border),
+                ),
+                child: IconButton(
+                  icon: Icon(
+                    _isListening ? Icons.mic : Icons.mic_none,
+                    color: _isListening ? AppColors.danger : AppColors.textSecondary,
+                    size: 20,
+                  ),
+                  tooltip: 'Voice Search',
+                  onPressed: () => _listen(currentLang),
+                ),
+              ),
+              const SizedBox(width: 10),
+
+              // Text Field
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  textInputAction: TextInputAction.send,
+                  onSubmitted: (_) => _sendMessage(),
+                  style: const TextStyle(fontSize: 14),
+                  decoration: InputDecoration(
+                    hintText: s.typeMessage,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+
+              // Send Button
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+                  onPressed: () => _sendMessage(),
+                ),
               ),
             ],
           ),
-          DropdownButton<String>(
-            value: _language,
-            icon: const Icon(Icons.language, color: Colors.black87),
-            underline: const SizedBox(),
-            items: const [
-              DropdownMenuItem(value: 'en', child: Text('English')),
-              DropdownMenuItem(value: 'si', child: Text('Sinhala')),
-              DropdownMenuItem(value: 'ta', child: Text('Tamil')),
-            ],
-            onChanged: (val) => setState(() => _language = val!),
+        ),
+      ],
+    );
+
+    if (widget.isEmbedded) {
+      return content;
+    }
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppComponents.headerAppBar(
+        context,
+        title: s.chatTitle,
+        subtitle: s.chatSubtitle,
+        showBack: true,
+        showLangPill: true,
+        extraActions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: AppComponents.aiBotAvatar(size: 34),
           ),
-          const SizedBox(width: 8),
         ],
       ),
-      body: Column(
+      body: content,
+    );
+  }
+
+  Widget _quickPromptChip(String prompt) {
+    return ActionChip(
+      label: Text(prompt, style: const TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w600)),
+      backgroundColor: AppColors.primaryLight,
+      side: const BorderSide(color: Color(0xFFC7D2FE), width: 1),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      onPressed: () => _sendMessage(prompt),
+    );
+  }
+
+  Widget _chatBubble(String text, bool isUser) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                final msg = _messages[index];
-                final isUser = msg['role'] == 'user';
-                return Align(
-                  alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(12),
-                    constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
-                    decoration: BoxDecoration(
-                      color: isUser ? const Color(0xFF1D4ED8) : Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))
-                      ],
-                    ),
-                    child: Text(
-                      msg['content']!,
-                      style: TextStyle(color: isUser ? Colors.white : Colors.black87),
-                    ),
-                  ),
-                );
-              },
+          if (!isUser) ...[
+            Padding(
+              padding: const EdgeInsets.only(right: 10, top: 2),
+              child: AppComponents.aiBotAvatar(size: 34),
+            ),
+          ],
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: isUser ? AppColors.primary : AppColors.surface,
+                borderRadius: BorderRadius.only(
+                  topLeft: const Radius.circular(16),
+                  topRight: const Radius.circular(16),
+                  bottomLeft: Radius.circular(isUser ? 16 : 4),
+                  bottomRight: Radius.circular(isUser ? 4 : 16),
+                ),
+                border: isUser ? null : Border.all(color: AppColors.border, width: 1.5),
+                boxShadow: const [
+                  BoxShadow(color: Color(0x06000000), blurRadius: 8, offset: Offset(0, 2)),
+                ],
+              ),
+              child: Text(
+                text,
+                style: TextStyle(
+                  color: isUser ? Colors.white : AppColors.textPrimary,
+                  fontSize: 14,
+                  height: 1.4,
+                ),
+              ),
             ),
           ),
-          if (_isLoading)
-            const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: CircularProgressIndicator(),
-            ),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, -2))
-              ],
-            ),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: Icon(_isListening ? Icons.mic : Icons.mic_none),
-                  color: _isListening ? Colors.red : const Color(0xFF1D4ED8),
-                  onPressed: _listen,
-                ),
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: InputDecoration(
-                      hintText: _isListening ? 'Listening...' : 'Type your message...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey[100],
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                CircleAvatar(
-                  backgroundColor: const Color(0xFF1D4ED8),
-                  child: IconButton(
-                    icon: const Icon(Icons.send, color: Colors.white),
-                    onPressed: _sendMessage,
-                  ),
-                )
-              ],
-            ),
-          ),
+          if (isUser) const SizedBox(width: 8),
         ],
       ),
     );

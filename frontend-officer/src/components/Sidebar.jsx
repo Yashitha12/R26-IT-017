@@ -1,10 +1,12 @@
 import { NavLink } from "react-router-dom";
+import { useApp } from "../context/AppContext";
 
 export default function Sidebar({ officerData }) {
+  const { pendingQueue } = useApp();
   const responsibilities = officerData?.responsibilities || [];
   const isSuperadmin = officerData?.username === "superadmin";
 
-  const hasAccess = (resId) => isSuperadmin || responsibilities.includes(resId);
+  const hasAccess = (resId) => isSuperadmin || responsibilities.length === 0 || responsibilities.includes(resId);
 
   const navClass = ({ isActive }) => `nav-item ${isActive ? "active" : ""}`;
 
@@ -43,17 +45,13 @@ export default function Sidebar({ officerData }) {
           </>
         )}
 
-        {/* We only show Main Menu header if they have at least one loan responsibility */}
-        {(hasAccess("samupakara_loans") || hasAccess("samurdhi_loans")) && (
-          <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'rgba(255, 255, 255, 0.5)', textTransform: 'uppercase', marginBottom: '16px', paddingLeft: '16px' }}>Main Menu</div>
-        )}
+        {/* Main Menu */}
+        <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'rgba(255, 255, 255, 0.5)', textTransform: 'uppercase', marginBottom: '16px', paddingLeft: '16px' }}>Main Menu</div>
         
-        {(hasAccess("samupakara_loans") || hasAccess("samurdhi_loans")) && (
-          <NavLink to="/" className={navClass}>
-            <i className="fa-solid fa-clipboard-list" style={{ width: '20px', textAlign: 'center' }}></i>
-            Loan Approvals
-          </NavLink>
-        )}
+        <NavLink to="/" className={navClass}>
+          <i className="fa-solid fa-clipboard-list" style={{ width: '20px', textAlign: 'center' }}></i>
+          Dashboard & Loans
+        </NavLink>
         
         {isSuperadmin && (
           <NavLink to="/manage" className={navClass}>
@@ -62,23 +60,31 @@ export default function Sidebar({ officerData }) {
           </NavLink>
         )}
 
-        {(hasAccess("welfare_checking") || hasAccess("kyc_checking")) && (
-          <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'rgba(255, 255, 255, 0.5)', textTransform: 'uppercase', marginBottom: '16px', marginTop: '32px', paddingLeft: '16px' }}>Operations</div>
-        )}
+        <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'rgba(255, 255, 255, 0.5)', textTransform: 'uppercase', marginBottom: '16px', marginTop: '32px', paddingLeft: '16px' }}>Operations</div>
 
-        {hasAccess("welfare_checking") && (
-          <NavLink to="/welfare" className={navClass}>
-            <i className="fa-solid fa-hand-holding-heart" style={{ width: '20px', textAlign: 'center' }}></i>
-            Welfare Management
-          </NavLink>
-        )}
+        <NavLink to="/welfare" className={navClass}>
+          <i className="fa-solid fa-hand-holding-heart" style={{ width: '20px', textAlign: 'center' }}></i>
+          Welfare Management
+        </NavLink>
         
-        {hasAccess("kyc_checking") && (
-          <NavLink to="/kyc" className={navClass}>
-            <i className="fa-solid fa-id-card-clip" style={{ width: '20px', textAlign: 'center' }}></i>
-            KYC Checking
-          </NavLink>
-        )}
+        <NavLink to="/kyc" className={navClass}>
+          <i className="fa-solid fa-id-card-clip" style={{ width: '20px', textAlign: 'center' }}></i>
+          <span style={{ flex: 1 }}>KYC Verifications</span>
+          {pendingQueue && pendingQueue.length > 0 && (
+            <span style={{
+              background: '#e11d48',
+              color: 'white',
+              fontSize: '11px',
+              fontWeight: 800,
+              padding: '2px 8px',
+              borderRadius: '9999px',
+              boxShadow: '0 2px 6px rgba(225, 29, 72, 0.4)',
+              lineHeight: 1.4,
+            }}>
+              {pendingQueue.length}
+            </span>
+          )}
+        </NavLink>
       </nav>
 
       {/* User Profile Footer */}
