@@ -59,6 +59,9 @@ function App() {
 
   const chatEndRef = useRef(null);
   const audioRef = useRef(null);
+  const recognitionRef = useRef(null);
+  const silenceTimerRef = useRef(null);
+  const transcriptRef = useRef("");
 
   const stopAudio = () => {
     if (audioRef.current) {
@@ -78,7 +81,13 @@ function App() {
   }, [messages, loading]);
 
   useEffect(() => {
-    return () => stopAudio();
+    return () => {
+      stopAudio();
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch (_) {}
+      }
+    };
   }, []);
 
   // Synchronize with global language switcher
@@ -194,32 +203,110 @@ function App() {
     }
   };
 
-  const startVoiceRecognition = async () => {
+  const toggleVoiceRecognition = async () => {
+    // If already listening, stop immediately and send what was spoken
+    if (listening) {
+      if (silenceTimerRef.current) {
+        clearTimeout(silenceTimerRef.current);
+        silenceTimerRef.current = null;
+      }
+      const textToSend = (transcriptRef.current || message).trim();
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch (_) {}
+        recognitionRef.current = null;
+      }
+      setListening(false);
+      if (textToSend) {
+        transcriptRef.current = "";
+        sendMessage(textToSend);
+      }
+      return;
+    }
+
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch (err) {
       alert("Microphone permission denied. Please allow microphone access.");
       return;
     }
+
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       alert("Speech Recognition is not supported in this browser. Please use Chrome.");
       return;
     }
+
+    transcriptRef.current = "";
     const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
     recognition.lang = language === "si-LK" ? "si-LK" : "en-US";
-    recognition.continuous = false;
-    recognition.interimResults = false;
+    recognition.continuous = true;
+    recognition.interimResults = true;
     recognition.maxAlternatives = 1;
-    recognition.onstart = () => setListening(true);
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      setMessage(transcript);
-      sendMessage(transcript);
+
+    recognition.onstart = () => {
+      setListening(true);
     };
-    recognition.onerror = () => setListening(false);
-    recognition.onend = () => setListening(false);
-    recognition.start();
+
+    recognition.onresult = (event) => {
+      let finalTranscript = "";
+      let interimTranscript = "";
+
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        } else {
+          interimTranscript += event.results[i][0].transcript;
+        }
+      }
+
+      const activeText = (finalTranscript || interimTranscript).trim();
+      if (activeText) {
+        transcriptRef.current = activeText;
+        setMessage(activeText);
+
+        // Fast 1.5-second silence auto-send timer (eliminates waiting for Chrome timeout)
+        if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+        silenceTimerRef.current = setTimeout(() => {
+          const toSend = transcriptRef.current.trim();
+          if (toSend && !loading) {
+            transcriptRef.current = "";
+            if (recognitionRef.current) {
+              try { recognitionRef.current.stop(); } catch (_) {}
+              recognitionRef.current = null;
+            }
+            setListening(false);
+            sendMessage(toSend);
+          }
+        }, 1500);
+      }
+    };
+
+    recognition.onerror = (err) => {
+      console.warn("Speech recognition error:", err);
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+      setListening(false);
+      recognitionRef.current = null;
+    };
+
+    recognition.onend = () => {
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+      const pendingText = transcriptRef.current.trim();
+      if (pendingText && !loading) {
+        transcriptRef.current = "";
+        sendMessage(pendingText);
+      }
+      setListening(false);
+      recognitionRef.current = null;
+    };
+
+    try {
+      recognition.start();
+    } catch (err) {
+      console.warn("Speech start failed:", err);
+      setListening(false);
+      recognitionRef.current = null;
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -235,7 +322,7 @@ function App() {
     <>
       <div className="input-bar-container">
         <textarea
-          placeholder={language === "si-LK" ? "ඔබගේ ප්‍රශ්නය අසන්න..." : "Ask your question..."}
+          placeholder={listening ? (language === "si-LK" ? "කරුණාකර කථා කරන්න..." : "Listening, please speak...") : (language === "si-LK" ? "ඔබගේ ප්‍රශ්නය අසන්න..." : "Ask your question...")}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -243,10 +330,11 @@ function App() {
         />
         <button
           className={`mic-btn-inline ${listening ? "listening" : ""}`}
-          onClick={startVoiceRecognition}
-          title="Voice Input"
+          onClick={toggleVoiceRecognition}
+          title={listening ? (language === "si-LK" ? "නැවැත්වීමට ක්ලික් කරන්න" : "Click to Stop & Send") : (language === "si-LK" ? "හඬින් විමසන්න" : "Voice Input")}
+          style={listening ? { background: "#ef4444", color: "#ffffff", borderColor: "#dc2626" } : {}}
         >
-          🎤
+          {listening ? "⏹" : "🎤"}
         </button>
         <button
           className="send-btn-inline"

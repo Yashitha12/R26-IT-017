@@ -25,7 +25,9 @@ import re
 # -----------------------------------
 # Translation
 # -----------------------------------
-from mtranslate import translate as m_translate
+import urllib.request
+import urllib.parse
+import json
 from deep_translator import MyMemoryTranslator
 
 # -----------------------------------
@@ -56,14 +58,28 @@ ENGLISH_TERMS = {
     "ස්මාර්ට්ග්‍රාම": "SmartGrama"
 }
 
+def gtx_translate(text, target_lang="en", source_lang="auto"):
+    """High-speed direct Google GTX translation engine with browser User-Agent."""
+    s_lang = source_lang.split("-")[0] if source_lang != "auto" else "auto"
+    t_lang = target_lang.split("-")[0]
+    
+    url = f"https://translate.googleapis.com/translate_a/single?client=gtx&sl={s_lang}&tl={t_lang}&dt=t&q=" + urllib.parse.quote(text)
+    req = urllib.request.Request(url, headers={
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    })
+    with urllib.request.urlopen(req, timeout=4) as resp:
+        data = json.loads(resp.read().decode('utf-8'))
+        return ''.join([part[0] for part in data[0] if part and part[0]])
+
 def safe_translate(text, target_lang="en", source_lang="auto"):
     if not text or not str(text).strip():
         return text
-    # 1. Primary: Google Translate via mtranslate
+
+    # 1. Primary: High-speed Google GTX endpoint (<0.5s)
     try:
-        return m_translate(text, target_lang, source_lang)
+        return gtx_translate(text, target_lang, source_lang)
     except Exception as e:
-        print(f"[Translation] Primary Google API returned {e}. Activating MyMemory fallback...")
+        print(f"[Translation] Primary Google GTX returned {e}. Activating MyMemory fallback...")
 
     # 2. Resilient Fallback: MyMemoryTranslator
     try:
@@ -323,7 +339,7 @@ def generate_human_response(context, question, use_rag=True):
             messages=messages,
             options={
                 "temperature": 0.2,
-                "num_predict": 500
+                "num_predict": 300
             }
         )
     except Exception as e:
@@ -333,7 +349,7 @@ def generate_human_response(context, question, use_rag=True):
             messages=messages,
             options={
                 "temperature": 0.2,
-                "num_predict": 500
+                "num_predict": 300
             }
         )
 
